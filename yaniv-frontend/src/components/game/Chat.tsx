@@ -1,0 +1,87 @@
+import { useRef, useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useGameStore } from '../../store/gameStore';
+import { he } from '../../strings/he';
+
+export function Chat() {
+  const messages = useGameStore((s) => s.chatMessages);
+  const sendChat = useGameStore((s) => s.sendChat);
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState('');
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (open && scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, open]);
+
+  const send = () => {
+    if (!text.trim()) return;
+    sendChat(text);
+    setText('');
+  };
+
+  return (
+    <div className="absolute bottom-36 end-3 z-20">
+      {/* Toggle button with unread badge */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="bg-black/40 hover:bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-white/70 text-sm flex items-center gap-2 transition-colors"
+      >
+        <span>💬</span>
+        <span>{he.game.chat}</span>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            className="absolute bottom-10 end-0 w-72 bg-gray-900/95 border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+          >
+            {/* Messages */}
+            <div
+              ref={scrollRef}
+              className="chat-scroll overflow-y-auto max-h-64 p-3 space-y-2 flex flex-col"
+            >
+              {messages.length === 0 ? (
+                <p className="text-white/20 text-xs text-center py-4">אין הודעות עדיין</p>
+              ) : (
+                messages.map((m, i) => (
+                  <div key={i} className="flex flex-col items-start">
+                    <span className="text-white/40 text-xs mb-0.5">{m.fromDisplayName}</span>
+                    <div className="bg-white/8 rounded-xl px-3 py-1.5 text-sm text-white max-w-[90%]">
+                      {m.text}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Input */}
+            <div className="flex items-center gap-2 p-2 border-t border-white/5">
+              <input
+                type="text"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && send()}
+                placeholder={he.game.chatPlaceholder}
+                maxLength={200}
+                className="flex-1 bg-white/5 rounded-lg px-3 py-1.5 text-sm text-white placeholder-white/20 outline-none focus:bg-white/10"
+              />
+              <button
+                onClick={send}
+                disabled={!text.trim()}
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 rounded-lg text-white text-sm transition-colors"
+              >
+                {he.game.send}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

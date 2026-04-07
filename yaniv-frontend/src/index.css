@@ -1,0 +1,119 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Noto+Sans+Hebrew:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* ============================================================
+   Color System — Tropical Vacation
+   ============================================================ */
+:root {
+  --cream:       #FDFAF3;
+  --sand:        #F5E6C8;
+  --sand-deep:   #E2C99A;
+  --ocean:       #0891B2;
+  --ocean-deep:  #0E7490;
+  --ocean-light: #BAE6FD;
+  --coral:       #F26419;
+  --coral-light: #FDBA74;
+  --palm:        #16A34A;
+  --navy:        #1A3352;
+  --navy-soft:   #2D4F7C;
+  --linen:       #D4B896;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Noto Sans Hebrew', 'Syne', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: var(--navy);
+}
+
+/* ============================================================
+   Card base styles
+   ============================================================ */
+.card {
+  user-select: none;
+  touch-action: manipulation;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(26, 51, 82, 0.14);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-selected {
+  box-shadow: 0 0 0 3px var(--coral), 0 8px 20px rgba(242, 100, 25, 0.3);
+  transform: translateY(-14px);
+}
+
+/* ============================================================
+   Game table — warm wooden beach deck
+   ============================================================ */
+.felt {
+  background-color: #D9C4A0;
+  background-image:
+    radial-gradient(ellipse at 50% 35%, #EDE0C4 0%, #D9C4A0 50%, #C4A87A 100%);
+  position: relative;
+}
+
+/* Subtle wood-grain texture overlay */
+.felt::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      93deg,
+      transparent,
+      transparent 4px,
+      rgba(160, 120, 60, 0.04) 4px,
+      rgba(160, 120, 60, 0.04) 5px
+    ),
+    repeating-linear-gradient(
+      180deg,
+      transparent,
+      transparent 40px,
+      rgba(160, 120, 60, 0.02) 40px,
+      rgba(160, 120, 60, 0.02) 41px
+    );
+  pointer-events: none;
+}
+
+/* ============================================================
+   Scrollbar
+   ============================================================ */
+.chat-scroll::-webkit-scrollbar { width: 4px; }
+.chat-scroll::-webkit-scrollbar-track { background: transparent; }
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: rgba(26, 51, 82, 0.15);
+  border-radius: 2px;
+}
+
+/* ============================================================
+   Animations
+   ============================================================ */
+@keyframes drift {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  33%       { transform: translateX(6px) rotate(1.5deg); }
+  66%       { transform: translateX(-4px) rotate(-1deg); }
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50%       { transform: rotate(3deg); }
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes wave-move {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-drift    { animation: drift 6s ease-in-out infinite; }
+.animate-sway     { animation: sway 4s ease-in-out infinite; }
+.animate-bob      { animation: bob 3s ease-in-out infinite; }
+.animate-wave-move { animation: wave-move 12s linear infinite; }
