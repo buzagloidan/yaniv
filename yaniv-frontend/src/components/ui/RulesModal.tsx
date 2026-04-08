@@ -44,9 +44,7 @@ const CARD_ROWS = [
   { card: "ג'וקר / Joker", value: '0' },
   { card: 'אס / Ace', value: '1' },
   { card: 'קלף מספרי / Number card (2–10)', value: 'face value' },
-  { card: 'נסיך / Jack (J)', value: '10' },
-  { card: 'מלכה / Queen (Q)', value: '10' },
-  { card: 'מלך / King (K)', value: '10' },
+  { card: 'נסיך, מלכה, מלך / Jack, Queen, King (J, Q, K)', value: '10' },
 ];
 
 function HebrewContent() {
@@ -57,9 +55,6 @@ function HebrewContent() {
           המשחק משוחק עם 54 קלפים — חבילה מלאה כולל 2 ג'וקרים.
         </p>
         <CardTable rows={CARD_ROWS} />
-        <p className="mt-2 text-xs" style={{ color: '#7C6A50' }}>
-          ⚠️ J, Q, K שווים <strong>10 נקודות</strong> כל אחד — לא 11, 12, 13.
-        </p>
       </Section>
 
       <Section title="מטרת המשחק">
@@ -131,9 +126,6 @@ function EnglishContent() {
           The game is played with a standard 54-card deck including 2 Jokers.
         </p>
         <CardTable rows={CARD_ROWS} />
-        <p className="mt-2 text-xs" style={{ color: '#7C6A50' }}>
-          ⚠️ J, Q and K are each worth <strong>10 points</strong> — not 11, 12 or 13.
-        </p>
       </Section>
 
       <Section title="Objective">
