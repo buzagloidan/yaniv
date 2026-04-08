@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
 import { createTable, addBot, joinTable } from '../../networking/api';
-import { useLangStore } from '../../store/langStore';
+import { useStrings } from '../../strings';
 import { RulesModal } from '../ui/RulesModal';
 import { CreateTableModal } from './CreateTableModal';
 import { JoinTableModal } from './JoinTableModal';
@@ -19,7 +19,7 @@ export function LobbyPage() {
   const [quickStarting, setQuickStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isEn = useLangStore((l) => l.lang) === 'en';
+  const s = useStrings();
   const token = user!.sessionToken;
 
   /** Create a table with 3 bots and navigate straight to the game */
@@ -35,7 +35,7 @@ export function LobbyPage() {
       await addBot(token, data.roomCode, 3);
       navigate(`/game/${data.tableId}?code=${data.roomCode}`);
     } catch (e) {
-      setError((e as Error).message ?? 'שגיאה ביצירת המשחק');
+      setError((e as Error).message ?? s.errors.unknown);
       setQuickStarting(false);
     }
   };
@@ -51,7 +51,7 @@ export function LobbyPage() {
       const data = await joinTable(token, code);
       navigate(`/game/${data.tableId}?code=${data.roomCode}`);
     } catch (e) {
-      setError((e as Error).message ?? 'שגיאה בהצטרפות');
+      setError((e as Error).message ?? s.errors.unknown);
     }
   };
 
@@ -181,7 +181,7 @@ export function LobbyPage() {
               />
             )}
             <span className="relative">
-              {quickStarting ? `🌴 ${isEn ? 'Starting...' : 'מתחיל...'}` : `🏄 ${isEn ? 'Start Game' : 'התחל משחק'}`}
+              {quickStarting ? `🌴 ${s.lobby.loading}` : `🏄 ${s.game.startGame}`}
             </span>
           </button>
 
@@ -207,7 +207,7 @@ export function LobbyPage() {
             }}
           >
             <span className="text-lg">#</span>
-            {isEn ? 'Join with Code' : 'הצטרף עם קוד'}
+            {s.lobby.joinWithCode}
           </button>
 
           {/* Create table */}
@@ -223,7 +223,7 @@ export function LobbyPage() {
             }}
           >
             <span className="text-lg">＋</span>
-            {isEn ? 'Create Table' : 'צור שולחן'}
+            {s.lobby.createTable}
           </button>
         </motion.div>
       </div>

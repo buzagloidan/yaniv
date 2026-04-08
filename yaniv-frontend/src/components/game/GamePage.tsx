@@ -5,7 +5,6 @@ import { useAuthStore } from '../../store/authStore';
 import { useGameStore, selectIsMyTurn, selectMe, selectIsWaitingPlayer } from '../../store/gameStore';
 import { useStrings } from '../../strings';
 import { leaveTable } from '../../networking/api';
-import { RulesModal } from '../ui/RulesModal';
 import { PlayerHand } from './PlayerHand';
 import { DiscardPile } from './DiscardPile';
 import { OpponentSeat } from './OpponentSeat';
@@ -100,7 +99,6 @@ export function GamePage() {
   }, [tableId]);
 
   const [leaving, setLeaving] = useState(false);
-  const [rulesOpen, setRulesOpen] = useState(false);
 
   async function handleLeaveTable() {
     if (!user || !roomCode || leaving) return;
@@ -125,42 +123,22 @@ export function GamePage() {
       <CornerPalm side="right" />
       <OceanStrip />
 
-      {/* Top-left controls: exit + rules */}
-      <div className="absolute top-3 left-3 z-20 flex items-center gap-2">
+      {/* Top-end controls: exit */}
+      <div className="absolute top-3 end-3 z-20">
         <button
           onClick={handleLeaveTable}
           disabled={leaving}
-          className="flex items-center justify-center rounded-full text-base shadow-md transition-transform hover:scale-105 active:scale-95"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold shadow-md transition-transform hover:scale-105 active:scale-95"
           style={{
-            width: 32,
-            height: 32,
-            background: 'rgba(255,255,255,0.82)',
+            background: 'rgba(242,100,25,0.15)',
             backdropFilter: 'blur(8px)',
             color: '#D9560E',
-            border: '1.5px solid rgba(242,100,25,0.35)',
+            border: '1.5px solid rgba(242,100,25,0.4)',
           }}
-          title="עזוב משחק"
         >
-          ✕
-        </button>
-        <button
-          onClick={() => setRulesOpen(true)}
-          className="flex items-center justify-center rounded-full text-sm font-bold shadow-md transition-transform hover:scale-105 active:scale-95"
-          style={{
-            width: 32,
-            height: 32,
-            background: 'rgba(255,255,255,0.82)',
-            backdropFilter: 'blur(8px)',
-            color: '#0891B2',
-            border: '1.5px solid rgba(8,145,178,0.35)',
-          }}
-          title="חוקי המשחק"
-        >
-          ?
+          🚪
         </button>
       </div>
-
-      <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
 
       {/* Connection banner */}
       <AnimatePresence>

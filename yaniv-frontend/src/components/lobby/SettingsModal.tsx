@@ -12,11 +12,11 @@ const LABELS: Record<Lang, Record<string, string>> = {
   ru: { settings: 'Настройки', sounds: 'Звуки', language: 'Язык', rules: 'Правила', about: 'О приложении', privacy: 'Конфиденциальность', support: 'Поддержка', signOut: 'Выйти' },
 };
 
-const LANG_OPTIONS: { value: Lang; flag: string; label: string }[] = [
-  { value: 'he', flag: '🇮🇱', label: 'עב' },
-  { value: 'en', flag: '🇬🇧', label: 'EN' },
-  { value: 'ar', flag: '🇸🇦', label: 'عر' },
-  { value: 'ru', flag: '🇷🇺', label: 'РУ' },
+const LANG_OPTIONS: { value: Lang; label: string }[] = [
+  { value: 'he', label: 'עב' },
+  { value: 'en', label: 'EN' },
+  { value: 'ar', label: 'عر' },
+  { value: 'ru', label: 'РУ' },
 ];
 
 interface Props {
@@ -159,8 +159,7 @@ export function SettingsModal({ open, onClose, onShowRules, onSignOut }: Props) 
                           border: lang === opt.value ? '2px solid #0891B2' : '2px solid transparent',
                         }}
                       >
-                        <span className="text-base leading-none">{opt.flag}</span>
-                        <span className="leading-none mt-0.5">{opt.label}</span>
+                        <span className="leading-none">{opt.label}</span>
                       </button>
                     ))}
                   </div>
