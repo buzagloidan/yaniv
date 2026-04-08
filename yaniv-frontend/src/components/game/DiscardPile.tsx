@@ -9,7 +9,7 @@ export function DiscardPile() {
   const discardAndDraw = useGameStore((s) => s.discardAndDraw);
   const canDiscardAndDraw = useGameStore(selectCanDiscardAndDraw);
 
-  const { currentSet, deckCount } = discardPile;
+  const { currentSet } = discardPile;
   const canInteractWithPile = canDiscardAndDraw && currentSet.length > 0;
 
   return (
