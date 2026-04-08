@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
 import { createTable, addBot, joinTable } from '../../networking/api';
@@ -13,15 +13,31 @@ import { SettingsModal } from './SettingsModal';
 export function LobbyPage() {
   const { user, signOut } = useAuthStore();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [quickStarting, setQuickStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const attemptedSharedJoinRef = useRef<string | null>(null);
 
   const s = useStrings();
   const token = user?.sessionToken ?? '';
+  const sharedJoinCode = searchParams.get('join')?.trim() ?? '';
+
+  const mapJoinError = (message: string) => {
+    switch (message) {
+      case 'Table not found':
+        return s.joinTable.notFound;
+      case 'Table full':
+        return s.joinTable.full;
+      case 'Game already started':
+        return s.joinTable.started;
+      default:
+        return message || s.errors.unknown;
+    }
+  };
 
   /** Create a table with 3 bots and navigate straight to the game */
   const handleQuickStart = async () => {
@@ -54,6 +70,23 @@ export function LobbyPage() {
     const data = await joinTable(token, code);
     navigate(`/game/${data.tableId}?code=${data.roomCode}`);
   };
+
+  useEffect(() => {
+    if (!user || !/^\d{4}$/.test(sharedJoinCode)) return;
+    if (attemptedSharedJoinRef.current === sharedJoinCode) return;
+
+    attemptedSharedJoinRef.current = sharedJoinCode;
+    setError(null);
+
+    void joinTable(token, sharedJoinCode)
+      .then((data) => {
+        navigate(`/game/${data.tableId}?code=${data.roomCode}`);
+      })
+      .catch((e) => {
+        setError(mapJoinError((e as Error).message));
+        setShowJoin(true);
+      });
+  }, [navigate, sharedJoinCode, token, user]);
 
   return (
     <div
@@ -259,6 +292,7 @@ export function LobbyPage() {
         open={showJoin}
         onClose={() => setShowJoin(false)}
         onJoin={handleJoin}
+        initialCode={sharedJoinCode}
       />
       <RulesModal open={showRules} onClose={() => setShowRules(false)} />
       <SettingsModal

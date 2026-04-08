@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { useStrings } from '../../strings';
@@ -7,13 +7,20 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onJoin: (code: string) => Promise<void>;
+  initialCode?: string;
 }
 
-export function JoinTableModal({ open, onClose, onJoin }: Props) {
+export function JoinTableModal({ open, onClose, onJoin, initialCode = '' }: Props) {
   const s = useStrings();
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setCode(initialCode);
+    setError('');
+  }, [initialCode, open]);
 
   const mapJoinError = (message: string) => {
     switch (message) {

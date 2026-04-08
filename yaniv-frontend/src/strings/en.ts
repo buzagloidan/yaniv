@@ -82,6 +82,8 @@ export const en = {
     roomCode: (code: string) => `Code: ${code}`,
     copyCode: 'Copy Code',
     copied: 'Copied!',
+    shareOnWhatsApp: 'Share on WhatsApp',
+    shareInvite: (code: string, url: string) => `Join my Yaniv room! Room code: ${code}\n${url}`,
     turnTimer: (n: number) => `Time: ${n}s`,
     eliminated: 'Eliminated',
     disconnected: 'Disconnected',

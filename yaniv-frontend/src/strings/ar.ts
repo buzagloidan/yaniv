@@ -82,6 +82,8 @@ export const ar = {
     roomCode: (code: string) => `الكود: ${code}`,
     copyCode: 'نسخ الكود',
     copied: 'تم النسخ!',
+    shareOnWhatsApp: 'مشاركة عبر WhatsApp',
+    shareInvite: (code: string, url: string) => `تعال العب يانيف معي! كود الغرفة: ${code}\n${url}`,
     turnTimer: (n: number) => `الوقت: ${n}ث`,
     eliminated: 'خرج من اللعبة',
     disconnected: 'غير متصل',

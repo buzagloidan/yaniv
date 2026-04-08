@@ -94,6 +94,8 @@ export const he = {
     roomCode: (code: string) => `קוד: ${code}`,
     copyCode: 'העתק קוד',
     copied: 'הועתק!',
+    shareOnWhatsApp: 'שתף ב-WhatsApp',
+    shareInvite: (code: string, url: string) => `בואו לשחק יניב איתי! קוד החדר: ${code}\n${url}`,
     turnTimer: (n: number) => `עוד ${n} שנ׳`,
     eliminated: 'הודח',
     disconnected: 'מנותק',

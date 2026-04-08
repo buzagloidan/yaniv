@@ -110,6 +110,14 @@ function EmptySeat({ label }: { label: string }) {
   );
 }
 
+function WhatsAppIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5">
+      <path d="M12.09 4a7.46 7.46 0 0 0-6.3 11.47L4 20l4.65-1.49a7.42 7.42 0 0 0 3.43.83h.01a7.46 7.46 0 0 0 0-14.92Zm0 13.99h-.01a6.18 6.18 0 0 1-3.15-.86l-.22-.13-2.76.88.9-2.69-.14-.23a6.2 6.2 0 1 1 5.38 3.03Zm3.4-4.64c-.18-.09-1.09-.53-1.26-.59-.17-.06-.29-.09-.41.09-.12.18-.47.59-.58.71-.1.12-.21.14-.39.05-.18-.09-.76-.28-1.44-.9-.53-.47-.88-1.06-.98-1.24-.1-.18-.01-.27.08-.36.08-.08.18-.21.27-.31.09-.1.12-.18.18-.3.06-.12.03-.23-.01-.32-.04-.09-.41-.99-.56-1.36-.15-.35-.3-.31-.41-.31h-.35c-.12 0-.31.04-.48.23-.16.18-.63.62-.63 1.52 0 .89.65 1.76.74 1.88.09.12 1.27 1.94 3.07 2.72.43.18.77.29 1.03.38.43.14.83.12 1.14.07.35-.05 1.09-.45 1.24-.87.15-.42.15-.77.11-.85-.05-.08-.17-.12-.35-.21Z" />
+    </svg>
+  );
+}
+
 export function GamePage() {
   const s = useStrings();
   const { tableId } = useParams<{ tableId: string }>();
@@ -171,6 +179,10 @@ export function GamePage() {
   const isHost = !!user && user.userId === hostId;
   const canShowStartButton = isWaiting && isHost && players.length >= 2;
   const canStartGame = connectedPlayersCount >= 2;
+  const inviteUrl = !isPrivateTable && roomCode ? `${window.location.origin}/?join=${encodeURIComponent(roomCode)}` : '';
+  const whatsAppShareUrl = inviteUrl
+    ? `https://wa.me/?text=${encodeURIComponent(s.game.shareInvite(roomCode, inviteUrl))}`
+    : '';
 
   return (
     <div className="felt relative w-full h-screen overflow-hidden select-none">
@@ -447,12 +459,31 @@ export function GamePage() {
 
             {!isPrivateTable && roomCode && (
               <div
-                className="rounded-2xl px-4 py-3 mb-4 flex flex-col items-center gap-1"
+                className="rounded-2xl px-4 py-3 mb-4 flex flex-col items-center gap-2"
                 style={{ background: 'linear-gradient(135deg, #E0F2FE, #BAE6FD)' }}
               >
-                <span className="text-xs font-medium" style={{ color: '#0E7490' }}>
-                  {s.game.roomCodeLabel}
-                </span>
+                <div className="w-full flex items-center justify-between gap-3">
+                  <span className="text-xs font-medium" style={{ color: '#0E7490' }}>
+                    {s.game.roomCodeLabel}
+                  </span>
+                  {whatsAppShareUrl && (
+                    <a
+                      href={whatsAppShareUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={s.game.shareOnWhatsApp}
+                      title={s.game.shareOnWhatsApp}
+                      className="inline-flex items-center justify-center w-10 h-10 rounded-full transition-transform active:scale-95"
+                      style={{
+                        background: '#25D366',
+                        color: '#FFFFFF',
+                        boxShadow: '0 8px 18px rgba(37,211,102,0.32)',
+                      }}
+                    >
+                      <WhatsAppIcon />
+                    </a>
+                  )}
+                </div>
                 <span
                   className="text-3xl font-bold tracking-widest"
                   style={{ color: '#0E7490', fontFamily: 'Syne, sans-serif' }}
