@@ -221,14 +221,18 @@ function dealRound(state: GameState, startSeatIndex: number): GameState {
     };
   });
 
+  // Deal one face-up starting card to the discard pile
+  const startingCard = remainingDeck[0];
+  const finalDeck = remainingDeck.slice(1);
+
   const now = Date.now();
   return {
     ...state,
     phase: 'player_turn_discard',
     players: updatedPlayers,
     currentTurnIndex: startSeatIndex,
-    deck: remainingDeck,
-    discardPile: { currentSet: [], previousSets: [] },
+    deck: finalDeck,
+    discardPile: { currentSet: [startingCard], previousSets: [] },
     roundNumber: state.roundNumber + 1,
     yanivCallerId: null,
     turnDeadlineEpoch: now + state.settings.turnTimeoutSeconds * 1000,
