@@ -19,26 +19,26 @@ import { ToastContainer } from '../ui/Toast';
 
 function opponentPositions(count: number): Array<{ top: string; left?: string; right?: string; transform?: string }> {
   if (count === 1) {
-    return [{ top: '6%', left: '50%', transform: 'translateX(-50%)' }];
+    return [{ top: '7%', left: '50%', transform: 'translateX(-50%)' }];
   }
   if (count === 2) {
     return [
-      { top: '24%', left: '5%' },
-      { top: '24%', right: '5%' },
+      { top: '19%', left: '7%' },
+      { top: '19%', right: '7%' },
     ];
   }
   if (count === 3) {
     return [
-      { top: '24%', left: '5%' },
-      { top: '6%', left: '50%', transform: 'translateX(-50%)' },
-      { top: '24%', right: '5%' },
+      { top: '19%', left: '7%' },
+      { top: '7%', left: '50%', transform: 'translateX(-50%)' },
+      { top: '19%', right: '7%' },
     ];
   }
   return [
-    { top: '24%', left: '5%' },
-    { top: '6%', left: '50%', transform: 'translateX(-50%)' },
-    { top: '24%', right: '5%' },
-    { top: '50%', right: '5%', transform: 'translateY(-50%)' },
+    { top: '19%', left: '7%' },
+    { top: '7%', left: '50%', transform: 'translateX(-50%)' },
+    { top: '19%', right: '7%' },
+    { top: '48%', right: '4%', transform: 'translateY(-50%)' },
   ];
 }
 
@@ -304,7 +304,7 @@ export function GamePage() {
             >
               {/* Animated logo */}
               <motion.img
-                src="/yaniv-logo.svg"
+                src="/yaniv-logo.png"
                 alt="יניב"
                 className="w-16 h-16 object-contain mx-auto mb-3"
                 animate={{ y: [0, -6, 0] }}
@@ -394,50 +394,6 @@ export function GamePage() {
           )}
         </div>
       ))}
-
-      {/* ── Turn indicator ── */}
-      {!isLoading && !isWaiting && !isWaitingPlayer && (
-        <div className="absolute top-1/3 inset-x-0 flex justify-center pointer-events-none z-10">
-          <AnimatePresence>
-            {isMyTurn && phase === 'player_turn_discard' && (
-              <motion.div
-                key="my-turn"
-                initial={{ opacity: 0, scale: 0.7, y: 8 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="px-5 py-2 rounded-full font-bold text-sm shadow-lg"
-                style={{
-                  background: 'linear-gradient(135deg, #F26419, #D9560E)',
-                  color: 'white',
-                  fontFamily: 'Syne, sans-serif',
-                  boxShadow: '0 4px 20px rgba(242,100,25,0.45)',
-                }}
-              >
-                {s.game.yourTurn} 🌟
-              </motion.div>
-            )}
-            {!isMyTurn && currentTurnUserId && (
-              <motion.div
-                key="their-turn"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="px-4 py-1.5 rounded-full text-xs font-medium"
-                style={{
-                  background: 'rgba(255,255,255,0.65)',
-                  backdropFilter: 'blur(8px)',
-                  color: '#2D4F7C',
-                  border: '1px solid rgba(226,201,154,0.5)',
-                }}
-              >
-                {s.game.waitingFor(
-                  players.find((p) => p.userId === currentTurnUserId)?.displayName ?? '...',
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
 
       {/* ── Center: room waiting panel ── */}
       {!isLoading && isWaiting && !isWaitingPlayer && (
@@ -529,39 +485,46 @@ export function GamePage() {
       {/* ── Center: discard + draw pile ── */}
       {!isLoading && !isWaiting && !isWaitingPlayer && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="pointer-events-auto">
-            <DiscardPile />
+          <div className="pointer-events-none flex flex-col items-center gap-3 -translate-y-12 sm:-translate-y-8">
+            <TurnCountdown
+              phase={phase}
+              turnDeadlineEpoch={turnDeadlineEpoch}
+              show={!!currentTurnUserId}
+            />
+            <div className="pointer-events-auto">
+              <DiscardPile />
+            </div>
           </div>
         </div>
       )}
 
       {/* ── My hand + action bar ── */}
       {!isLoading && !isWaitingPlayer && (
-        <div className="absolute bottom-8 inset-x-0 flex flex-col items-center gap-4 px-4" style={{ zIndex: 5 }}>
-          {!isWaiting && (
-            <div className="pointer-events-none">
-              <TurnCountdown
-                phase={phase}
-                turnDeadlineEpoch={turnDeadlineEpoch}
-                show={isMyTurn}
-              />
-            </div>
-          )}
+        <div className="absolute bottom-4 inset-x-0 flex flex-col items-center gap-2.5 px-3" style={{ zIndex: 5 }}>
           <ActionBar />
-          <PlayerHand />
           {me && (
-            <div
-              className="px-4 py-1.5 rounded-full text-xs font-medium"
+            <motion.div
+              animate={isMyTurn ? { scale: 1.04, y: [0, -2, 0] } : { scale: 1, y: 0 }}
+              transition={isMyTurn ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.2 }}
+              className="px-4 py-2 rounded-full text-sm font-semibold"
               style={{
-                background: 'rgba(255,255,255,0.7)',
-                backdropFilter: 'blur(8px)',
-                color: '#2D4F7C',
-                border: '1px solid rgba(226,201,154,0.5)',
+                background: isMyTurn
+                  ? 'linear-gradient(135deg, rgba(242,100,25,0.96), rgba(217,86,14,0.94))'
+                  : 'rgba(255,255,255,0.76)',
+                backdropFilter: 'blur(10px)',
+                color: isMyTurn ? '#FFF7ED' : '#2D4F7C',
+                border: isMyTurn
+                  ? '1.5px solid rgba(255,255,255,0.28)'
+                  : '1px solid rgba(226,201,154,0.5)',
+                boxShadow: isMyTurn
+                  ? '0 10px 24px rgba(242,100,25,0.28)'
+                  : '0 8px 20px rgba(12,74,110,0.1)',
               }}
             >
               {me.displayName} · {me.score} נק׳
-            </div>
+            </motion.div>
           )}
+          <PlayerHand />
         </div>
       )}
 

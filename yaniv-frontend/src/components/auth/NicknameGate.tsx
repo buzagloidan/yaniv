@@ -55,7 +55,7 @@ export function NicknameGate({ open }: Props) {
               style={{ background: 'linear-gradient(135deg, #0891B2 0%, #0C4A6E 100%)' }}
             >
               <motion.img
-                src="/yaniv-logo.svg"
+                src="/yaniv-logo.png"
                 alt="יניב"
                 className="w-36 sm:w-40 h-auto object-contain mx-auto mb-2"
                 initial={{ scale: 0.88, opacity: 0 }}

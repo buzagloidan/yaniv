@@ -12,11 +12,12 @@ export function OpponentSeat({ player, isCurrentTurn }: Props) {
   const s = useStrings();
   return (
     <motion.div
-      className="flex flex-col items-center gap-2"
-      animate={isCurrentTurn ? { scale: 1.05 } : { scale: 1 }}
+      className="flex flex-col items-center gap-1.5"
+      animate={isCurrentTurn ? { scale: 1.05, y: [0, -2, 0] } : { scale: 1, y: 0 }}
+      transition={isCurrentTurn ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.2 }}
     >
       {/* Card backs */}
-      <div className="flex items-center" style={{ minHeight: 56 }}>
+      <div className="flex items-center justify-center" style={{ minHeight: 72 }}>
         {player.isEliminated ? (
           <span className="text-red-400 text-xs font-medium">{s.game.eliminated}</span>
         ) : (
@@ -24,12 +25,12 @@ export function OpponentSeat({ player, isCurrentTurn }: Props) {
             <div
               key={i}
               style={{
-                marginInlineStart: i === 0 ? 0 : -20,
+                marginInlineStart: i === 0 ? 0 : -18,
                 zIndex: i,
-                transform: `rotate(${(i - (player.cardCount - 1) / 2) * 6}deg)`,
+                transform: `rotate(${(i - (player.cardCount - 1) / 2) * 5}deg) translateY(${Math.abs(i - (player.cardCount - 1) / 2) * 1.5}px)`,
               }}
             >
-              <CardView cardId="XX" faceDown small />
+              <CardView cardId="XX" faceDown size="sm" />
             </div>
           ))
         )}
@@ -37,21 +38,27 @@ export function OpponentSeat({ player, isCurrentTurn }: Props) {
 
       {/* Name badge */}
       <div
-        className={[
-          'px-3 py-1 rounded-full text-xs font-medium transition-colors',
-          isCurrentTurn
-            ? 'bg-yellow-400 text-gray-900'
-            : 'bg-black/30 text-white/70',
-          !player.isConnected && !player.isEliminated ? 'opacity-50' : '',
-        ].join(' ')}
+        className="px-3.5 py-1.5 rounded-full text-[0.8rem] font-semibold transition-all"
+        style={{
+          background: isCurrentTurn
+            ? 'linear-gradient(135deg, rgba(242,100,25,0.96), rgba(217,86,14,0.94))'
+            : 'rgba(75, 64, 45, 0.34)',
+          color: isCurrentTurn ? '#FFF7ED' : 'rgba(255,251,240,0.92)',
+          border: isCurrentTurn
+            ? '1.5px solid rgba(255,255,255,0.28)'
+            : '1px solid rgba(255,255,255,0.16)',
+          boxShadow: isCurrentTurn
+            ? '0 10px 24px rgba(242,100,25,0.28)'
+            : '0 6px 14px rgba(12,74,110,0.12)',
+          opacity: !player.isConnected && !player.isEliminated ? 0.55 : 1,
+        }}
       >
-        {isCurrentTurn && '• '}
         {player.displayName}
         {!player.isConnected && !player.isEliminated && ` (${s.game.disconnected})`}
       </div>
 
       {/* Score */}
-      <span className="text-white/40 text-xs">{player.score} {s.game.score ?? 'נק׳'}</span>
+      <span className="text-white/55 text-xs font-medium">{player.score} {s.game.score ?? 'נק׳'}</span>
     </motion.div>
   );
 }

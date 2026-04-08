@@ -160,7 +160,7 @@ export function SignInPage() {
 
             {/* Logo */}
             <motion.img
-              src="/yaniv-logo.svg"
+              src="/yaniv-logo.png"
               alt="יניב"
               className="w-40 h-auto object-contain mb-2 drop-shadow-lg"
               initial={{ scale: 0.8, opacity: 0 }}

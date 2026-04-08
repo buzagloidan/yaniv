@@ -33,18 +33,18 @@ export function PlayerHand() {
 
   if (isWaitingRoom) {
     return (
-      <div className="flex flex-col items-center gap-3">
-        <div className="text-white/60 text-sm">
+      <div className="flex flex-col items-center gap-2.5">
+        <div className="text-white/65 text-sm">
           {s.game.handOnStart}
         </div>
 
-        <div className="flex items-end justify-center gap-2" style={{ minHeight: 96 }}>
+        <div className="flex items-end justify-center gap-1.5" style={{ minHeight: 112 }}>
           {Array.from({ length: 5 }).map((_, i) => {
-            const offset = Math.abs(i - 2) * 3;
+            const offset = Math.abs(i - 2) * 4;
             return (
               <div
                 key={i}
-                className="w-14 h-20 rounded-xl border border-white/20 bg-white/10"
+                className="w-16 h-24 rounded-2xl border border-white/20 bg-white/10"
                 style={{
                   transform: `translateY(${offset}px)`,
                   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12)',
@@ -58,33 +58,44 @@ export function PlayerHand() {
     );
   }
 
+  const overlap = sortedHand.length >= 8 ? -28 : sortedHand.length >= 7 ? -24 : sortedHand.length >= 6 ? -20 : -12;
+
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-2.5">
       {/* Hand total */}
-      <div className="text-white/60 text-sm">
+      <div
+        className="px-3 py-1 rounded-full text-xs font-semibold tabular-nums"
+        style={{
+          background: 'rgba(255,251,240,0.72)',
+          color: '#0C4A6E',
+          border: '1px solid rgba(12,74,110,0.12)',
+          boxShadow: '0 8px 20px rgba(12,74,110,0.08)',
+        }}
+      >
         {s.game.handTotal(total)}
       </div>
 
       {/* Cards — fan layout, highest value left, lowest value right (RTL) */}
-      <div className="flex items-end justify-center" style={{ minHeight: 96 }}>
+      <div className="flex items-end justify-center px-2" style={{ minHeight: 128 }}>
         {sortedHand.map((cardId, i) => {
           const mid = (sortedHand.length - 1) / 2;
           const offset = i - mid;
-          const rotate = offset * 4;
-          const translateY = Math.abs(offset) * 3;
+          const rotate = offset * 4.5;
+          const translateY = Math.abs(offset) * 4;
 
           return (
             <div
               key={cardId}
               style={{
                 transform: `rotate(${rotate}deg) translateY(${translateY}px)`,
-                marginInline: sortedHand.length > 6 ? '-6px' : '-2px',
+                marginInlineStart: i === 0 ? 0 : overlap,
                 zIndex: i,
                 transformOrigin: 'bottom center',
               }}
             >
               <CardView
                 cardId={cardId}
+                size="lg"
                 selected={selectedCards.includes(cardId)}
                 onClick={canSelect ? () => toggleCard(cardId) : undefined}
               />

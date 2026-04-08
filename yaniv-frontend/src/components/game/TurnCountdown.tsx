@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useStrings } from '../../strings';
 import type { GamePhase } from '../../shared/types';
 
 interface Props {
@@ -18,7 +17,6 @@ function isTimedTurnPhase(phase: GamePhase | null): boolean {
 }
 
 export function TurnCountdown({ phase, turnDeadlineEpoch, show }: Props) {
-  const s = useStrings();
   const [now, setNow] = useState(() => Date.now());
 
   const isVisible = show && turnDeadlineEpoch !== null && isTimedTurnPhase(phase);
@@ -48,7 +46,7 @@ export function TurnCountdown({ phase, turnDeadlineEpoch, show }: Props) {
         scale: isUrgent ? [1, 1.03, 1] : 1,
       }}
       transition={isUrgent ? { duration: 0.9, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.18 }}
-      className="px-4 py-2 rounded-2xl text-sm font-bold shadow-lg"
+      className="min-w-[4.25rem] px-3 py-2 rounded-full font-bold shadow-lg"
       style={{
         background: isUrgent ? 'rgba(220, 38, 38, 0.88)' : 'rgba(255,255,255,0.78)',
         backdropFilter: 'blur(10px)',
@@ -62,9 +60,9 @@ export function TurnCountdown({ phase, turnDeadlineEpoch, show }: Props) {
         fontFamily: 'Syne, sans-serif',
       }}
     >
-      <div className="flex items-center gap-2">
-        <span aria-hidden="true">{isUrgent ? '⏰' : '⏳'}</span>
-        <span>{s.game.turnTimer(secondsLeft)}</span>
+      <div className="flex items-center justify-center gap-1.5">
+        <span aria-hidden="true" className="text-base leading-none">{isUrgent ? '⏰' : '🕒'}</span>
+        <span className="tabular-nums text-lg leading-none">{secondsLeft}</span>
       </div>
     </motion.div>
   );

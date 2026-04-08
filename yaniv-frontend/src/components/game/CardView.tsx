@@ -10,6 +10,7 @@ interface CardViewProps {
   onClick?: () => void;
   className?: string;
   small?: boolean;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export function CardView({
@@ -19,11 +20,36 @@ export function CardView({
   onClick,
   className,
   small = false,
+  size,
 }: CardViewProps) {
-  const w = small ? 'w-10' : 'w-16';
-  const h = small ? 'h-14' : 'h-24';
-  const textSm = small ? 'text-xs' : 'text-sm';
-  const textLg = small ? 'text-lg' : 'text-3xl';
+  const resolvedSize = size ?? (small ? 'sm' : 'md');
+  const sizeClasses = {
+    sm: {
+      w: 'w-11 sm:w-12',
+      h: 'h-16 sm:h-[4.5rem]',
+      textSm: 'text-[11px] sm:text-xs',
+      textLg: 'text-xl sm:text-2xl',
+    },
+    md: {
+      w: 'w-[4.15rem] sm:w-[4.35rem]',
+      h: 'h-[6.15rem] sm:h-[6.45rem]',
+      textSm: 'text-sm',
+      textLg: 'text-[2rem] sm:text-[2.15rem]',
+    },
+    lg: {
+      w: 'w-[4.6rem] sm:w-[4.9rem]',
+      h: 'h-[6.8rem] sm:h-[7.2rem]',
+      textSm: 'text-sm sm:text-[0.95rem]',
+      textLg: 'text-[2.2rem] sm:text-[2.45rem]',
+    },
+    xl: {
+      w: 'w-[5rem] sm:w-[5.45rem]',
+      h: 'h-[7.4rem] sm:h-[8rem]',
+      textSm: 'text-[0.95rem] sm:text-base',
+      textLg: 'text-[2.4rem] sm:text-[2.7rem]',
+    },
+  } as const;
+  const { w, h, textSm, textLg } = sizeClasses[resolvedSize];
 
   if (faceDown) {
     return (

@@ -6,11 +6,25 @@
  */
 
 let ctx: AudioContext | null = null;
+let preloadPromise: Promise<void> | null = null;
+let unlockPromise: Promise<boolean> | null = null;
+let unlockListenersInstalled = false;
+
+type LegacyAudioWindow = Window & typeof globalThis & {
+  webkitAudioContext?: typeof AudioContext;
+};
+
+function getAudioContextCtor(): typeof AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  return window.AudioContext ?? (window as LegacyAudioWindow).webkitAudioContext ?? null;
+}
 
 function getCtx(): AudioContext {
-  if (!ctx) ctx = new AudioContext();
-  // Safari sometimes suspends the context until a user gesture
-  if (ctx.state === 'suspended') ctx.resume();
+  const AudioContextCtor = getAudioContextCtor();
+  if (!AudioContextCtor) {
+    throw new Error('Web Audio API is unavailable in this browser.');
+  }
+  if (!ctx) ctx = new AudioContextCtor();
   return ctx;
 }
 
@@ -40,9 +54,81 @@ async function loadBuffer(url: string): Promise<AudioBuffer | null> {
   }
 }
 
-// Pre-load on first import (best-effort — no throw if unavailable)
-loadBuffer('/sounds/yaniv.wav').catch(() => {});
-loadBuffer('/sounds/asaf.wav').catch(() => {});
+async function preloadRecordedSounds(): Promise<void> {
+  if (!preloadPromise) {
+    preloadPromise = Promise.all([
+      loadBuffer('/sounds/yaniv.wav'),
+      loadBuffer('/sounds/asaf.wav'),
+    ]).then(() => undefined);
+  }
+
+  return preloadPromise;
+}
+
+function primeAudioContext(ac: AudioContext) {
+  const source = ac.createBufferSource();
+  source.buffer = ac.createBuffer(1, 1, 22050);
+  const gain = ac.createGain();
+  gain.gain.value = 0.0001;
+  source.connect(gain);
+  gain.connect(ac.destination);
+  source.start(0);
+  source.stop(ac.currentTime + 0.001);
+}
+
+export async function unlockAudio(): Promise<boolean> {
+  if (!isSoundEnabled()) return false;
+
+  if (ctx?.state === 'running') {
+    void preloadRecordedSounds();
+    return true;
+  }
+
+  if (unlockPromise) return unlockPromise;
+
+  unlockPromise = (async () => {
+    try {
+      const ac = getCtx();
+      if (ac.state !== 'running') {
+        await ac.resume();
+      }
+      primeAudioContext(ac);
+
+      if (ac.state !== 'running') {
+        return false;
+      }
+
+      void preloadRecordedSounds();
+      return true;
+    } catch {
+      return false;
+    } finally {
+      unlockPromise = null;
+    }
+  })();
+
+  return unlockPromise;
+}
+
+export function installAudioUnlock() {
+  if (typeof window === 'undefined' || unlockListenersInstalled) return;
+
+  unlockListenersInstalled = true;
+  const events: Array<keyof WindowEventMap> = ['pointerdown', 'touchstart', 'mousedown', 'keydown'];
+
+  const onGesture = () => {
+    void unlockAudio().then((unlocked) => {
+      if (!unlocked) return;
+      events.forEach((eventName) => {
+        window.removeEventListener(eventName, onGesture, true);
+      });
+    });
+  };
+
+  events.forEach((eventName) => {
+    window.addEventListener(eventName, onGesture, true);
+  });
+}
 
 function playBuffer(buf: AudioBuffer, volumeGain = 1) {
   const ac = getCtx();
@@ -53,6 +139,19 @@ function playBuffer(buf: AudioBuffer, volumeGain = 1) {
   source.connect(gain);
   gain.connect(ac.destination);
   source.start();
+}
+
+async function playWhenReady(playback: () => void | Promise<void>) {
+  if (!isSoundEnabled()) return;
+
+  const unlocked = await unlockAudio();
+  if (!unlocked) return;
+
+  try {
+    await playback();
+  } catch {
+    // ignore audio playback failures
+  }
 }
 
 // ── Synthesised effects ───────────────────────────────────────────────────────
@@ -233,49 +332,44 @@ function synthGameWin() {
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
-export async function playYaniv() {
-  if (!isSoundEnabled()) return;
-  const buf = await loadBuffer('/sounds/yaniv.wav');
-  if (buf) playBuffer(buf, 1.0);
+export function playYaniv() {
+  void playWhenReady(async () => {
+    const buf = await loadBuffer('/sounds/yaniv.wav');
+    if (buf) playBuffer(buf, 1.0);
+  });
 }
 
-export async function playAsaf() {
-  if (!isSoundEnabled()) return;
-  const buf = await loadBuffer('/sounds/asaf.wav');
-  if (buf) playBuffer(buf, 1.0);
+export function playAsaf() {
+  void playWhenReady(async () => {
+    const buf = await loadBuffer('/sounds/asaf.wav');
+    if (buf) playBuffer(buf, 1.0);
+  });
 }
 
 export function playCardDiscard() {
-  if (!isSoundEnabled()) return;
-  try { synthCardDiscard(); } catch { /* ignore */ }
+  void playWhenReady(() => { synthCardDiscard(); });
 }
 
 export function playCardDraw() {
-  if (!isSoundEnabled()) return;
-  try { synthCardDraw(); } catch { /* ignore */ }
+  void playWhenReady(() => { synthCardDraw(); });
 }
 
 export function playMyTurn() {
-  if (!isSoundEnabled()) return;
-  try { synthMyTurn(); } catch { /* ignore */ }
+  void playWhenReady(() => { synthMyTurn(); });
 }
 
 export function playOpponentPlay() {
-  if (!isSoundEnabled()) return;
-  try { synthOpponentPlay(); } catch { /* ignore */ }
+  void playWhenReady(() => { synthOpponentPlay(); });
 }
 
 export function playRoundWin() {
-  if (!isSoundEnabled()) return;
-  try { synthRoundWin(); } catch { /* ignore */ }
+  void playWhenReady(() => { synthRoundWin(); });
 }
 
 export function playPenalty() {
-  if (!isSoundEnabled()) return;
-  try { synthPenalty(); } catch { /* ignore */ }
+  void playWhenReady(() => { synthPenalty(); });
 }
 
 export function playGameWin() {
-  if (!isSoundEnabled()) return;
-  try { synthGameWin(); } catch { /* ignore */ }
+  void playWhenReady(() => { synthGameWin(); });
 }

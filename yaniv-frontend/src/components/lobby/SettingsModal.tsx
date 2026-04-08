@@ -4,6 +4,7 @@ import type { Lang } from '../../store/langStore';
 import { useState } from 'react';
 import { AboutModal } from './AboutModal';
 import { PrivacyModal } from './PrivacyModal';
+import { unlockAudio } from '../../utils/soundManager';
 
 const LABELS: Record<Lang, Record<string, string>> = {
   he: { settings: 'הגדרות', sounds: 'צלילים', language: 'שפה', rules: 'חוקי המשחק', about: 'אודות', privacy: 'מדיניות פרטיות', support: 'תמיכה', signOut: 'התנתק' },
@@ -88,6 +89,9 @@ export function SettingsModal({ open, onClose, onShowRules, onSignOut }: Props) 
     const next = !soundsOn;
     setSoundsOn(next);
     try { localStorage.setItem('yaniv_sounds', next ? 'on' : 'off'); } catch { /* ignore */ }
+    if (next) {
+      void unlockAudio();
+    }
   };
 
   return (

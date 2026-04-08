@@ -132,7 +132,7 @@ export function LobbyPage() {
           className="mb-4"
         >
           <img
-            src="/yaniv-logo.svg"
+            src="/yaniv-logo.png"
             alt="יניב"
             className="w-48 sm:w-56 md:w-64 h-auto object-contain drop-shadow-[0_10px_24px_rgba(12,74,110,0.28)]"
             onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
