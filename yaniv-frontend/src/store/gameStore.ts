@@ -232,8 +232,12 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
           ...p,
           cardCount: msg.opponentCardCounts[p.userId] ?? p.cardCount,
         }));
-        // Update our hand if we drew
-        const myHand = msg.myHand ?? s.myHand;
+        // Update our hand: server sends it on draw; on discard, remove the cards we just threw
+        const myHand =
+          msg.myHand ??
+          (msg.action === 'discard' && msg.actingUserId === myUserId && msg.discardedCards
+            ? s.myHand.filter((c) => !msg.discardedCards!.includes(c))
+            : s.myHand);
         return {
           players: updatedPlayers,
           myHand,

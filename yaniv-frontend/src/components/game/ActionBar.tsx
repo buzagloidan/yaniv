@@ -155,6 +155,22 @@ export function ActionBar() {
                 )}
               </>
             )}
+            {phase === 'player_turn_draw' && (
+              <motion.p
+                key="draw-hint"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-sm font-medium px-4 py-2 rounded-full"
+                style={{
+                  background: 'rgba(255,255,255,0.75)',
+                  backdropFilter: 'blur(8px)',
+                  color: '#0E7490',
+                  border: '1.5px solid rgba(8,145,178,0.3)',
+                }}
+              >
+                🃏 משוך קלף מהערימה או מהשלכה
+              </motion.p>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
