@@ -123,24 +123,40 @@ export function GamePage() {
       <CornerPalm side="right" />
       <OceanStrip />
 
-      {/* Rules button */}
-      <button
-        onClick={() => setRulesOpen(true)}
-        className="absolute top-3 z-20 flex items-center justify-center rounded-full text-sm font-bold shadow-md transition-transform hover:scale-105"
-        style={{
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 32,
-          height: 32,
-          background: 'rgba(255,255,255,0.82)',
-          backdropFilter: 'blur(8px)',
-          color: '#0891B2',
-          border: '1.5px solid rgba(8,145,178,0.35)',
-        }}
-        title="חוקי המשחק"
-      >
-        ?
-      </button>
+      {/* Top-left controls: exit + rules */}
+      <div className="absolute top-3 left-3 z-20 flex items-center gap-2">
+        <button
+          onClick={handleLeaveTable}
+          disabled={leaving}
+          className="flex items-center justify-center rounded-full text-base shadow-md transition-transform hover:scale-105 active:scale-95"
+          style={{
+            width: 32,
+            height: 32,
+            background: 'rgba(255,255,255,0.82)',
+            backdropFilter: 'blur(8px)',
+            color: '#D9560E',
+            border: '1.5px solid rgba(242,100,25,0.35)',
+          }}
+          title="עזוב משחק"
+        >
+          ✕
+        </button>
+        <button
+          onClick={() => setRulesOpen(true)}
+          className="flex items-center justify-center rounded-full text-sm font-bold shadow-md transition-transform hover:scale-105 active:scale-95"
+          style={{
+            width: 32,
+            height: 32,
+            background: 'rgba(255,255,255,0.82)',
+            backdropFilter: 'blur(8px)',
+            color: '#0891B2',
+            border: '1.5px solid rgba(8,145,178,0.35)',
+          }}
+          title="חוקי המשחק"
+        >
+          ?
+        </button>
+      </div>
 
       <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
 
