@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Modal } from '../ui/Modal';
-import { Button } from '../ui/Button';
+import { motion, AnimatePresence } from 'framer-motion';
 import { he } from '../../strings/he';
 
 interface Props {
@@ -9,27 +8,71 @@ interface Props {
   onCreate: (settings: {
     maxPlayers: number;
     yanivThreshold: number;
-    turnTimeoutSeconds: number;
-    isRanked: boolean;
+    scoreLimit: number;
   }) => Promise<void>;
 }
 
+function Spinner<T extends number>({
+  label,
+  options,
+  value,
+  onChange,
+  suffix,
+}: {
+  label: string;
+  options: T[];
+  value: T;
+  onChange: (v: T) => void;
+  suffix?: string;
+}) {
+  const idx = options.indexOf(value);
+  const prev = () => onChange(options[(idx - 1 + options.length) % options.length]);
+  const next = () => onChange(options[(idx + 1) % options.length]);
+
+  return (
+    <div className="flex items-center justify-between gap-3 py-2">
+      <span
+        className="text-right font-medium text-base"
+        style={{ color: '#E8D5B7', fontFamily: 'Noto Sans Hebrew, sans-serif', minWidth: 90 }}
+      >
+        {label}
+      </span>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={next}
+          className="w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold transition-all active:scale-90"
+          style={{ background: 'rgba(255,255,255,0.12)', color: '#E8D5B7' }}
+        >
+          ›
+        </button>
+        <span
+          className="w-16 text-center text-xl font-bold"
+          style={{ color: '#FFFBF0', fontFamily: 'Syne, sans-serif' }}
+        >
+          {value}{suffix}
+        </span>
+        <button
+          onClick={prev}
+          className="w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold transition-all active:scale-90"
+          style={{ background: 'rgba(255,255,255,0.12)', color: '#E8D5B7' }}
+        >
+          ‹
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function CreateTableModal({ open, onClose, onCreate }: Props) {
-  const [maxPlayers, setMaxPlayers] = useState(4);
-  const [threshold, setThreshold] = useState(7);
-  const [isRanked, setIsRanked] = useState(false);
-  const [blitz, setBlitz] = useState(false);
+  const [maxPlayers, setMaxPlayers] = useState<2 | 3 | 4>(4);
+  const [threshold, setThreshold] = useState<1 | 3 | 5 | 7>(7);
+  const [scoreLimit, setScoreLimit] = useState<50 | 100 | 200>(100);
   const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
     setLoading(true);
     try {
-      await onCreate({
-        maxPlayers,
-        yanivThreshold: isRanked ? 7 : threshold,
-        turnTimeoutSeconds: blitz ? 10 : 30,
-        isRanked,
-      });
+      await onCreate({ maxPlayers, yanivThreshold: threshold, scoreLimit });
       onClose();
     } finally {
       setLoading(false);
@@ -37,89 +80,113 @@ export function CreateTableModal({ open, onClose, onCreate }: Props) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={he.createTable.title}>
-      <div className="space-y-4">
-        {/* Max players */}
-        <div>
-          <label className="block text-white/70 text-sm mb-2">{he.createTable.maxPlayers}</label>
-          <div className="flex gap-2">
-            {[2, 3, 4, 5].map((n) => (
-              <button
-                key={n}
-                onClick={() => setMaxPlayers(n)}
-                className={[
-                  'flex-1 py-2 rounded-lg text-sm font-medium transition-colors',
-                  maxPlayers === n
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10',
-                ].join(' ')}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Yaniv threshold */}
-        <div>
-          <label className="block text-white/70 text-sm mb-2">
-            {he.createTable.threshold}: {isRanked ? 7 : threshold}
-          </label>
-          <input
-            type="range"
-            min={5}
-            max={9}
-            value={isRanked ? 7 : threshold}
-            disabled={isRanked}
-            onChange={(e) => setThreshold(Number(e.target.value))}
-            className="w-full accent-emerald-500 disabled:opacity-40"
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center px-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={onClose}
           />
-          {isRanked && (
-            <p className="text-white/40 text-xs mt-1">{he.createTable.rankedNote}</p>
-          )}
-        </div>
 
-        {/* Turn time */}
-        <div>
-          <label className="block text-white/70 text-sm mb-2">{he.createTable.turnTime}</label>
-          <div className="flex gap-2">
-            {([false, true] as const).map((b) => (
-              <button
-                key={String(b)}
-                onClick={() => setBlitz(b)}
-                className={[
-                  'flex-1 py-2 rounded-lg text-sm font-medium transition-colors',
-                  blitz === b
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10',
-                ].join(' ')}
+          {/* Bamboo frame panel */}
+          <motion.div
+            className="relative z-10 w-full max-w-xs"
+            initial={{ scale: 0.85, y: 30 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.85, y: 30 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+          >
+            {/* Outer bamboo border */}
+            <div
+              className="rounded-3xl p-1"
+              style={{
+                background: 'linear-gradient(135deg, #8B6914 0%, #C49A28 30%, #8B6914 60%, #C49A28 100%)',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)',
+              }}
+            >
+              {/* Bamboo corner joints */}
+              {['-top-1.5 -left-1.5', '-top-1.5 -right-1.5', '-bottom-1.5 -left-1.5', '-bottom-1.5 -right-1.5'].map((pos, i) => (
+                <div
+                  key={i}
+                  className={`absolute ${pos} w-5 h-5 rounded-full z-20`}
+                  style={{ background: 'radial-gradient(circle, #C49A28, #6B4F10)' }}
+                />
+              ))}
+
+              {/* Inner content */}
+              <div
+                className="rounded-3xl px-5 py-6"
+                style={{
+                  background: 'linear-gradient(160deg, #4A2E0A 0%, #3A2008 50%, #2E1A06 100%)',
+                }}
               >
-                {b ? he.createTable.blitz : he.createTable.standard}
-              </button>
-            ))}
-          </div>
-        </div>
+                {/* Title */}
+                <div className="text-center mb-5">
+                  <h2
+                    className="text-xl font-bold"
+                    style={{ color: '#E8D5B7', fontFamily: 'Syne, sans-serif' }}
+                  >
+                    {he.createTable.title}
+                  </h2>
+                </div>
 
-        {/* Ranked toggle */}
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={isRanked}
-            onChange={(e) => setIsRanked(e.target.checked)}
-            className="w-4 h-4 accent-emerald-500"
-          />
-          <span className="text-white/80 text-sm">{he.createTable.ranked}</span>
-        </label>
+                {/* Divider */}
+                <div className="h-px mb-4" style={{ background: 'rgba(232,213,183,0.2)' }} />
 
-        <div className="flex gap-3 pt-2">
-          <Button variant="ghost" onClick={onClose} className="flex-1">
-            {he.createTable.cancel}
-          </Button>
-          <Button onClick={handleCreate} disabled={loading} className="flex-1">
-            {he.createTable.create}
-          </Button>
-        </div>
-      </div>
-    </Modal>
+                {/* Spinners */}
+                <div className="space-y-1">
+                  <Spinner
+                    label={he.createTable.maxPlayers}
+                    options={[2, 3, 4] as (2 | 3 | 4)[]}
+                    value={maxPlayers}
+                    onChange={setMaxPlayers}
+                  />
+                  <div className="h-px" style={{ background: 'rgba(232,213,183,0.12)' }} />
+                  <Spinner
+                    label={he.createTable.threshold}
+                    options={[1, 3, 5, 7] as (1 | 3 | 5 | 7)[]}
+                    value={threshold}
+                    onChange={setThreshold}
+                  />
+                  <div className="h-px" style={{ background: 'rgba(232,213,183,0.12)' }} />
+                  <Spinner
+                    label={he.createTable.pointsLimit}
+                    options={[50, 100, 200] as (50 | 100 | 200)[]}
+                    value={scoreLimit}
+                    onChange={setScoreLimit}
+                  />
+                </div>
+
+                {/* Divider */}
+                <div className="h-px mt-4 mb-5" style={{ background: 'rgba(232,213,183,0.2)' }} />
+
+                {/* Create button */}
+                <button
+                  onClick={handleCreate}
+                  disabled={loading}
+                  className="w-full py-3 rounded-2xl text-base font-bold transition-all active:scale-95 disabled:opacity-60"
+                  style={{
+                    background: loading
+                      ? 'rgba(242,100,25,0.5)'
+                      : 'linear-gradient(135deg, #F26419 0%, #D9560E 100%)',
+                    color: '#FFFBF0',
+                    fontFamily: 'Syne, sans-serif',
+                    boxShadow: loading ? 'none' : '0 4px 16px rgba(242,100,25,0.4)',
+                  }}
+                >
+                  {loading ? '...' : he.createTable.create}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

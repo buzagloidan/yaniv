@@ -57,7 +57,7 @@ export async function getTables(token: string): Promise<{ tables: TableSummary[]
 
 export async function createTable(
   token: string,
-  settings: Partial<Pick<GameSettings, 'maxPlayers' | 'yanivThreshold' | 'turnTimeoutSeconds' | 'isRanked'>>,
+  settings: Partial<Pick<GameSettings, 'maxPlayers' | 'yanivThreshold' | 'scoreLimit'>>,
 ): Promise<{ tableId: string; roomCode: string }> {
   return request('/tables', { method: 'POST', body: JSON.stringify(settings) }, token);
 }

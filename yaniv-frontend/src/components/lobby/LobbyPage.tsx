@@ -1,166 +1,42 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
-import { getTables, createTable, joinTable } from '../../networking/api';
-import { he } from '../../strings/he';
-import { Button } from '../ui/Button';
+import { createTable, addBot, joinTable } from '../../networking/api';
 import { RulesModal } from '../ui/RulesModal';
 import { CreateTableModal } from './CreateTableModal';
 import { JoinTableModal } from './JoinTableModal';
-import type { TableSummary } from '../../shared/types';
-
-/* ── Decorative SVGs ── */
-
-function WaveHeader() {
-  return (
-    <svg viewBox="0 0 1440 60" preserveAspectRatio="none" className="w-full" style={{ height: 40, display: 'block' }}>
-      <path d="M0,30 C240,55 480,5 720,30 C960,55 1200,10 1440,30 L1440,60 L0,60Z" fill="#F5E6C8" opacity="0.7" />
-      <path d="M0,45 C300,25 600,55 900,40 C1100,30 1300,50 1440,38 L1440,60 L0,60Z" fill="#E2C99A" opacity="0.4" />
-    </svg>
-  );
-}
-
-function PlayerDots({ count, max }: { count: number; max: number }) {
-  return (
-    <div className="flex gap-1 items-center">
-      {Array.from({ length: max }).map((_, i) => (
-        <div
-          key={i}
-          className="w-2 h-2 rounded-full transition-colors"
-          style={{ background: i < count ? '#0891B2' : '#E2C99A' }}
-        />
-      ))}
-    </div>
-  );
-}
-
-/* Table "destination" card colors — each gets its own accent strip */
-const CARD_ACCENTS = [
-  { from: '#0891B2', to: '#0E7490' }, // ocean
-  { from: '#F26419', to: '#D9560E' }, // coral
-  { from: '#16A34A', to: '#15803D' }, // palm
-  { from: '#7C3AED', to: '#6D28D9' }, // lavender
-  { from: '#DB2777', to: '#BE185D' }, // flamingo
-];
-
-function TableCard({ table, index, onJoin, joining }: { table: TableSummary; index: number; onJoin: () => void; joining?: boolean }) {
-  const accent = CARD_ACCENTS[index % CARD_ACCENTS.length];
-  const inProgress = table.status === 'in_progress';
-  const count = table.player_count ?? 0;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
-      onClick={onJoin}
-      className="cursor-pointer group"
-    >
-      <div
-        className="rounded-2xl overflow-hidden transition-all duration-200 group-hover:-translate-y-0.5"
-        style={{
-          background: 'white',
-          boxShadow: '0 4px 16px rgba(26,51,82,0.08), 0 1px 4px rgba(26,51,82,0.04)',
-          border: '1px solid rgba(226,201,154,0.4)',
-        }}
-      >
-        {/* Accent top strip */}
-        <div
-          className="h-1.5"
-          style={{ background: `linear-gradient(90deg, ${accent.from}, ${accent.to})` }}
-        />
-
-        <div className="px-4 py-3 flex items-center justify-between gap-3">
-          {/* Left: info */}
-          <div className="flex flex-col gap-1.5 min-w-0">
-            {/* Room code */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span
-                className="text-base font-bold tracking-wider"
-                style={{ color: '#1A3352', fontFamily: 'Syne, sans-serif' }}
-              >
-                {table.room_code}
-              </span>
-
-              {inProgress && (
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full font-medium"
-                  style={{ background: '#E0F2FE', color: '#0E7490' }}
-                >
-                  בתהליך
-                </span>
-              )}
-
-              {table.is_ranked ? (
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full font-medium"
-                  style={{ background: '#FEF3C7', color: '#92400E' }}
-                >
-                  {he.lobby.ranked}
-                </span>
-              ) : (
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full"
-                  style={{ background: '#F5E6C8', color: '#7C5533' }}
-                >
-                  {he.lobby.casual}
-                </span>
-              )}
-            </div>
-
-            {/* Player dots + count */}
-            <div className="flex items-center gap-2">
-              <PlayerDots count={count} max={table.max_players} />
-              <span className="text-xs" style={{ color: '#7C6A50' }}>
-                {he.lobby.players(count, table.max_players)} · ספף {table.yaniv_threshold}
-              </span>
-            </div>
-          </div>
-
-          {/* Right: join button */}
-          <Button
-            size="sm"
-            variant={inProgress ? 'secondary' : 'primary'}
-            onClick={e => { e.stopPropagation(); onJoin(); }}
-            disabled={joining}
-            className="shrink-0"
-          >
-            {joining ? '...' : inProgress ? 'המתן' : he.lobby.join}
-          </Button>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
+import { SettingsModal } from './SettingsModal';
 
 export function LobbyPage() {
   const { user, signOut } = useAuthStore();
   const navigate = useNavigate();
-  const [tables, setTables] = useState<TableSummary[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [joinError, setJoinError] = useState<string | null>(null);
-  const [joiningCode, setJoiningCode] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [quickStarting, setQuickStarting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const token = user!.sessionToken;
 
-  const load = async () => {
+  /** Create a table with 3 bots and navigate straight to the game */
+  const handleQuickStart = async () => {
+    setError(null);
+    setQuickStarting(true);
     try {
-      const data = await getTables(token);
-      setTables(data.tables);
-    } finally {
-      setLoading(false);
+      const data = await createTable(token, {
+        maxPlayers: 4,
+        yanivThreshold: 7,
+        scoreLimit: 100,
+      });
+      await addBot(token, data.roomCode, 3);
+      navigate(`/game/${data.tableId}?code=${data.roomCode}`);
+    } catch (e) {
+      setError((e as Error).message ?? 'שגיאה ביצירת המשחק');
+      setQuickStarting(false);
     }
   };
-
-  useEffect(() => {
-    load();
-    const interval = setInterval(load, 10_000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleCreate = async (settings: Parameters<typeof createTable>[1]) => {
     const data = await createTable(token, settings);
@@ -168,145 +44,208 @@ export function LobbyPage() {
   };
 
   const handleJoin = async (code: string) => {
-    setJoinError(null);
-    setJoiningCode(code);
+    setError(null);
     try {
       const data = await joinTable(token, code);
       navigate(`/game/${data.tableId}?code=${data.roomCode}`);
     } catch (e) {
-      setJoinError((e as Error).message ?? 'שגיאה בהצטרפות');
-    } finally {
-      setJoiningCode(null);
+      setError((e as Error).message ?? 'שגיאה בהצטרפות');
     }
-  };
-
-  const handleJoinRow = (table: TableSummary) => {
-    handleJoin(table.room_code);
   };
 
   return (
     <div
-      className="min-h-screen flex flex-col"
-      style={{ background: 'linear-gradient(180deg, #F0F9FF 0%, #FDFAF3 30%, #FDFAF3 100%)' }}
+      className="min-h-screen flex flex-col relative overflow-hidden"
+      style={{
+        background: 'linear-gradient(180deg, #87CEEB 0%, #56B4D3 25%, #0891B2 55%, #E8D5B7 55%, #D4A96A 75%, #C49A50 100%)',
+      }}
     >
-      {/* ── Header ── */}
-      <header
-        className="relative"
-        style={{ background: 'linear-gradient(135deg, #0891B2 0%, #0E7490 100%)' }}
-      >
-        <div className="flex items-center justify-between px-5 pt-4 pb-2">
-          {/* Logo + brand */}
-          <div className="flex items-center gap-3">
-            <img src="/yaniv-logo.png" alt="יניב" className="w-9 h-9 object-contain drop-shadow" />
-            <span
-              className="text-xl font-bold text-white tracking-wide"
-              style={{ fontFamily: 'Syne, sans-serif' }}
-            >
-              יניב
+      {/* Sky decoration */}
+      <div className="absolute top-8 right-8 opacity-80">
+        <div className="w-16 h-16 rounded-full" style={{ background: 'rgba(255,245,180,0.9)', boxShadow: '0 0 30px 10px rgba(255,235,150,0.4)' }} />
+      </div>
+      <div className="absolute top-12 right-10 opacity-30">
+        <div className="w-8 h-8 rounded-full" style={{ background: 'white' }} />
+      </div>
+
+      {/* Clouds */}
+      <div className="absolute top-6 left-12 opacity-70">
+        <div className="flex gap-1">
+          <div className="w-10 h-5 rounded-full bg-white" />
+          <div className="w-14 h-7 rounded-full bg-white -ml-3 mt-1" />
+          <div className="w-8 h-4 rounded-full bg-white -ml-2" />
+        </div>
+      </div>
+
+      {/* Header */}
+      <header className="relative z-10 flex items-center justify-between px-5 pt-safe pt-4 pb-2">
+        <div className="flex items-center gap-2">
+          <img src="/yaniv-logo.png" alt="יניב" className="w-9 h-9 object-contain drop-shadow" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          <span
+            className="text-xl font-bold text-white drop-shadow"
+            style={{ fontFamily: 'Syne, sans-serif', textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}
+          >
+            יניב
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* User name pill */}
+          <div
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+            style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)' }}
+          >
+            <span className="text-sm font-medium text-white drop-shadow" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
+              {user?.displayName}
             </span>
           </div>
 
-          {/* User + sign out */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowRules(true)}
-              className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors"
-              style={{ background: 'rgba(255,255,255,0.18)', color: 'white' }}
-              title="חוקי המשחק"
-            >
-              ?
-            </button>
-            <div className="flex items-center gap-2 rounded-full px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.15)' }}>
-              <span className="text-sm text-white/90 font-medium">{user?.displayName}</span>
-            </div>
-            <button
-              onClick={signOut}
-              className="text-sm text-sky-200 hover:text-white transition-colors px-2 py-1"
-            >
-              {he.lobby.signOut}
-            </button>
-          </div>
-        </div>
+          {/* Rules button */}
+          <button
+            onClick={() => setShowRules(true)}
+            className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-base transition-all active:scale-90"
+            style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+            title="חוקי המשחק"
+          >
+            ?
+          </button>
 
-        {/* Wave divider */}
-        <WaveHeader />
+          {/* Settings button */}
+          <button
+            onClick={() => setShowSettings(true)}
+            className="w-9 h-9 rounded-full flex items-center justify-center text-base transition-all active:scale-90"
+            style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', color: 'white' }}
+            title="הגדרות"
+          >
+            ⚙️
+          </button>
+        </div>
       </header>
 
-      {/* ── Action Bar ── */}
-      <div className="px-4 pt-4 pb-3">
-        <div className="flex gap-3">
-          <Button onClick={() => setShowCreate(true)} className="flex-1 gap-2">
-            <span>＋</span>
-            {he.lobby.createTable}
-          </Button>
-          <Button variant="secondary" onClick={() => setShowJoin(true)} className="flex-1 gap-2">
-            <span>#</span>
-            {he.lobby.joinWithCode}
-          </Button>
-        </div>
-      </div>
-
-      {/* ── Section Label ── */}
-      <div className="px-4 mb-2 flex items-center gap-2">
-        <span className="text-sm font-semibold" style={{ color: '#2D4F7C' }}>
-          שולחנות פעילים
-        </span>
-        <div className="flex-1 h-px" style={{ background: '#E2C99A' }} />
-        <span className="text-xs" style={{ color: '#7C6A50' }}>
-          {tables.length > 0 ? `${tables.length} שולחנות` : ''}
-        </span>
-      </div>
-
-      {/* ── Table List ── */}
-      <div className="flex-1 overflow-y-auto px-4 pb-8">
-        <AnimatePresence>
-          {loading ? (
-            <div className="flex flex-col items-center gap-3 mt-16">
-              <motion.div
-                className="text-3xl"
-                animate={{ rotate: [0, 15, -15, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                🌴
-              </motion.div>
-              <p className="text-sm" style={{ color: '#7C6A50' }}>{he.lobby.loading}</p>
-            </div>
-          ) : tables.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex flex-col items-center gap-2 mt-16"
-            >
-              <span className="text-4xl">🏖</span>
-              <p className="text-sm" style={{ color: '#7C6A50' }}>{he.lobby.noTables}</p>
-            </motion.div>
-          ) : (
-            <div className="flex flex-col gap-2.5">
-              {joinError && (
-                <div className="rounded-xl px-4 py-2.5 text-sm text-center" style={{ background: '#FEE2E2', color: '#B91C1C' }}>
-                  {joinError}
-                </div>
-              )}
-              {tables.map((t, i) => (
-                <TableCard
-                  key={t.id}
-                  table={t}
-                  index={i}
-                  onJoin={() => handleJoinRow(t)}
-                  joining={joiningCode === t.room_code}
-                />
-              ))}
-            </div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ── Bottom wave decoration ── */}
-      <div className="pointer-events-none fixed bottom-0 inset-x-0 opacity-30" style={{ height: 60 }}>
-        <svg viewBox="0 0 1440 60" preserveAspectRatio="none" className="w-full h-full">
-          <path d="M0,30 C360,60 720,0 1080,30 C1260,45 1380,35 1440,30 L1440,60 L0,60Z" fill="#0891B2" />
+      {/* Water wave separator */}
+      <div className="relative" style={{ marginTop: '10vh' }}>
+        <svg viewBox="0 0 1440 40" preserveAspectRatio="none" className="w-full" style={{ height: 40, display: 'block' }}>
+          <path d="M0,20 C240,40 480,0 720,20 C960,40 1200,5 1440,20 L1440,40 L0,40Z" fill="rgba(8,145,178,0.35)" />
+          <path d="M0,30 C300,10 600,40 900,25 C1100,15 1300,35 1440,22 L1440,40 L0,40Z" fill="rgba(8,145,178,0.25)" />
         </svg>
       </div>
+
+      {/* Main content — sits on the sand */}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pt-6 pb-16">
+
+        {/* Error banner */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-xs mb-4 px-4 py-2.5 rounded-xl text-sm text-center"
+            style={{ background: '#FEE2E2', color: '#B91C1C', border: '1px solid #FECACA' }}
+          >
+            {error}
+          </motion.div>
+        )}
+
+        {/* Quick start button — main CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, type: 'spring', stiffness: 260, damping: 20 }}
+          className="w-full max-w-xs mb-6"
+        >
+          <button
+            onClick={handleQuickStart}
+            disabled={quickStarting}
+            className="w-full py-5 rounded-3xl text-xl font-bold transition-all active:scale-95 disabled:opacity-60 relative overflow-hidden"
+            style={{
+              background: quickStarting
+                ? 'linear-gradient(135deg, #C49A28, #8B6914)'
+                : 'linear-gradient(135deg, #F26419 0%, #E05210 50%, #C94A0C 100%)',
+              color: '#FFFBF0',
+              fontFamily: 'Syne, sans-serif',
+              boxShadow: quickStarting
+                ? 'none'
+                : '0 6px 24px rgba(242,100,25,0.45), 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)',
+              border: '2px solid rgba(255,255,255,0.15)',
+            }}
+          >
+            {/* Shimmer */}
+            {!quickStarting && (
+              <div
+                className="absolute inset-0 opacity-20"
+                style={{
+                  background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.6) 50%, transparent 70%)',
+                  animation: 'shimmer 2.5s infinite',
+                }}
+              />
+            )}
+            <span className="relative">
+              {quickStarting ? '🌴 מתחיל...' : '🏄 התחל משחק'}
+            </span>
+          </button>
+
+          {/* Subtitle */}
+          <p
+            className="text-center text-sm mt-2 opacity-60"
+            style={{ color: '#3A2008', fontFamily: 'Noto Sans Hebrew, sans-serif' }}
+          >
+            4 שחקנים · ספף 7 · 100 נקודות · 15 שניות לתור
+          </p>
+        </motion.div>
+
+        {/* Secondary buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 260, damping: 20 }}
+          className="w-full max-w-xs flex flex-col gap-3"
+        >
+          {/* Join with code */}
+          <button
+            onClick={() => setShowJoin(true)}
+            className="w-full py-4 rounded-2xl text-base font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
+            style={{
+              background: 'rgba(255,255,255,0.85)',
+              color: '#0C4A6E',
+              fontFamily: 'Noto Sans Hebrew, sans-serif',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)',
+              border: '1px solid rgba(8,145,178,0.2)',
+            }}
+          >
+            <span className="text-lg">#</span>
+            הצטרף עם קוד
+          </button>
+
+          {/* Create table */}
+          <button
+            onClick={() => setShowCreate(true)}
+            className="w-full py-4 rounded-2xl text-base font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
+            style={{
+              background: 'rgba(255,255,255,0.85)',
+              color: '#0C4A6E',
+              fontFamily: 'Noto Sans Hebrew, sans-serif',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)',
+              border: '1px solid rgba(8,145,178,0.2)',
+            }}
+          >
+            <span className="text-lg">＋</span>
+            צור שולחן
+          </button>
+        </motion.div>
+      </div>
+
+      {/* Bottom palm tree decoration */}
+      <div className="pointer-events-none fixed bottom-0 inset-x-0 flex justify-between px-4 pb-0 opacity-70">
+        <div className="text-6xl" style={{ transform: 'scaleX(-1)', transformOrigin: 'bottom', marginBottom: -8 }}>🌴</div>
+        <div className="text-6xl" style={{ transformOrigin: 'bottom', marginBottom: -8 }}>🌴</div>
+      </div>
+
+      {/* Shimmer keyframe */}
+      <style>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(200%); }
+        }
+      `}</style>
 
       <CreateTableModal
         open={showCreate}
@@ -319,6 +258,12 @@ export function LobbyPage() {
         onJoin={handleJoin}
       />
       <RulesModal open={showRules} onClose={() => setShowRules(false)} />
+      <SettingsModal
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        onShowRules={() => setShowRules(true)}
+        onSignOut={signOut}
+      />
     </div>
   );
 }

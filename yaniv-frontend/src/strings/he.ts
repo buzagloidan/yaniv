@@ -32,15 +32,11 @@ export const he = {
 
   // ── Create table modal ────────────────────────────────────
   createTable: {
-    title: 'צור שולחן חדש',
-    maxPlayers: 'מספר שחקנים',
+    title: 'צור שולחן',
+    maxPlayers: 'שחקנים',
     threshold: 'ספף יניב',
-    turnTime: 'זמן תור',
-    ranked: 'משחק מדורג',
-    rankedNote: 'במשחק מדורג הסף נעול על 7',
-    blitz: 'מצב בזק (10 שניות)',
-    standard: 'רגיל (30 שניות)',
-    create: 'צור שולחן',
+    pointsLimit: 'מגבלת נקודות',
+    create: 'שחק',
     cancel: 'ביטול',
   },
 

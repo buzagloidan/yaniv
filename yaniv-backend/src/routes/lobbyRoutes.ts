@@ -57,8 +57,7 @@ lobby.post('/', async (ctx) => {
   let body: {
     maxPlayers?: number;
     yanivThreshold?: number;
-    turnTimeoutSeconds?: number;
-    isRanked?: boolean;
+    scoreLimit?: number;
   };
   try {
     body = await ctx.req.json();
@@ -67,15 +66,15 @@ lobby.post('/', async (ctx) => {
   }
 
   // Validate + clamp settings
-  const maxPlayers = clamp(body.maxPlayers ?? DEFAULTS.MAX_PLAYERS, 2, 5);
-  const isRanked = body.isRanked === true;
-  const yanivThreshold = isRanked
-    ? 7
-    : clamp(body.yanivThreshold ?? DEFAULTS.YANIV_THRESHOLD, 5, 9);
-  const turnTimeoutSeconds =
-    body.turnTimeoutSeconds === DEFAULTS.BLITZ_TURN_TIMEOUT_SECONDS
-      ? DEFAULTS.BLITZ_TURN_TIMEOUT_SECONDS
-      : DEFAULTS.TURN_TIMEOUT_SECONDS;
+  const maxPlayers = clamp(body.maxPlayers ?? DEFAULTS.MAX_PLAYERS, 2, 4);
+  const yanivThreshold = [1, 3, 5, 7].includes(body.yanivThreshold ?? 0)
+    ? body.yanivThreshold!
+    : DEFAULTS.YANIV_THRESHOLD;
+  const scoreLimit = [50, 100, 200].includes(body.scoreLimit ?? 0)
+    ? body.scoreLimit!
+    : DEFAULTS.SCORE_LIMIT;
+  const resetScoreAt = Math.round(scoreLimit / 2);
+  const turnTimeoutSeconds = DEFAULTS.TURN_TIMEOUT_SECONDS;
 
   // Generate unique 4-digit room code
   const roomCode = await generateRoomCode(ctx.env.DB);
@@ -85,7 +84,7 @@ lobby.post('/', async (ctx) => {
     maxPlayers,
     yanivThreshold,
     turnTimeoutSeconds,
-    isRanked,
+    isRanked: false,
   });
 
   // Initialise the Durable Object
@@ -93,11 +92,11 @@ lobby.post('/', async (ctx) => {
     maxPlayers,
     yanivThreshold,
     penaltyOnAssaf: DEFAULTS.PENALTY_ASSAF,
-    scoreLimit: DEFAULTS.SCORE_LIMIT,
-    resetScoreAt: DEFAULTS.RESET_SCORE_AT,
+    scoreLimit,
+    resetScoreAt,
     turnTimeoutSeconds,
     initialCardCount: DEFAULTS.INITIAL_CARD_COUNT,
-    isRanked,
+    isRanked: false,
   };
 
   const initPayload: InitTablePayload = {
