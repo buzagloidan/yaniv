@@ -6,6 +6,7 @@ import type { GamePhase } from '../../shared/types';
 interface Props {
   phase: GamePhase | null;
   turnDeadlineEpoch: number | null;
+  show: boolean;
 }
 
 function isTimedTurnPhase(phase: GamePhase | null): boolean {
@@ -16,11 +17,11 @@ function isTimedTurnPhase(phase: GamePhase | null): boolean {
   );
 }
 
-export function TurnCountdown({ phase, turnDeadlineEpoch }: Props) {
+export function TurnCountdown({ phase, turnDeadlineEpoch, show }: Props) {
   const s = useStrings();
   const [now, setNow] = useState(() => Date.now());
 
-  const isVisible = turnDeadlineEpoch !== null && isTimedTurnPhase(phase);
+  const isVisible = show && turnDeadlineEpoch !== null && isTimedTurnPhase(phase);
 
   useEffect(() => {
     if (!isVisible) return;

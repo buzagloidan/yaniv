@@ -41,6 +41,8 @@ interface GameStore {
   roomCode: string | null;
 
   // ── Server-authoritative state ──────────────────────────
+  hostId: string | null;
+  maxPlayers: number;
   phase: GamePhase | null;
   roundNumber: number;
   currentTurnUserId: string | null;
@@ -94,6 +96,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   connectionState: 'idle',
   tableId: null,
   roomCode: null,
+  hostId: null,
+  maxPlayers: 0,
   phase: null,
   roundNumber: 0,
   currentTurnUserId: null,
@@ -137,6 +141,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       connectionState: 'idle',
       tableId: null,
       roomCode: null,
+      hostId: null,
+      maxPlayers: 0,
       phase: null,
       players: [],
       myHand: [],
@@ -228,6 +234,8 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
   switch (msg.type) {
     case 'state_snapshot':
       set({
+        hostId: msg.hostId,
+        maxPlayers: msg.maxPlayers,
         phase: msg.phase,
         roundNumber: msg.roundNumber,
         currentTurnUserId: msg.currentTurnUserId,

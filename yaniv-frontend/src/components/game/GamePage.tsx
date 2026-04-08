@@ -75,6 +75,35 @@ function OceanStrip() {
   );
 }
 
+function EmptySeat({ label }: { label: string }) {
+  return (
+    <motion.div
+      className="flex flex-col items-center gap-2 opacity-80"
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 0.8, scale: 1 }}
+    >
+      <div className="flex items-center" style={{ minHeight: 56 }}>
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="w-8 h-12 rounded-lg border border-dashed border-white/25 bg-white/5"
+            style={{
+              marginInlineStart: i === 0 ? 0 : -12,
+              zIndex: i,
+              transform: `rotate(${(i - 1) * 6}deg)`,
+              backdropFilter: 'blur(4px)',
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="px-3 py-1 rounded-full text-xs font-medium bg-black/20 text-white/60 border border-white/10">
+        {label}
+      </div>
+    </motion.div>
+  );
+}
+
 export function GamePage() {
   const s = useStrings();
   const { tableId } = useParams<{ tableId: string }>();
@@ -86,10 +115,13 @@ export function GamePage() {
   const connect = useGameStore((s) => s.connect);
   const disconnect = useGameStore((s) => s.disconnect);
   const connectionState = useGameStore((s) => s.connectionState);
+  const hostId = useGameStore((s) => s.hostId);
+  const maxPlayers = useGameStore((s) => s.maxPlayers);
   const phase = useGameStore((s) => s.phase);
   const players = useGameStore((s) => s.players);
   const currentTurnUserId = useGameStore((s) => s.currentTurnUserId);
   const turnDeadlineEpoch = useGameStore((s) => s.turnDeadlineEpoch);
+  const readyUp = useGameStore((s) => s.readyUp);
   const isMyTurn = useGameStore(selectIsMyTurn);
   const me = useGameStore(selectMe);
   const isWaitingPlayer = useGameStore(selectIsWaitingPlayer);
@@ -115,8 +147,18 @@ export function GamePage() {
   }
 
   const opponents = players.filter((p) => p.userId !== user?.userId);
-  const positions = opponentPositions(opponents.length);
-  const isWaiting = phase === 'waiting_for_players' || !phase;
+  const isLoading = !phase;
+  const isWaiting = phase === 'waiting_for_players';
+  const visibleSeatCount = isWaiting ? Math.max(0, maxPlayers - 1) : opponents.length;
+  const positions = visibleSeatCount > 0 ? opponentPositions(visibleSeatCount) : [];
+  const waitingSeatEntries = isWaiting
+    ? Array.from({ length: visibleSeatCount }, (_, i) => opponents[i] ?? null)
+    : opponents;
+  const hostName = players.find((p) => p.userId === hostId)?.displayName ?? s.game.hostLabel;
+  const connectedPlayersCount = players.filter((p) => p.isConnected).length;
+  const isHost = !!user && user.userId === hostId;
+  const canShowStartButton = isWaiting && isHost && players.length >= 2;
+  const canStartGame = connectedPlayersCount >= 2;
 
   return (
     <div className="felt relative w-full h-screen overflow-hidden select-none">
@@ -165,7 +207,7 @@ export function GamePage() {
 
       {/* ── Waiting room overlay (before game starts) ── */}
       <AnimatePresence>
-        {isWaiting && !isWaitingPlayer && (
+        {isLoading && !isWaitingPlayer && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -200,38 +242,8 @@ export function GamePage() {
                 {s.game.waitingForPlayers}
               </p>
               <p className="text-sm mb-4" style={{ color: '#7C6A50' }}>
-                ממתינים לשחקן נוסף... 🌴
+                {s.game.loadingRoom}
               </p>
-
-              {roomCode && (
-                <div
-                  className="rounded-2xl px-4 py-3 mb-5 flex flex-col items-center gap-1"
-                  style={{ background: 'linear-gradient(135deg, #E0F2FE, #BAE6FD)' }}
-                >
-                  <span className="text-xs font-medium" style={{ color: '#0E7490' }}>קוד חדר</span>
-                  <span
-                    className="text-3xl font-bold tracking-widest"
-                    style={{ color: '#0E7490', fontFamily: 'Syne, sans-serif' }}
-                  >
-                    {roomCode}
-                  </span>
-                </div>
-              )}
-              <ActionBar />
-
-              <button
-                onClick={handleLeaveTable}
-                disabled={leaving}
-                className="mt-3 w-full py-2 rounded-2xl text-sm font-medium transition-opacity"
-                style={{
-                  background: 'rgba(242,100,25,0.1)',
-                  color: '#D9560E',
-                  border: '1px solid rgba(242,100,25,0.25)',
-                  opacity: leaving ? 0.5 : 1,
-                }}
-              >
-                {leaving ? 'עוזב...' : 'עזוב שולחן'}
-              </button>
             </motion.div>
           </motion.div>
         )}
@@ -290,69 +302,147 @@ export function GamePage() {
       </AnimatePresence>
 
       {/* ── Opponents around table ── */}
-      {!isWaiting && !isWaitingPlayer && opponents.map((opponent, i) => (
+      {!isLoading && !isWaitingPlayer && waitingSeatEntries.map((opponent, i) => (
         <div
-          key={opponent.userId}
+          key={opponent?.userId ?? `empty-seat-${i}`}
           className="absolute"
           style={positions[i] ?? { top: '5%', left: '5%' }}
         >
-          <OpponentSeat
-            player={opponent}
-            isCurrentTurn={currentTurnUserId === opponent.userId}
-          />
+          {opponent ? (
+            <OpponentSeat
+              player={opponent}
+              isCurrentTurn={currentTurnUserId === opponent.userId}
+            />
+          ) : (
+            <EmptySeat label={s.game.openSeat} />
+          )}
         </div>
       ))}
 
       {/* ── Turn indicator ── */}
-      {!isWaiting && !isWaitingPlayer && (
+      {!isLoading && !isWaiting && !isWaitingPlayer && (
         <div className="absolute top-1/3 inset-x-0 flex justify-center pointer-events-none z-10">
-          <div className="flex flex-col items-center gap-3">
-            <AnimatePresence>
-              {isMyTurn && phase === 'player_turn_discard' && (
-                <motion.div
-                  key="my-turn"
-                  initial={{ opacity: 0, scale: 0.7, y: 8 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="px-5 py-2 rounded-full font-bold text-sm shadow-lg"
-                  style={{
-                    background: 'linear-gradient(135deg, #F26419, #D9560E)',
-                    color: 'white',
-                    fontFamily: 'Syne, sans-serif',
-                    boxShadow: '0 4px 20px rgba(242,100,25,0.45)',
-                  }}
-                >
-                  {s.game.yourTurn} 🌟
-                </motion.div>
-              )}
-              {!isMyTurn && currentTurnUserId && (
-                <motion.div
-                  key="their-turn"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="px-4 py-1.5 rounded-full text-xs font-medium"
-                  style={{
-                    background: 'rgba(255,255,255,0.65)',
-                    backdropFilter: 'blur(8px)',
-                    color: '#2D4F7C',
-                    border: '1px solid rgba(226,201,154,0.5)',
-                  }}
-                >
-                  {s.game.waitingFor(
-                    players.find((p) => p.userId === currentTurnUserId)?.displayName ?? '...',
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <AnimatePresence>
+            {isMyTurn && phase === 'player_turn_discard' && (
+              <motion.div
+                key="my-turn"
+                initial={{ opacity: 0, scale: 0.7, y: 8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="px-5 py-2 rounded-full font-bold text-sm shadow-lg"
+                style={{
+                  background: 'linear-gradient(135deg, #F26419, #D9560E)',
+                  color: 'white',
+                  fontFamily: 'Syne, sans-serif',
+                  boxShadow: '0 4px 20px rgba(242,100,25,0.45)',
+                }}
+              >
+                {s.game.yourTurn} 🌟
+              </motion.div>
+            )}
+            {!isMyTurn && currentTurnUserId && (
+              <motion.div
+                key="their-turn"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="px-4 py-1.5 rounded-full text-xs font-medium"
+                style={{
+                  background: 'rgba(255,255,255,0.65)',
+                  backdropFilter: 'blur(8px)',
+                  color: '#2D4F7C',
+                  border: '1px solid rgba(226,201,154,0.5)',
+                }}
+              >
+                {s.game.waitingFor(
+                  players.find((p) => p.userId === currentTurnUserId)?.displayName ?? '...',
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
-            <TurnCountdown phase={phase} turnDeadlineEpoch={turnDeadlineEpoch} />
-          </div>
+      {!isLoading && !isWaiting && !isWaitingPlayer && (
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+          <TurnCountdown
+            phase={phase}
+            turnDeadlineEpoch={turnDeadlineEpoch}
+            show={isMyTurn}
+          />
+        </div>
+      )}
+
+      {/* ── Center: room waiting panel ── */}
+      {!isLoading && isWaiting && !isWaitingPlayer && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-4" style={{ zIndex: 6 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 12, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="pointer-events-auto w-full max-w-sm rounded-[2rem] px-6 py-6 text-center"
+            style={{
+              background: 'rgba(255,255,255,0.82)',
+              backdropFilter: 'blur(18px)',
+              boxShadow: '0 24px 80px rgba(12,74,110,0.18)',
+              border: '1px solid rgba(255,255,255,0.88)',
+            }}
+          >
+            <div className="text-xs font-semibold mb-2" style={{ color: '#0E7490' }}>
+              {s.game.playersInRoom(players.length, maxPlayers)}
+            </div>
+
+            {roomCode && (
+              <div
+                className="rounded-2xl px-4 py-3 mb-4 flex flex-col items-center gap-1"
+                style={{ background: 'linear-gradient(135deg, #E0F2FE, #BAE6FD)' }}
+              >
+                <span className="text-xs font-medium" style={{ color: '#0E7490' }}>
+                  {s.game.roomCodeLabel}
+                </span>
+                <span
+                  className="text-3xl font-bold tracking-widest"
+                  style={{ color: '#0E7490', fontFamily: 'Syne, sans-serif' }}
+                >
+                  {roomCode}
+                </span>
+              </div>
+            )}
+
+            <p
+              className="text-lg font-semibold mb-2"
+              style={{ color: '#1A3352', fontFamily: 'Syne, sans-serif' }}
+            >
+              {canShowStartButton ? s.game.roomReady : s.game.waitingForPlayers}
+            </p>
+
+            <p className="text-sm mb-5" style={{ color: '#7C6A50' }}>
+              {players.length < 2
+                ? s.game.waitingForMorePlayers
+                : isHost
+                  ? s.game.hostCanStart
+                  : s.game.waitingForHostStart(hostName)}
+            </p>
+
+            {canShowStartButton && (
+              <button
+                onClick={readyUp}
+                disabled={!canStartGame}
+                className="w-full py-3 rounded-2xl text-base font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
+                style={{
+                  background: 'linear-gradient(135deg, #F26419, #D9560E)',
+                  color: '#FFFBF0',
+                  boxShadow: '0 12px 28px rgba(242,100,25,0.28)',
+                }}
+              >
+                {s.game.startGame}
+              </button>
+            )}
+          </motion.div>
         </div>
       )}
 
       {/* ── Center: discard + draw pile ── */}
-      {!isWaiting && !isWaitingPlayer && (
+      {!isLoading && !isWaiting && !isWaitingPlayer && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="pointer-events-auto">
             <DiscardPile />
@@ -361,7 +451,7 @@ export function GamePage() {
       )}
 
       {/* ── My hand + action bar ── */}
-      {!isWaiting && !isWaitingPlayer && (
+      {!isLoading && !isWaitingPlayer && (
         <div className="absolute bottom-8 inset-x-0 flex flex-col items-center gap-4 px-4" style={{ zIndex: 5 }}>
           <ActionBar />
           <PlayerHand />

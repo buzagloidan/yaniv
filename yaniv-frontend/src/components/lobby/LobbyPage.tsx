@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
 import { createTable, addBot, joinTable } from '../../networking/api';
 import { useStrings } from '../../strings';
+import { NicknameGate } from '../auth/NicknameGate';
 import { RulesModal } from '../ui/RulesModal';
 import { CreateTableModal } from './CreateTableModal';
 import { JoinTableModal } from './JoinTableModal';
@@ -20,10 +21,11 @@ export function LobbyPage() {
   const [error, setError] = useState<string | null>(null);
 
   const s = useStrings();
-  const token = user!.sessionToken;
+  const token = user?.sessionToken ?? '';
 
   /** Create a table with 3 bots and navigate straight to the game */
   const handleQuickStart = async () => {
+    if (!user) return;
     setError(null);
     setQuickStarting(true);
     try {
@@ -41,11 +43,13 @@ export function LobbyPage() {
   };
 
   const handleCreate = async (settings: Parameters<typeof createTable>[1]) => {
+    if (!user) return;
     const data = await createTable(token, settings);
     navigate(`/game/${data.tableId}?code=${data.roomCode}`);
   };
 
   const handleJoin = async (code: string) => {
+    if (!user) return;
     setError(null);
     try {
       const data = await joinTable(token, code);
@@ -92,15 +96,16 @@ export function LobbyPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* User name pill */}
-          <div
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-            style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)' }}
-          >
-            <span className="text-sm font-medium text-white drop-shadow" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
-              {user?.displayName}
-            </span>
-          </div>
+          {user && (
+            <div
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+              style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)' }}
+            >
+              <span className="text-sm font-medium text-white drop-shadow" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
+                {user.displayName}
+              </span>
+            </div>
+          )}
 
           {/* Rules button */}
           <button
@@ -181,7 +186,7 @@ export function LobbyPage() {
               />
             )}
             <span className="relative">
-              {quickStarting ? `🌴 ${s.lobby.loading}` : `🏄 ${s.game.startGame}`}
+              {quickStarting ? `🌴 ${s.lobby.loading}` : `🤖 ${s.lobby.quickStartBots}`}
             </span>
           </button>
 
@@ -259,6 +264,7 @@ export function LobbyPage() {
         onShowRules={() => setShowRules(true)}
         onSignOut={signOut}
       />
+      <NicknameGate open={!user} />
     </div>
   );
 }

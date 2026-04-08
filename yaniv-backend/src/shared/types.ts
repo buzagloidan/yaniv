@@ -138,6 +138,8 @@ export type ClientMessage =
 export interface StateSnapshotMessage {
   type: 'state_snapshot';
   tableId: string;
+  hostId: string;
+  maxPlayers: number;
   phase: GamePhase;
   roundNumber: number;
   currentTurnUserId: string | null;

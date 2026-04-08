@@ -26,9 +26,37 @@ export function PlayerHand() {
   const phase = useGameStore((s) => s.phase);
   const isMyTurn = useGameStore(selectIsMyTurn);
   const total = handTotal(myHand);
+  const isWaitingRoom = phase === 'waiting_for_players';
 
   const canSelect = isMyTurn && phase === 'player_turn_discard';
   const sortedHand = sortHandForRTL(myHand);
+
+  if (isWaitingRoom) {
+    return (
+      <div className="flex flex-col items-center gap-3">
+        <div className="text-white/60 text-sm">
+          {s.game.handOnStart}
+        </div>
+
+        <div className="flex items-end justify-center gap-2" style={{ minHeight: 96 }}>
+          {Array.from({ length: 5 }).map((_, i) => {
+            const offset = Math.abs(i - 2) * 3;
+            return (
+              <div
+                key={i}
+                className="w-14 h-20 rounded-xl border border-white/20 bg-white/10"
+                style={{
+                  transform: `translateY(${offset}px)`,
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12)',
+                  backdropFilter: 'blur(6px)',
+                }}
+              />
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-3">

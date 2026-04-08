@@ -103,6 +103,8 @@ export function buildSnapshot(state: GameState, forUserId: string): StateSnapsho
   return {
     type: 'state_snapshot',
     tableId: state.tableId,
+    hostId: state.hostId,
+    maxPlayers: state.settings.maxPlayers,
     phase: state.phase,
     roundNumber: state.roundNumber,
     currentTurnUserId: state.phase.startsWith('player_turn')

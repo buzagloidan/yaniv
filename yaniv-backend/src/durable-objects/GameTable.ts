@@ -259,14 +259,6 @@ export class GameTable implements DurableObject {
       connected: true,
       reconnectWindowMs: 0,
     });
-
-    // Auto-start if we now have ≥ 2 connected players in the waiting room
-    if (updatedState.phase === 'waiting_for_players') {
-      const connectedCount = Object.values(updatedState.players).filter((p) => p.isConnected).length;
-      if (connectedCount >= DEFAULTS.MIN_PLAYERS) {
-        await this.autoStart(updatedState);
-      }
-    }
   }
 
   // ============================================================
@@ -291,9 +283,14 @@ export class GameTable implements DurableObject {
   // ready — host starts the game
   // ============================================================
 
-  private async handleReady(_userId: string, ws: WebSocket, state: GameState): Promise<void> {
+  private async handleReady(userId: string, ws: WebSocket, state: GameState): Promise<void> {
     if (state.phase !== 'waiting_for_players') {
       this.sendError(ws, ErrorCode.GAME_ALREADY_STARTED, 'Game already started');
+      return;
+    }
+
+    if (userId !== state.hostId) {
+      this.sendError(ws, ErrorCode.NOT_HOST, 'Only the host can start');
       return;
     }
 

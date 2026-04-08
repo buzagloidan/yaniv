@@ -219,6 +219,7 @@ lobby.post('/:code/leave', async (ctx) => {
 // ============================================================
 
 lobby.post('/:code/add-bot', async (ctx) => {
+  const userId = ctx.var.userId;
   const roomCode = ctx.req.param('code');
   let body: { count?: number } = {};
   try { body = await ctx.req.json(); } catch { /* default count=1 */ }
@@ -226,6 +227,12 @@ lobby.post('/:code/add-bot', async (ctx) => {
   const table = await getTableByRoomCode(ctx.env.DB, roomCode);
   if (!table) return ctx.json({ error: 'Table not found' }, 404);
   if (table.status !== 'waiting') return ctx.json({ error: 'Game already started' }, 409);
+  if (table.host_id !== userId) return ctx.json({ error: 'Only the host can add bots' }, 403);
+
+  const humanPlayerCount = await getTablePlayerCount(ctx.env.DB, table.id);
+  if (humanPlayerCount > 1) {
+    return ctx.json({ error: 'Bots can only be added before other players join' }, 409);
+  }
 
   const doId = ctx.env.GAME_TABLE.idFromName(table.id);
   const stub = ctx.env.GAME_TABLE.get(doId);
