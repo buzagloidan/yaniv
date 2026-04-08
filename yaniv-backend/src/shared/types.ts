@@ -18,6 +18,7 @@ export type GamePhase =
   | 'waiting_for_players'
   | 'player_turn_discard'
   | 'player_turn_draw'
+  | 'player_turn_hadabaka'
   | 'yaniv_called'
   | 'between_rounds'
   | 'game_over'
@@ -88,6 +89,8 @@ export interface GameState {
   // Preserved across between_rounds to seed next round's start seat
   lastRoundCallerId: string | null;
   turnDeadlineEpoch: number | null;
+  // Set during player_turn_hadabaka: the card the player can throw back immediately
+  hadabakaCard: CardId | null;
   createdAt: number;
   startedAt: number | null;
   // Players who joined mid-game; added to next game on table reset
@@ -124,6 +127,7 @@ export type ClientMessage =
   | { type: 'discard'; cards: CardId[] }
   | { type: 'draw'; source: DrawSource }
   | { type: 'call_yaniv' }
+  | { type: 'hadabaka_accept' }
   | { type: 'chat'; text: string }
   | { type: 'ping'; clientTs: number };
 
@@ -143,6 +147,9 @@ export interface StateSnapshotMessage {
   discardPile: PublicDiscardPile;
   // IDs of players in the waiting queue (joined mid-game, will play next round)
   waitingPlayerIds: string[];
+  // Set during player_turn_hadabaka: the card the current player can throw back.
+  // Only sent to the player whose turn it is; null for all others.
+  hadabakaCard: CardId | null;
 }
 
 export interface TurnDeltaMessage {

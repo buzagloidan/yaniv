@@ -2,7 +2,9 @@ export const DEFAULTS = {
   YANIV_THRESHOLD: 7,
   MAX_PLAYERS: 4,
   MIN_PLAYERS: 2,
-  SCORE_LIMIT: 100,
+  // Players are eliminated if they exceed this score; multiples of RESET_SCORE_AT reset to 0
+  SCORE_LIMIT: 200,
+  // Every multiple of this value triggers a score reset to 0 (e.g. 50, 100, 150, 200 → 0)
   RESET_SCORE_AT: 50,
   PENALTY_ASSAF: 30,
   TURN_TIMEOUT_SECONDS: 15,
@@ -20,6 +22,8 @@ export const DEFAULTS = {
   SESSION_TTL_SECONDS: 86_400,
   // Bot players
   BOT_THINK_MS: 1_400,           // delay before bot acts (feels natural)
+  // Window (ms) for a player to accept a הדבקה (same-rank deck draw) before auto-decline
+  HADABAKA_WINDOW_MS: 5_000,
   BOT_NAMES: ['דני 🤖', 'מיכל 🤖', 'יוסי 🤖', 'רותי 🤖'] as readonly string[],
   // Public tables always kept alive in the lobby
   NUM_PUBLIC_TABLES: 5,

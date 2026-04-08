@@ -18,6 +18,7 @@ export type GamePhase =
   | 'waiting_for_players'
   | 'player_turn_discard'
   | 'player_turn_draw'
+  | 'player_turn_hadabaka'
   | 'yaniv_called'
   | 'between_rounds'
   | 'game_over'
@@ -115,6 +116,7 @@ export type ClientMessage =
   | { type: 'discard'; cards: CardId[] }
   | { type: 'draw'; source: DrawSource }
   | { type: 'call_yaniv' }
+  | { type: 'hadabaka_accept' }
   | { type: 'chat'; text: string }
   | { type: 'ping'; clientTs: number };
 
@@ -133,6 +135,8 @@ export interface StateSnapshotMessage {
   myHand: CardId[];
   discardPile: PublicDiscardPile;
   waitingPlayerIds: string[];
+  // Set during player_turn_hadabaka for the drawing player only; null for all others.
+  hadabakaCard: CardId | null;
 }
 
 export interface TurnDeltaMessage {

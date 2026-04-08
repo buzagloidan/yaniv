@@ -229,8 +229,14 @@ export function resolveYaniv(
   for (const [playerId, delta] of Object.entries(scoreDeltas)) {
     let score = (currentScores[playerId] ?? 0) + delta;
 
-    if (score === settings.scoreLimit) {
-      score = settings.resetScoreAt;
+    // הגעה לסף בדיוק: hitting an exact multiple of resetScoreAt (e.g. 50, 100, 150, 200) resets to 0
+    if (
+      settings.resetScoreAt > 0 &&
+      score > 0 &&
+      score % settings.resetScoreAt === 0 &&
+      score <= settings.scoreLimit
+    ) {
+      score = 0;
       resetPlayerIds.push(playerId);
     } else if (score > settings.scoreLimit) {
       eliminatedPlayerIds.push(playerId);
@@ -297,6 +303,18 @@ export function selectBotDiscard(hand: CardId[]): CardId[] {
 
   // Fall back to discarding the single highest-value card
   return [selectAutoDiscardCard(hand)];
+}
+
+// ============================================================
+// הדבקה check — true when the drawn card shares a rank with
+// any card in the set that was just discarded.
+// Only applies to deck draws (not discard-pile draws).
+// ============================================================
+
+export function checkHadabaka(drawnCard: CardId, discardedSet: CardId[]): boolean {
+  if (discardedSet.length === 0) return false;
+  const drawnRank = parseCard(drawnCard).rank;
+  return discardedSet.some((c) => parseCard(c).rank === drawnRank);
 }
 
 function combinations<T>(arr: T[], k: number): T[][] {

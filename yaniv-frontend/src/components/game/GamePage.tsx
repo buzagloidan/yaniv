@@ -14,6 +14,7 @@ import { ScoreBoard } from './ScoreBoard';
 import { Chat } from './Chat';
 import { RoundResultOverlay } from './RoundResultOverlay';
 import { GameOverOverlay } from './GameOverOverlay';
+import { HadabakaOverlay } from './HadabakaOverlay';
 import { ToastContainer } from '../ui/Toast';
 
 function opponentPositions(count: number): Array<{ top: string; left?: string; right?: string; transform?: string }> {
@@ -397,6 +398,7 @@ export function GamePage() {
       )}
 
       {/* Overlays */}
+      <HadabakaOverlay />
       <RoundResultOverlay />
       <GameOverOverlay />
       <ToastContainer />

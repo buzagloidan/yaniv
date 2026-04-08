@@ -6,6 +6,7 @@ import {
   resolveYaniv,
   reshuffleDiscardIntoDeck,
   selectAutoDiscardCard,
+  checkHadabaka,
 } from './gameLogic';
 import { DEFAULTS } from '../shared/constants';
 
@@ -79,6 +80,7 @@ export function initGameState(
     yanivCallerId: null,
     lastRoundCallerId: null,
     turnDeadlineEpoch: null,
+    hadabakaCard: null,
     createdAt: now,
     startedAt: null,
     waitingPlayers: [],
@@ -139,6 +141,7 @@ export function resetTableState(
     yanivCallerId: null,
     lastRoundCallerId: null,
     turnDeadlineEpoch: null,
+    hadabakaCard: null,
     startedAt: null,
     waitingPlayers: [],
   };
@@ -235,6 +238,7 @@ function dealRound(state: GameState, startSeatIndex: number): GameState {
     discardPile: { currentSet: [startingCard], previousSets: [] },
     roundNumber: state.roundNumber + 1,
     yanivCallerId: null,
+    hadabakaCard: null,
     turnDeadlineEpoch: now + state.settings.turnTimeoutSeconds * 1000,
     startedAt: state.startedAt ?? now,
   };
@@ -302,6 +306,7 @@ export interface DrawResult {
   newState: GameState;
   drawnCard: CardId;
   deckWasReshuffled: boolean;
+  isHadabaka: boolean;
 }
 
 export function applyDraw(state: GameState, playerId: string, source: DrawSource): DrawResult {
@@ -345,8 +350,32 @@ export function applyDraw(state: GameState, playerId: string, source: DrawSource
   }
 
   const player = state.players[playerId];
-  const nextSeat = nextActiveSeat(state, state.currentTurnIndex);
   const now = Date.now();
+
+  // הדבקה: deck draw that matches the rank of the just-discarded set
+  const hadabaka =
+    source === 'deck' &&
+    checkHadabaka(drawnCard, pile.currentSet);
+
+  if (hadabaka) {
+    // Don't advance turn — let the player decide whether to throw the card back
+    const newState: GameState = {
+      ...state,
+      phase: 'player_turn_hadabaka',
+      players: {
+        ...state.players,
+        [playerId]: { ...player, hand: [...player.hand, drawnCard] },
+      },
+      deck,
+      discardPile: pile,
+      // currentTurnIndex stays the same
+      hadabakaCard: drawnCard,
+      turnDeadlineEpoch: now + DEFAULTS.HADABAKA_WINDOW_MS,
+    };
+    return { newState, drawnCard, deckWasReshuffled, isHadabaka: true };
+  }
+
+  const nextSeat = nextActiveSeat(state, state.currentTurnIndex);
 
   const newState: GameState = {
     ...state,
@@ -358,10 +387,11 @@ export function applyDraw(state: GameState, playerId: string, source: DrawSource
     deck,
     discardPile: pile,
     currentTurnIndex: nextSeat,
+    hadabakaCard: null,
     turnDeadlineEpoch: now + state.settings.turnTimeoutSeconds * 1000,
   };
 
-  return { newState, drawnCard, deckWasReshuffled };
+  return { newState, drawnCard, deckWasReshuffled, isHadabaka: false };
 }
 
 // ============================================================
@@ -469,6 +499,59 @@ export function applyAutoDiscard(state: GameState, playerId: string): AutoDiscar
   };
 
   return { newState, discardedCard, shouldEliminate };
+}
+
+// ============================================================
+// הדבקה — player accepts (throws back the matching card)
+// ============================================================
+
+export function applyHadabakaAccept(state: GameState, playerId: string): GameState {
+  const hadabakaCard = state.hadabakaCard;
+  if (!hadabakaCard) return applyHadabakaDecline(state);
+
+  const player = state.players[playerId];
+  if (!player || !player.hand.includes(hadabakaCard)) {
+    return applyHadabakaDecline(state);
+  }
+
+  // Remove the card from the player's hand
+  const newHand = player.hand.filter((c) => c !== hadabakaCard);
+
+  // Archive the previous discard set and make the hadabaka card the new top
+  const previousSets =
+    state.discardPile.currentSet.length > 0
+      ? [...state.discardPile.previousSets, state.discardPile.currentSet]
+      : state.discardPile.previousSets;
+
+  const nextSeat = nextActiveSeat(state, state.currentTurnIndex);
+  const now = Date.now();
+
+  return {
+    ...state,
+    phase: 'player_turn_discard',
+    players: { ...state.players, [playerId]: { ...player, hand: newHand } },
+    discardPile: { currentSet: [hadabakaCard], previousSets },
+    currentTurnIndex: nextSeat,
+    hadabakaCard: null,
+    turnDeadlineEpoch: now + state.settings.turnTimeoutSeconds * 1000,
+  };
+}
+
+// ============================================================
+// הדבקה — player declines (or window expired); keep the card
+// ============================================================
+
+export function applyHadabakaDecline(state: GameState): GameState {
+  const nextSeat = nextActiveSeat(state, state.currentTurnIndex);
+  const now = Date.now();
+
+  return {
+    ...state,
+    phase: 'player_turn_discard',
+    currentTurnIndex: nextSeat,
+    hadabakaCard: null,
+    turnDeadlineEpoch: now + state.settings.turnTimeoutSeconds * 1000,
+  };
 }
 
 // ============================================================

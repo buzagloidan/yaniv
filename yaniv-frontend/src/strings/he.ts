@@ -85,7 +85,7 @@ export const he = {
     yanivCalled: (name: string) => `${name} קרא יניב!`,
     assaf: (caller: string, assafer: string) => `אסף! ${assafer} הפיל את ${caller}`,
     penalty: '+30 קנס',
-    scoreReset: 'ניקוד אופס ל-100',
+    scoreReset: '🎉 ניקוד אופס לאפס!',
     eliminated: (name: string) => `${name} הודח`,
     nextRound: 'הסיבוב הבא מתחיל...',
     pointsAdded: (n: number) => `+${n}`,
@@ -100,6 +100,14 @@ export const he = {
     finalScores: 'תוצאות סופיות',
     playAgain: 'שחק שוב',
     lobby: 'חזור ללובי',
+  },
+
+  // ── הדבקה ────────────────────────────────────────────────
+  hadabaka: {
+    title: 'הדבקה!',
+    prompt: (card: string) => `קיבלת ${card} — זרוק בחזרה?`,
+    accept: 'זרוק בחזרה!',
+    waiting: (name: string) => `${name} מחליט על הדבקה...`,
   },
 
   // ── Errors ────────────────────────────────────────────────

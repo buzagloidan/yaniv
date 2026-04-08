@@ -71,7 +71,7 @@ export const en = {
     yanivCalled: (name: string) => `${name} called Yaniv!`,
     assaf: (caller: string, assafer: string) => `Assaf! ${assafer} caught ${caller}`,
     penalty: '+30 penalty',
-    scoreReset: 'Score reset',
+    scoreReset: '🎉 Score reset to zero!',
     eliminated: (name: string) => `${name} eliminated`,
     nextRound: 'Next round starting...',
     pointsAdded: (n: number) => `+${n}`,
@@ -84,6 +84,12 @@ export const en = {
     finalScores: 'Final Scores',
     playAgain: 'Play Again',
     lobby: 'Back to Lobby',
+  },
+  hadabaka: {
+    title: 'Hadabaka!',
+    prompt: (card: string) => `Got ${card} — throw it back?`,
+    accept: 'Throw back!',
+    waiting: (name: string) => `${name} is deciding on hadabaka...`,
   },
   errors: {
     INVALID_MOVE: 'Invalid card combination',

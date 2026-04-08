@@ -50,6 +50,8 @@ interface GameStore {
   selectedCards: CardId[];
   toasts: Toast[];
   waitingPlayerIds: string[];
+  // Set for the drawing player during player_turn_hadabaka phase
+  hadabakaCard: CardId | null;
 
   // ── Derived (computed in actions, not stored separately) ──
   // use selectors below
@@ -61,6 +63,7 @@ interface GameStore {
   clearSelection: () => void;
   discardAndDraw: (source: DrawSource) => void;
   callYaniv: () => void;
+  hadabakaAccept: () => void;
   readyUp: () => void;
   sendChat: (text: string) => void;
   dismissRoundResult: () => void;
@@ -94,6 +97,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   selectedCards: [],
   toasts: [],
   waitingPlayerIds: [],
+  hadabakaCard: null,
   _pendingDrawSource: null,
 
   connect: (tableId, roomCode, token, userId) => {
@@ -152,6 +156,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   callYaniv: () => {
     wsManager?.send({ type: 'call_yaniv' });
+  },
+
+  hadabakaAccept: () => {
+    wsManager?.send({ type: 'hadabaka_accept' });
   },
 
   readyUp: () => {
@@ -217,6 +225,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
         myHand: msg.myHand,
         discardPile: msg.discardPile,
         waitingPlayerIds: msg.waitingPlayerIds ?? [],
+        hadabakaCard: msg.hadabakaCard ?? null,
         selectedCards: [],
         // Clear overlays when table resets for a new game
         ...(msg.phase === 'waiting_for_players' ? { gameOver: null, roundResult: null, yanivCalled: null } : {}),

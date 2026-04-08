@@ -27,6 +27,8 @@ import {
   applyRoundResolution,
   applyAutoDiscard,
   eliminatePlayerMidRound,
+  applyHadabakaAccept,
+  applyHadabakaDecline,
 } from './stateMachine';
 import { validateDiscard, validateDraw, validateYanivCall } from './validator';
 import { BroadcastManager, buildSnapshot } from './broadcastManager';
@@ -191,6 +193,9 @@ export class GameTable implements DurableObject {
       state.phase === 'player_turn_draw'
     ) {
       await this.handleTurnTimeout(state);
+    } else if (state.phase === 'player_turn_hadabaka') {
+      // Window expired — auto-decline, keep the drawn card
+      await this.handleHadabakaTimeout(state);
     } else if (state.phase === 'between_rounds') {
       await this.handleBetweenRoundsTimeout(state);
     } else if (state.phase === 'game_over') {
@@ -214,6 +219,7 @@ export class GameTable implements DurableObject {
       case 'discard': return this.handleDiscard(userId, ws, state, msg.cards);
       case 'draw':    return this.handleDraw(userId, ws, state, msg.source);
       case 'call_yaniv': return this.handleCallYaniv(userId, ws, state);
+      case 'hadabaka_accept': return this.handleHadabakaAccept(userId, ws, state);
       case 'chat':    return this.handleChat(userId, ws, state, msg.text);
       case 'ping':
         ws.send(JSON.stringify({ type: 'pong', serverTs: Date.now(), clientTs: msg.clientTs }));
@@ -362,9 +368,16 @@ export class GameTable implements DurableObject {
       return;
     }
 
-    const { newState, drawnCard } = applyDraw(state, userId, source);
+    const { newState, drawnCard, isHadabaka } = applyDraw(state, userId, source);
     await this.saveState(newState);
     await this.setAlarm(newState);
+
+    if (isHadabaka) {
+      // Broadcast a personalised snapshot so each player sees the new phase.
+      // The drawer sees their hadabakaCard; others see null.
+      this.broadcast.broadcastSnapshot(newState);
+      return;
+    }
 
     const nextTurnUserId = newState.seatOrder[newState.currentTurnIndex];
 
@@ -458,6 +471,42 @@ export class GameTable implements DurableObject {
   }
 
   // ============================================================
+  // hadabaka_accept — player throws back the matching card
+  // ============================================================
+
+  private async handleHadabakaAccept(
+    userId: string,
+    ws: WebSocket,
+    state: GameState,
+  ): Promise<void> {
+    if (state.phase !== 'player_turn_hadabaka') {
+      this.sendError(ws, ErrorCode.WRONG_PHASE, 'Not in hadabaka phase');
+      return;
+    }
+    const currentPlayerId = state.seatOrder[state.currentTurnIndex];
+    if (userId !== currentPlayerId) {
+      this.sendError(ws, ErrorCode.NOT_YOUR_TURN, 'Not your hadabaka');
+      return;
+    }
+
+    const newState = applyHadabakaAccept(state, userId);
+    await this.saveState(newState);
+    await this.setAlarm(newState);
+    this.broadcast.broadcastSnapshot(newState);
+  }
+
+  // ============================================================
+  // Hadabaka timeout — window expired, keep the card
+  // ============================================================
+
+  private async handleHadabakaTimeout(state: GameState): Promise<void> {
+    const newState = applyHadabakaDecline(state);
+    await this.saveState(newState);
+    await this.setAlarm(newState);
+    this.broadcast.broadcastSnapshot(newState);
+  }
+
+  // ============================================================
   // chat
   // ============================================================
 
@@ -518,19 +567,23 @@ export class GameTable implements DurableObject {
       }
 
       // Not eliminated — auto-draw from deck
-      const { newState: afterDraw } = applyDraw(afterDiscard, playerId, 'deck');
-      await this.saveState(afterDraw);
-      await this.setAlarm(afterDraw);
+      const { newState: afterDraw, isHadabaka } = applyDraw(afterDiscard, playerId, 'deck');
+      // Timed-out player doesn't get a hadabaka window — decline immediately
+      const finalState = isHadabaka ? applyHadabakaDecline(afterDraw) : afterDraw;
+      await this.saveState(finalState);
+      await this.setAlarm(finalState);
 
       // Broadcast via snapshots (simplest safe path for auto-play)
-      this.broadcast.broadcastSnapshot(afterDraw);
+      this.broadcast.broadcastSnapshot(finalState);
 
     } else if (state.phase === 'player_turn_draw') {
       // Auto-draw from deck (timeout during draw phase doesn't add to timeoutCount)
-      const { newState: afterDraw } = applyDraw(state, playerId, 'deck');
-      await this.saveState(afterDraw);
-      await this.setAlarm(afterDraw);
-      this.broadcast.broadcastSnapshot(afterDraw);
+      const { newState: afterDraw, isHadabaka } = applyDraw(state, playerId, 'deck');
+      // Timed-out player doesn't get a hadabaka window — decline immediately
+      const finalState = isHadabaka ? applyHadabakaDecline(afterDraw) : afterDraw;
+      await this.saveState(finalState);
+      await this.setAlarm(finalState);
+      this.broadcast.broadcastSnapshot(finalState);
     }
   }
 
@@ -800,7 +853,17 @@ export class GameTable implements DurableObject {
 
     } else if (state.phase === 'player_turn_draw') {
       // Bot always draws from deck
-      const { newState, drawnCard } = applyDraw(state, playerId, 'deck');
+      const { newState, drawnCard, isHadabaka } = applyDraw(state, playerId, 'deck');
+
+      if (isHadabaka) {
+        // Bot always accepts הדבקה immediately
+        const afterAccept = applyHadabakaAccept(newState, playerId);
+        await this.saveState(afterAccept);
+        await this.setAlarm(afterAccept);
+        this.broadcast.broadcastSnapshot(afterAccept);
+        return;
+      }
+
       await this.saveState(newState);
       await this.setAlarm(newState);
 
