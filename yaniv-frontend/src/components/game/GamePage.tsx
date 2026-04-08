@@ -18,21 +18,27 @@ import { TurnCountdown } from './TurnCountdown';
 import { ToastContainer } from '../ui/Toast';
 
 function opponentPositions(count: number): Array<{ top: string; left?: string; right?: string; transform?: string }> {
-  if (count === 1) return [{ top: '2%', left: '50%', transform: 'translateX(-50%)' }];
-  if (count === 2) return [
-    { top: '2%', left: '25%' },
-    { top: '2%', right: '25%' },
-  ];
-  if (count === 3) return [
-    { top: '2%', left: '15%' },
-    { top: '2%', left: '50%', transform: 'translateX(-50%)' },
-    { top: '2%', right: '15%' },
-  ];
+  if (count === 1) {
+    return [{ top: '6%', left: '50%', transform: 'translateX(-50%)' }];
+  }
+  if (count === 2) {
+    return [
+      { top: '24%', left: '5%' },
+      { top: '24%', right: '5%' },
+    ];
+  }
+  if (count === 3) {
+    return [
+      { top: '24%', left: '5%' },
+      { top: '6%', left: '50%', transform: 'translateX(-50%)' },
+      { top: '24%', right: '5%' },
+    ];
+  }
   return [
-    { top: '20%', left: '2%' },
-    { top: '2%', left: '25%' },
-    { top: '2%', right: '25%' },
-    { top: '20%', right: '2%' },
+    { top: '24%', left: '5%' },
+    { top: '6%', left: '50%', transform: 'translateX(-50%)' },
+    { top: '24%', right: '5%' },
+    { top: '50%', right: '5%', transform: 'translateY(-50%)' },
   ];
 }
 
@@ -133,6 +139,7 @@ export function GamePage() {
   }, [tableId]);
 
   const [leaving, setLeaving] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
   async function handleLeaveTable() {
     if (!user || !roomCode || leaving) return;
@@ -169,19 +176,71 @@ export function GamePage() {
 
       {/* Top-end controls: exit */}
       <div className="absolute top-3 end-3 z-20">
-        <button
-          onClick={handleLeaveTable}
-          disabled={leaving}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold shadow-md transition-transform hover:scale-105 active:scale-95"
-          style={{
-            background: 'rgba(242,100,25,0.15)',
-            backdropFilter: 'blur(8px)',
-            color: '#D9560E',
-            border: '1.5px solid rgba(242,100,25,0.4)',
-          }}
-        >
-          🚪
-        </button>
+        <AnimatePresence mode="wait">
+          {showLeaveConfirm ? (
+            <motion.div
+              key="leave-confirm"
+              initial={{ opacity: 0, y: -8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.96 }}
+              className="rounded-2xl px-3 py-3 min-w-[180px]"
+              style={{
+                background: 'rgba(255,255,255,0.86)',
+                backdropFilter: 'blur(14px)',
+                boxShadow: '0 12px 32px rgba(12,74,110,0.18)',
+                border: '1px solid rgba(242,100,25,0.22)',
+              }}
+            >
+              <p className="text-xs font-medium text-center mb-3" style={{ color: '#7C5533' }}>
+                {s.game.leaveConfirm}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleLeaveTable}
+                  disabled={leaving}
+                  className="flex-1 py-2 rounded-xl text-sm font-semibold transition-opacity"
+                  style={{
+                    background: 'linear-gradient(135deg, #F26419, #D9560E)',
+                    color: '#FFFBF0',
+                    opacity: leaving ? 0.6 : 1,
+                  }}
+                >
+                  {leaving ? s.game.leaving : s.game.leaveYes}
+                </button>
+                <button
+                  onClick={() => setShowLeaveConfirm(false)}
+                  disabled={leaving}
+                  className="flex-1 py-2 rounded-xl text-sm font-semibold"
+                  style={{
+                    background: 'rgba(12,74,110,0.08)',
+                    color: '#0C4A6E',
+                    border: '1px solid rgba(12,74,110,0.12)',
+                  }}
+                >
+                  {s.game.leaveCancel}
+                </button>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.button
+              key="leave-button"
+              onClick={() => setShowLeaveConfirm(true)}
+              disabled={leaving}
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.94 }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold shadow-md transition-transform hover:scale-105 active:scale-95"
+              style={{
+                background: 'rgba(242,100,25,0.15)',
+                backdropFilter: 'blur(8px)',
+                color: '#D9560E',
+                border: '1.5px solid rgba(242,100,25,0.4)',
+              }}
+            >
+              🚪
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Connection banner */}

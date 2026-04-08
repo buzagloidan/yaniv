@@ -233,6 +233,8 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
 
   switch (msg.type) {
     case 'state_snapshot':
+      const shouldClearRoundOverlay =
+        msg.phase !== 'between_rounds' && msg.phase !== 'yaniv_called';
       set({
         hostId: msg.hostId,
         maxPlayers: msg.maxPlayers,
@@ -246,8 +248,8 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
         waitingPlayerIds: msg.waitingPlayerIds ?? [],
         hadabakaCard: msg.hadabakaCard ?? null,
         selectedCards: [],
-        // Clear overlays when table resets for a new game
-        ...(msg.phase === 'waiting_for_players' ? { gameOver: null, roundResult: null, yanivCalled: null } : {}),
+        ...(shouldClearRoundOverlay ? { roundResult: null, yanivCalled: null } : {}),
+        ...(msg.phase === 'waiting_for_players' ? { gameOver: null } : {}),
       });
       break;
 
@@ -306,7 +308,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
       break;
 
     case 'round_result':
-      set({ roundResult: msg, phase: 'between_rounds' });
+      set({ roundResult: msg, yanivCalled: null, phase: 'between_rounds' });
       // Update scores in players list
       set((s) => ({
         players: s.players.map((p) => ({
@@ -336,7 +338,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
       break;
 
     case 'game_over':
-      set({ gameOver: msg, phase: 'game_over' });
+      set({ gameOver: msg, roundResult: null, yanivCalled: null, phase: 'game_over' });
       if (msg.winnerId === myUserId) {
         playGameWin();
       } else {

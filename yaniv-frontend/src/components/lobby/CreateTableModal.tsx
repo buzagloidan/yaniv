@@ -39,11 +39,11 @@ function Spinner<T extends number>({
       </span>
       <div className="flex items-center gap-2">
         <button
-          onClick={next}
+          onClick={prev}
           className="w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold transition-all active:scale-90"
           style={{ background: 'rgba(255,255,255,0.12)', color: '#E8D5B7' }}
         >
-          ›
+          ➡️
         </button>
         <span
           className="w-16 text-center text-xl font-bold"
@@ -52,11 +52,11 @@ function Spinner<T extends number>({
           {value}{suffix}
         </span>
         <button
-          onClick={prev}
+          onClick={next}
           className="w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold transition-all active:scale-90"
           style={{ background: 'rgba(255,255,255,0.12)', color: '#E8D5B7' }}
         >
-          ‹
+          ⬅️
         </button>
       </div>
     </div>

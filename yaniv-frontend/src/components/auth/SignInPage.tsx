@@ -162,17 +162,11 @@ export function SignInPage() {
             <motion.img
               src="/yaniv-logo.svg"
               alt="יניב"
-              className="w-24 h-24 object-contain mb-3 drop-shadow-lg"
+              className="w-40 h-auto object-contain mb-2 drop-shadow-lg"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.5, ease: 'backOut' }}
             />
-            <h1
-              className="text-3xl font-bold text-white tracking-wide"
-              style={{ fontFamily: 'Syne, sans-serif' }}
-            >
-              יניב
-            </h1>
             <p className="text-sky-200 text-sm mt-1 opacity-90">משחק קלפים מרובה שחקנים</p>
           </div>
 

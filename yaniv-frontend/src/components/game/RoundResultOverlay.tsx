@@ -2,12 +2,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CardView } from './CardView';
 import { useGameStore } from '../../store/gameStore';
 import { useStrings } from '../../strings';
-import { Button } from '../ui/Button';
 
 export function RoundResultOverlay() {
   const s = useStrings();
   const result = useGameStore((s) => s.roundResult);
-  const dismiss = useGameStore((s) => s.dismissRoundResult);
   const players = useGameStore((s) => s.players);
 
   const open = !!result;
@@ -115,9 +113,15 @@ export function RoundResultOverlay() {
               })}
             </div>
 
-            <Button onClick={dismiss} className="w-full">
-              המשך
-            </Button>
+            <div
+              className="w-full rounded-2xl px-4 py-3 text-center text-sm font-medium"
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                color: 'rgba(255,255,255,0.72)',
+              }}
+            >
+              {s.round.nextRound}
+            </div>
           </motion.div>
         </motion.div>
       )}

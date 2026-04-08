@@ -57,14 +57,11 @@ export function NicknameGate({ open }: Props) {
               <motion.img
                 src="/yaniv-logo.svg"
                 alt="יניב"
-                className="w-18 h-18 object-contain mx-auto mb-3"
+                className="w-36 sm:w-40 h-auto object-contain mx-auto mb-2"
                 initial={{ scale: 0.88, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.1, duration: 0.35 }}
               />
-              <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
-                {s.auth.title}
-              </h2>
               <p className="text-sky-100 text-sm mt-2 opacity-95">
                 {s.auth.nicknamePrompt}
               </p>
