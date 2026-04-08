@@ -24,6 +24,8 @@ export type GamePhase =
   | 'game_over'
   | 'abandoned';
 
+export type PauseReason = 'disconnect' | 'timeout';
+
 // ============================================================
 // Game settings
 // ============================================================
@@ -70,6 +72,12 @@ export interface WaitingPlayer {
   accountId: number;
 }
 
+export interface PauseState {
+  reason: PauseReason;
+  pausedByUserId: string;
+  pausedAt: number;
+}
+
 export interface GameState {
   tableId: string;
   roomCode: string;
@@ -87,7 +95,7 @@ export interface GameState {
   roundNumber: number;
   // Set when Yaniv is called; cleared after round resolution
   yanivCallerId: string | null;
-  // Preserved across between_rounds to seed next round's start seat
+  // Legacy name: stores whoever should start the next round
   lastRoundCallerId: string | null;
   turnDeadlineEpoch: number | null;
   // Set during player_turn_hadabaka: the card the player can throw back immediately
@@ -96,6 +104,7 @@ export interface GameState {
   startedAt: number | null;
   // Players who joined mid-game; added to next game on table reset
   waitingPlayers: WaitingPlayer[];
+  pauseState: PauseState | null;
 }
 
 // ============================================================
@@ -125,6 +134,7 @@ export interface PublicDiscardPile {
 export type ClientMessage =
   | { type: 'join' }
   | { type: 'ready' }
+  | { type: 'continue_game' }
   | { type: 'discard'; cards: CardId[] }
   | { type: 'draw'; source: DrawSource }
   | { type: 'call_yaniv' }
@@ -151,6 +161,7 @@ export interface StateSnapshotMessage {
   discardPile: PublicDiscardPile;
   // IDs of players in the waiting queue (joined mid-game, will play next round)
   waitingPlayerIds: string[];
+  pauseState: PauseState | null;
   // Set during player_turn_hadabaka: the card the current player can throw back.
   // Only sent to the player whose turn it is; null for all others.
   hadabakaCard: CardId | null;

@@ -88,6 +88,10 @@ export const ar = {
     eliminated: 'خرج من اللعبة',
     disconnected: 'غير متصل',
     reconnecting: 'جارٍ إعادة الاتصال...',
+    pausedTitle: 'تم إيقاف اللعبة مؤقتاً',
+    pauseAfterDisconnect: 'البوتات تنتظرك حتى تعود. اضغط متابعة عندما تكون جاهزاً.',
+    pauseAfterTimeout: 'تم إيقاف اللعبة مؤقتاً بعد عدم النشاط. اضغط متابعة للعودة.',
+    continueGame: 'متابعة اللعبة',
   },
   round: {
     yanivCalled: (name: string) => `${name} نادى بيانيف!`,
@@ -124,6 +128,7 @@ export const ar = {
     TABLE_FULL: 'الطاولة ممتلئة',
     TABLE_NOT_FOUND: 'الطاولة غير موجودة',
     GAME_ALREADY_STARTED: 'اللعبة بدأت بالفعل',
+    GAME_PAUSED: 'اللعبة متوقفة مؤقتاً حتى يتابعها لاعب بشري',
     NOT_HOST: 'فقط المضيف يمكنه البدء',
     connection: 'انقطع الاتصال. جارٍ إعادة الاتصال...',
     unknown: 'خطأ غير معروف',

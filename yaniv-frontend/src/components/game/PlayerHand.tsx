@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { CardView } from './CardView';
 import { useGameStore, selectIsMyTurn } from '../../store/gameStore';
 import { handTotal, parseCard, isJoker } from '../../utils/cardUtils';
@@ -23,12 +24,15 @@ export function PlayerHand() {
   const myHand = useGameStore((s) => s.myHand);
   const selectedCards = useGameStore((s) => s.selectedCards);
   const toggleCard = useGameStore((s) => s.toggleCard);
+  const hadabakaCard = useGameStore((s) => s.hadabakaCard);
+  const hadabakaAccept = useGameStore((s) => s.hadabakaAccept);
   const phase = useGameStore((s) => s.phase);
   const isMyTurn = useGameStore(selectIsMyTurn);
   const total = handTotal(myHand);
   const isWaitingRoom = phase === 'waiting_for_players';
 
   const canSelect = isMyTurn && phase === 'player_turn_discard';
+  const isHadabakaPhase = isMyTurn && phase === 'player_turn_hadabaka';
   const sortedHand = sortHandForRTL(myHand);
 
   if (isWaitingRoom) {
@@ -76,12 +80,13 @@ export function PlayerHand() {
       </div>
 
       {/* Cards — fan layout, highest value left, lowest value right (RTL) */}
-      <div className="flex items-end justify-center px-2" style={{ minHeight: 128 }}>
+      <div className="flex items-end justify-center px-2" style={{ minHeight: 124 }}>
         {sortedHand.map((cardId, i) => {
           const mid = (sortedHand.length - 1) / 2;
           const offset = i - mid;
           const rotate = offset * 4.5;
           const translateY = Math.abs(offset) * 4;
+          const isHadabakaCandidate = isHadabakaPhase && hadabakaCard === cardId;
 
           return (
             <div
@@ -89,16 +94,23 @@ export function PlayerHand() {
               style={{
                 transform: `rotate(${rotate}deg) translateY(${translateY}px)`,
                 marginInlineStart: i === 0 ? 0 : overlap,
-                zIndex: i,
+                zIndex: isHadabakaCandidate ? sortedHand.length + 2 : i,
                 transformOrigin: 'bottom center',
               }}
             >
-              <CardView
-                cardId={cardId}
-                size="lg"
-                selected={selectedCards.includes(cardId)}
-                onClick={canSelect ? () => toggleCard(cardId) : undefined}
-              />
+              <motion.div
+                animate={isHadabakaCandidate ? { y: [0, -8, 0], scale: [1, 1.04, 1] } : { y: 0, scale: 1 }}
+                transition={isHadabakaCandidate ? { duration: 0.68, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.18 }}
+                className={isHadabakaCandidate ? 'animate-hadabaka-glow' : undefined}
+              >
+                <CardView
+                  cardId={cardId}
+                  size="lg"
+                  selected={selectedCards.includes(cardId)}
+                  onClick={isHadabakaCandidate ? hadabakaAccept : canSelect ? () => toggleCard(cardId) : undefined}
+                  className={isHadabakaCandidate ? 'ring-4 ring-amber-400 ring-offset-2 ring-offset-transparent' : undefined}
+                />
+              </motion.div>
             </div>
           );
         })}

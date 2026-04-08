@@ -59,7 +59,7 @@ export function CardView({
         whileHover={onClick ? { scale: 1.05 } : undefined}
         onClick={onClick}
       >
-        <img src="/yaniv-card.svg" alt="" className="w-full h-full object-cover" draggable={false} />
+        <img src="/yaniv-card.png" alt="" className="w-full h-full object-cover" draggable={false} />
       </motion.div>
     );
   }

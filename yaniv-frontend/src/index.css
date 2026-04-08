@@ -113,7 +113,17 @@ html, body, #root {
   100% { transform: translateX(-50%); }
 }
 
+@keyframes hadabaka-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 0 rgba(245, 158, 11, 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 18px rgba(245, 158, 11, 0.65));
+  }
+}
+
 .animate-drift    { animation: drift 6s ease-in-out infinite; }
 .animate-sway     { animation: sway 4s ease-in-out infinite; }
 .animate-bob      { animation: bob 3s ease-in-out infinite; }
 .animate-wave-move { animation: wave-move 12s linear infinite; }
+.animate-hadabaka-glow { animation: hadabaka-glow 0.68s ease-in-out infinite; }

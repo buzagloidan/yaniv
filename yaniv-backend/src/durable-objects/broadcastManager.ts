@@ -116,6 +116,7 @@ export function buildSnapshot(state: GameState, forUserId: string): StateSnapsho
     myHand,
     discardPile,
     waitingPlayerIds: state.waitingPlayers.map((p) => p.userId),
+    pauseState: state.pauseState,
     hadabakaCard,
   };
 }

@@ -13,7 +13,6 @@ import { ScoreBoard } from './ScoreBoard';
 import { Chat } from './Chat';
 import { RoundResultOverlay } from './RoundResultOverlay';
 import { GameOverOverlay } from './GameOverOverlay';
-import { HadabakaOverlay } from './HadabakaOverlay';
 import { TurnCountdown } from './TurnCountdown';
 import { ToastContainer } from '../ui/Toast';
 
@@ -136,7 +135,9 @@ export function GamePage() {
   const players = useGameStore((s) => s.players);
   const currentTurnUserId = useGameStore((s) => s.currentTurnUserId);
   const turnDeadlineEpoch = useGameStore((s) => s.turnDeadlineEpoch);
+  const pauseState = useGameStore((s) => s.pauseState);
   const readyUp = useGameStore((s) => s.readyUp);
+  const continuePausedGame = useGameStore((s) => s.continuePausedGame);
   const isMyTurn = useGameStore(selectIsMyTurn);
   const me = useGameStore(selectMe);
   const isWaitingPlayer = useGameStore(selectIsWaitingPlayer);
@@ -183,9 +184,13 @@ export function GamePage() {
   const whatsAppShareUrl = inviteUrl
     ? `https://wa.me/?text=${encodeURIComponent(s.game.shareInvite(roomCode, inviteUrl))}`
     : '';
+  const showPauseOverlay = !isLoading && !isWaitingPlayer && !!pauseState && !!me && !me.isBot;
+  const pauseMessage = pauseState?.reason === 'timeout'
+    ? s.game.pauseAfterTimeout
+    : s.game.pauseAfterDisconnect;
 
   return (
-    <div className="felt relative w-full h-screen overflow-hidden select-none">
+    <div className="felt relative w-full h-[100svh] overflow-hidden select-none">
       {/* Palm corner decorations */}
       <CornerPalm side="left" />
       <CornerPalm side="right" />
@@ -377,6 +382,57 @@ export function GamePage() {
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {showPauseOverlay && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-40 flex items-center justify-center px-4"
+          >
+            <div
+              className="absolute inset-0"
+              style={{ background: 'rgba(12, 34, 52, 0.42)', backdropFilter: 'blur(6px)' }}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.96 }}
+              className="relative z-10 w-full max-w-sm rounded-[2rem] px-6 py-7 text-center"
+              style={{
+                background: 'rgba(255,255,255,0.92)',
+                backdropFilter: 'blur(20px)',
+                boxShadow: '0 24px 80px rgba(12,74,110,0.22)',
+                border: '1px solid rgba(255,255,255,0.95)',
+              }}
+            >
+              <div className="text-4xl mb-3">⏸️</div>
+              <p
+                className="text-xl font-semibold mb-2"
+                style={{ color: '#1A3352', fontFamily: 'Syne, sans-serif' }}
+              >
+                {s.game.pausedTitle}
+              </p>
+              <p className="text-sm leading-6 mb-5" style={{ color: '#7C6A50' }}>
+                {pauseMessage}
+              </p>
+              <button
+                onClick={continuePausedGame}
+                disabled={connectionState !== 'connected'}
+                className="w-full py-3 rounded-2xl text-base font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
+                style={{
+                  background: 'linear-gradient(135deg, #F26419, #D9560E)',
+                  color: '#FFFBF0',
+                  boxShadow: '0 12px 28px rgba(242,100,25,0.28)',
+                }}
+              >
+                {s.game.continueGame}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── Opponents around table ── */}
       {!isLoading && !isWaitingPlayer && waitingSeatEntries.map((opponent, i) => (
         <div
@@ -485,11 +541,11 @@ export function GamePage() {
       {/* ── Center: discard + draw pile ── */}
       {!isLoading && !isWaiting && !isWaitingPlayer && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="pointer-events-none flex flex-col items-center gap-3 -translate-y-12 sm:-translate-y-8">
+          <div className="pointer-events-none flex flex-col items-center gap-2 -translate-y-7 sm:-translate-y-5">
             <TurnCountdown
               phase={phase}
               turnDeadlineEpoch={turnDeadlineEpoch}
-              show={!!currentTurnUserId}
+              show={isMyTurn}
             />
             <div className="pointer-events-auto">
               <DiscardPile />
@@ -500,7 +556,7 @@ export function GamePage() {
 
       {/* ── My hand + action bar ── */}
       {!isLoading && !isWaitingPlayer && (
-        <div className="absolute bottom-4 inset-x-0 flex flex-col items-center gap-2.5 px-3" style={{ zIndex: 5 }}>
+        <div className="absolute inset-x-0 flex flex-col items-center gap-1.5 px-3" style={{ zIndex: 5, bottom: '1.75rem' }}>
           <ActionBar />
           {me && (
             <motion.div
@@ -529,7 +585,6 @@ export function GamePage() {
       )}
 
       {/* Overlays */}
-      <HadabakaOverlay />
       <RoundResultOverlay />
       <GameOverOverlay />
       <ToastContainer />

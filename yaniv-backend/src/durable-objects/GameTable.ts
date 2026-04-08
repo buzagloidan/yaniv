@@ -29,6 +29,8 @@ import {
   eliminatePlayerMidRound,
   applyHadabakaAccept,
   applyHadabakaDecline,
+  pauseGame,
+  resumePausedGame,
 } from './stateMachine';
 import { validateDiscard, validateDraw, validateYanivCall } from './validator';
 import { BroadcastManager, buildSnapshot } from './broadcastManager';
@@ -187,6 +189,11 @@ export class GameTable implements DurableObject {
 
     this.hydrateBroadcastMap();
 
+    if (state.pauseState) {
+      await this.ctx.storage.deleteAlarm();
+      return;
+    }
+
     const currentPlayerId = state.seatOrder[state.currentTurnIndex];
     const isBot = state.players[currentPlayerId]?.isBot;
 
@@ -220,9 +227,21 @@ export class GameTable implements DurableObject {
     msg: ClientMessage,
     state: GameState,
   ): Promise<void> {
+    if (
+      state.pauseState &&
+      msg.type !== 'join' &&
+      msg.type !== 'ping' &&
+      msg.type !== 'chat' &&
+      msg.type !== 'continue_game'
+    ) {
+      this.sendError(ws, ErrorCode.GAME_PAUSED, 'Game is paused until a human continues');
+      return;
+    }
+
     switch (msg.type) {
       case 'join':    return this.handleJoin(userId, ws, state);
       case 'ready':   return this.handleReady(userId, ws, state);
+      case 'continue_game': return this.handleContinueGame(userId, ws, state);
       case 'discard': return this.handleDiscard(userId, ws, state, msg.cards);
       case 'draw':    return this.handleDraw(userId, ws, state, msg.source);
       case 'call_yaniv': return this.handleCallYaniv(userId, ws, state);
@@ -266,6 +285,13 @@ export class GameTable implements DurableObject {
       connected: true,
       reconnectWindowMs: 0,
     });
+
+    if (
+      updatedState.phase === 'waiting_for_players' &&
+      this.canAutoStartWaitingTable(updatedState)
+    ) {
+      await this.autoStart(updatedState);
+    }
   }
 
   // ============================================================
@@ -308,6 +334,28 @@ export class GameTable implements DurableObject {
     }
 
     await this.autoStart(state);
+  }
+
+  private async handleContinueGame(
+    userId: string,
+    ws: WebSocket,
+    state: GameState,
+  ): Promise<void> {
+    if (!state.pauseState) {
+      this.sendError(ws, ErrorCode.WRONG_PHASE, 'Game is not paused');
+      return;
+    }
+
+    const player = state.players[userId];
+    if (!player || player.isBot) {
+      this.sendError(ws, ErrorCode.NOT_A_MEMBER, 'Only a human player can continue the game');
+      return;
+    }
+
+    const resumedState = resumePausedGame(state);
+    await this.saveState(resumedState);
+    await this.setAlarm(resumedState);
+    this.broadcast.broadcastSnapshot(resumedState);
   }
 
   // ============================================================
@@ -441,7 +489,8 @@ export class GameTable implements DurableObject {
 
     // 2. Resolve round
     const { newState, resolution, isMatchOver, winnerId } = applyRoundResolution(yanivState);
-    await this.saveState(newState);
+    const persistedState = this.pauseIfNeededAfterRound(newState, userId);
+    await this.saveState(persistedState);
     await this.ctx.storage.deleteAlarm();
 
     // 3. Build and broadcast round result
@@ -465,12 +514,15 @@ export class GameTable implements DurableObject {
     };
     this.broadcast.broadcastAll(roundResult);
 
+    if (persistedState.pauseState) {
+      this.broadcast.broadcastSnapshot(persistedState);
+    }
+
     // 4. End or continue
     if (isMatchOver) {
-      await this.concludeMatch(newState, winnerId);
-    } else {
-      // Schedule the between-rounds delay alarm
-      await this.ctx.storage.setAlarm(Date.now() + DEFAULTS.BETWEEN_ROUNDS_DELAY_MS);
+      await this.concludeMatch(persistedState, winnerId);
+    } else if (!persistedState.pauseState) {
+      await this.setAlarm(persistedState);
     }
   }
 
@@ -544,6 +596,19 @@ export class GameTable implements DurableObject {
 
   private async handleTurnTimeout(state: GameState): Promise<void> {
     const playerId = state.seatOrder[state.currentTurnIndex];
+    const player = state.players[playerId];
+
+    if (
+      player &&
+      !player.isBot &&
+      this.shouldPauseForMissingHumans(state, playerId)
+    ) {
+      const pausedState = pauseGame(state, playerId, 'timeout');
+      await this.saveState(pausedState);
+      await this.setAlarm(pausedState);
+      this.broadcast.broadcastSnapshot(pausedState);
+      return;
+    }
 
     if (state.phase === 'player_turn_discard') {
       // Auto-discard the highest-value card
@@ -664,9 +729,7 @@ export class GameTable implements DurableObject {
       .catch(() => { /* non-critical */ });
 
     // If enough connected players, auto-start immediately
-    const connectedActive = Object.values(resetState.players).filter((p) => p.isConnected).length;
-
-    if (connectedActive >= DEFAULTS.MIN_PLAYERS) {
+    if (this.canAutoStartWaitingTable(resetState)) {
       await this.autoStart(resetState);
     } else {
       this.broadcast.broadcastSnapshot(resetState);
@@ -805,8 +868,7 @@ export class GameTable implements DurableObject {
     this.broadcast.broadcastSnapshot(current);
 
     // Auto-start if enough real+bot players are now present
-    const connectedCount = Object.values(current.players).filter(p => p.isConnected).length;
-    if (connectedCount >= DEFAULTS.MIN_PLAYERS && current.phase === 'waiting_for_players') {
+    if (this.canAutoStartWaitingTable(current)) {
       await this.autoStart(current);
     }
 
@@ -914,7 +976,8 @@ export class GameTable implements DurableObject {
     });
 
     const { newState, resolution, isMatchOver, winnerId } = applyRoundResolution(yanivState);
-    await this.saveState(newState);
+    const persistedState = this.pauseIfNeededAfterRound(newState, playerId);
+    await this.saveState(persistedState);
     await this.ctx.storage.deleteAlarm();
 
     const handsRevealed: RoundResultMessage['handsRevealed'] = {};
@@ -936,10 +999,14 @@ export class GameTable implements DurableObject {
       nextRoundStartsIn: isMatchOver ? 0 : DEFAULTS.BETWEEN_ROUNDS_DELAY_MS,
     });
 
+    if (persistedState.pauseState) {
+      this.broadcast.broadcastSnapshot(persistedState);
+    }
+
     if (isMatchOver) {
-      await this.concludeMatch(newState, winnerId);
-    } else {
-      await this.ctx.storage.setAlarm(Date.now() + DEFAULTS.BETWEEN_ROUNDS_DELAY_MS);
+      await this.concludeMatch(persistedState, winnerId);
+    } else if (!persistedState.pauseState) {
+      await this.setAlarm(persistedState);
     }
   }
 
@@ -997,7 +1064,11 @@ export class GameTable implements DurableObject {
     if (!state?.players[userId]) return;
 
     const updatedState = patchPlayer(state, userId, { isConnected: false });
-    await this.saveState(updatedState);
+    const finalState = this.shouldPauseForMissingHumans(updatedState)
+      ? pauseGame(updatedState, userId, 'disconnect')
+      : updatedState;
+    await this.saveState(finalState);
+    await this.setAlarm(finalState);
 
     this.broadcast.broadcastAll({
       type: 'presence',
@@ -1005,6 +1076,10 @@ export class GameTable implements DurableObject {
       connected: false,
       reconnectWindowMs: DEFAULTS.RECONNECT_WINDOW_MS,
     });
+
+    if (finalState.pauseState) {
+      this.broadcast.broadcastSnapshot(finalState);
+    }
   }
 
   private async loadState(): Promise<GameState | null> {
@@ -1020,6 +1095,11 @@ export class GameTable implements DurableObject {
   }
 
   private async setAlarm(state: GameState): Promise<void> {
+    if (state.pauseState) {
+      await this.ctx.storage.deleteAlarm();
+      return;
+    }
+
     const currentPlayerId = state.seatOrder[state.currentTurnIndex];
     const isBot = state.players[currentPlayerId]?.isBot;
 
@@ -1040,6 +1120,53 @@ export class GameTable implements DurableObject {
     try {
       ws.send(JSON.stringify({ type: 'error', code, message }));
     } catch { /* ignore */ }
+  }
+
+  private canAutoStartWaitingTable(state: GameState): boolean {
+    if (state.phase !== 'waiting_for_players') return false;
+
+    const connectedPlayers = Object.values(state.players).filter((p) => p.isConnected).length;
+    const connectedHumans = Object.values(state.players).filter((p) => !p.isBot && p.isConnected).length;
+    const hasBot = Object.values(state.players).some((p) => p.isBot);
+
+    return connectedPlayers >= DEFAULTS.MIN_PLAYERS && (!hasBot || connectedHumans > 0);
+  }
+
+  private shouldPauseForMissingHumans(
+    state: GameState,
+    absentUserId?: string,
+  ): boolean {
+    if (state.pauseState) return false;
+    if (
+      state.phase === 'waiting_for_players' ||
+      state.phase === 'yaniv_called' ||
+      state.phase === 'game_over' ||
+      state.phase === 'abandoned'
+    ) {
+      return false;
+    }
+
+    const hasBot = Object.values(state.players).some((p) => p.isBot);
+    const hasHuman = Object.values(state.players).some((p) => !p.isBot);
+    if (!hasBot || !hasHuman) return false;
+
+    const connectedHumans = Object.values(state.players).filter(
+      (p) => !p.isBot && p.isConnected && p.userId !== absentUserId,
+    ).length;
+
+    return connectedHumans === 0;
+  }
+
+  private pauseIfNeededAfterRound(
+    state: GameState,
+    fallbackUserId: string,
+  ): GameState {
+    if (!this.shouldPauseForMissingHumans(state)) return state;
+    return pauseGame(state, this.pickPauseOwnerId(state, fallbackUserId), 'disconnect');
+  }
+
+  private pickPauseOwnerId(state: GameState, fallbackUserId: string): string {
+    return state.seatOrder.find((userId) => !state.players[userId]?.isBot) ?? fallbackUserId;
   }
 }
 

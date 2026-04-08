@@ -88,6 +88,10 @@ export const en = {
     eliminated: 'Eliminated',
     disconnected: 'Disconnected',
     reconnecting: 'Reconnecting...',
+    pausedTitle: 'Game paused',
+    pauseAfterDisconnect: 'The bots are waiting for you to come back. Tap continue when you are ready.',
+    pauseAfterTimeout: 'The game paused after inactivity. Tap continue to jump back in.',
+    continueGame: 'Continue game',
   },
   round: {
     yanivCalled: (name: string) => `${name} called Yaniv!`,
@@ -124,6 +128,7 @@ export const en = {
     TABLE_FULL: 'Table is full',
     TABLE_NOT_FOUND: 'Table not found',
     GAME_ALREADY_STARTED: 'Game already started',
+    GAME_PAUSED: 'The game is paused until a human continues',
     NOT_HOST: 'Only the host can start',
     connection: 'Connection lost. Reconnecting...',
     unknown: 'Unknown error',

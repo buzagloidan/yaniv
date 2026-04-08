@@ -88,6 +88,10 @@ export const ru = {
     eliminated: 'Выбыл',
     disconnected: 'Отключён',
     reconnecting: 'Переподключение...',
+    pausedTitle: 'Игра приостановлена',
+    pauseAfterDisconnect: 'Боты ждут вашего возвращения. Нажмите «Продолжить», когда будете готовы.',
+    pauseAfterTimeout: 'Игра приостановилась из-за бездействия. Нажмите «Продолжить», чтобы вернуться.',
+    continueGame: 'Продолжить игру',
   },
   round: {
     yanivCalled: (name: string) => `${name} объявил Янив!`,
@@ -124,6 +128,7 @@ export const ru = {
     TABLE_FULL: 'Стол заполнен',
     TABLE_NOT_FOUND: 'Стол не найден',
     GAME_ALREADY_STARTED: 'Игра уже началась',
+    GAME_PAUSED: 'Игра приостановлена, пока человек не продолжит её',
     NOT_HOST: 'Только хост может начать',
     connection: 'Соединение потеряно. Переподключение...',
     unknown: 'Неизвестная ошибка',

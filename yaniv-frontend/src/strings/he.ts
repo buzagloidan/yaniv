@@ -100,6 +100,10 @@ export const he = {
     eliminated: 'הודח',
     disconnected: 'מנותק',
     reconnecting: 'מתחבר מחדש...',
+    pausedTitle: 'המשחק הושהה',
+    pauseAfterDisconnect: 'הבוטים מחכים שתחזור. לחץ על המשך כדי להמשיך את המשחק.',
+    pauseAfterTimeout: 'המשחק הושהה אחרי חוסר פעילות. לחץ על המשך כדי לחזור לשולחן.',
+    continueGame: 'המשך משחק',
   },
 
   // ── Round result overlay ──────────────────────────────────
@@ -144,6 +148,7 @@ export const he = {
     TABLE_FULL: 'השולחן מלא',
     TABLE_NOT_FOUND: 'שולחן לא נמצא',
     GAME_ALREADY_STARTED: 'המשחק כבר התחיל',
+    GAME_PAUSED: 'המשחק מושהה עד ששחקן אנושי ימשיך',
     NOT_HOST: 'רק המארח יכול להתחיל',
     connection: 'החיבור נותק. מנסה להתחבר מחדש...',
     unknown: 'שגיאה לא ידועה',

@@ -1,9 +1,17 @@
-import type { GameState, GameSettings, CardId, DrawSource, PlayerRecord } from '../shared/types';
+import type {
+  GameState,
+  GameSettings,
+  CardId,
+  DrawSource,
+  PlayerRecord,
+  PauseReason,
+} from '../shared/types';
 import {
   createDeck,
   shuffleDeck,
   dealHands,
   resolveYaniv,
+  handTotal,
   reshuffleDiscardIntoDeck,
   selectAutoDiscardCard,
   checkHadabaka,
@@ -86,6 +94,7 @@ export function initGameState(
     createdAt: now,
     startedAt: null,
     waitingPlayers: [],
+    pauseState: null,
   };
 }
 
@@ -146,6 +155,7 @@ export function resetTableState(
     hadabakaCard: null,
     startedAt: null,
     waitingPlayers: [],
+    pauseState: null,
   };
 }
 
@@ -259,14 +269,14 @@ export function startGame(state: GameState): GameState {
 // ============================================================
 
 export function startNextRound(state: GameState): GameState {
-  // The player after last round's Yaniv caller goes first
-  const callerId = state.lastRoundCallerId;
+  // Legacy field name, but it now stores the player who should open the next round.
+  const starterId = state.lastRoundCallerId;
   let startSeat = 0;
 
-  if (callerId) {
-    const callerIdx = state.seatOrder.indexOf(callerId);
-    if (callerIdx !== -1) {
-      startSeat = nextActiveSeat(state, callerIdx);
+  if (starterId) {
+    const starterIdx = state.seatOrder.indexOf(starterId);
+    if (starterIdx !== -1) {
+      startSeat = starterIdx;
     }
   }
 
@@ -435,6 +445,7 @@ export function applyRoundResolution(state: GameState): RoundResolutionResult {
   }
 
   const resolution = resolveYaniv(callerId, hands, currentScores, state.settings);
+  const nextRoundStarterId = pickNextRoundStarterId(state, callerId, hands, resolution);
 
   // Apply updated scores and eliminations
   const updatedPlayers = { ...state.players };
@@ -457,11 +468,43 @@ export function applyRoundResolution(state: GameState): RoundResolutionResult {
     phase: isMatchOver ? 'game_over' : 'between_rounds',
     players: updatedPlayers,
     yanivCallerId: null,
-    lastRoundCallerId: callerId,
+    lastRoundCallerId: nextRoundStarterId,
     turnDeadlineEpoch: null,
   };
 
   return { newState, resolution, isMatchOver, winnerId };
+}
+
+function pickNextRoundStarterId(
+  state: GameState,
+  callerId: string,
+  hands: Record<string, CardId[]>,
+  resolution: YanivResolution,
+): string {
+  if (!resolution.isAssaf) {
+    return callerId;
+  }
+
+  const assafIds = new Set(resolution.assafPlayerIds);
+  let starterId: string | null = null;
+  let starterTotal = Number.POSITIVE_INFINITY;
+
+  // When multiple players Assaf, let the lowest hand start.
+  // Ties fall back to seat order for deterministic behavior.
+  for (const playerId of state.seatOrder) {
+    if (!assafIds.has(playerId)) continue;
+
+    const hand = hands[playerId];
+    if (!hand) continue;
+
+    const total = handTotal(hand);
+    if (starterId === null || total < starterTotal) {
+      starterId = playerId;
+      starterTotal = total;
+    }
+  }
+
+  return starterId ?? callerId;
 }
 
 // ============================================================
@@ -553,6 +596,45 @@ export function applyHadabakaDecline(state: GameState): GameState {
     currentTurnIndex: nextSeat,
     hadabakaCard: null,
     turnDeadlineEpoch: now + state.settings.turnTimeoutSeconds * 1000,
+  };
+}
+
+// ============================================================
+// Pause / resume
+// ============================================================
+
+export function pauseGame(
+  state: GameState,
+  pausedByUserId: string,
+  reason: PauseReason,
+): GameState {
+  return {
+    ...state,
+    turnDeadlineEpoch: null,
+    pauseState: {
+      reason,
+      pausedByUserId,
+      pausedAt: Date.now(),
+    },
+  };
+}
+
+export function resumePausedGame(state: GameState): GameState {
+  const now = Date.now();
+  let turnDeadlineEpoch: number | null = null;
+
+  if (state.phase === 'player_turn_discard' || state.phase === 'player_turn_draw') {
+    turnDeadlineEpoch = now + state.settings.turnTimeoutSeconds * 1000;
+  } else if (state.phase === 'player_turn_hadabaka') {
+    turnDeadlineEpoch = now + DEFAULTS.HADABAKA_WINDOW_MS;
+  } else if (state.phase === 'between_rounds') {
+    turnDeadlineEpoch = now + DEFAULTS.BETWEEN_ROUNDS_DELAY_MS;
+  }
+
+  return {
+    ...state,
+    turnDeadlineEpoch,
+    pauseState: null,
   };
 }
 

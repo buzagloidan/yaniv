@@ -23,6 +23,7 @@ import type {
   YanivCalledMessage,
   RoundResultMessage,
   GameOverMessage,
+  PauseState,
   ServerMessage,
 } from '../shared/types';
 
@@ -66,6 +67,7 @@ interface GameStore {
   waitingPlayerIds: string[];
   // Set for the drawing player during player_turn_hadabaka phase
   hadabakaCard: CardId | null;
+  pauseState: PauseState | null;
 
   // ── Derived (computed in actions, not stored separately) ──
   // use selectors below
@@ -78,6 +80,7 @@ interface GameStore {
   discardAndDraw: (source: DrawSource) => void;
   callYaniv: () => void;
   hadabakaAccept: () => void;
+  continuePausedGame: () => void;
   readyUp: () => void;
   sendChat: (text: string) => void;
   dismissRoundResult: () => void;
@@ -115,6 +118,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   toasts: [],
   waitingPlayerIds: [],
   hadabakaCard: null,
+  pauseState: null,
   _pendingDrawSource: null,
 
   connect: (tableId, roomCode, token, userId) => {
@@ -153,6 +157,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       yanivCalled: null,
       roundResult: null,
       gameOver: null,
+      pauseState: null,
     });
   },
 
@@ -180,6 +185,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   hadabakaAccept: () => {
     wsManager?.send({ type: 'hadabaka_accept' });
+  },
+
+  continuePausedGame: () => {
+    wsManager?.send({ type: 'continue_game' });
   },
 
   readyUp: () => {
@@ -251,6 +260,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
         discardPile: msg.discardPile,
         waitingPlayerIds: msg.waitingPlayerIds ?? [],
         hadabakaCard: msg.hadabakaCard ?? null,
+        pauseState: msg.pauseState ?? null,
         selectedCards: [],
         ...(shouldClearRoundOverlay ? { roundResult: null, yanivCalled: null } : {}),
         ...(msg.phase === 'waiting_for_players' ? { gameOver: null } : {}),
@@ -275,6 +285,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
           discardPile: msg.newDiscardPile,
           currentTurnUserId: msg.nextTurnUserId,
           turnDeadlineEpoch: msg.turnDeadlineEpoch,
+          pauseState: null,
           phase:
             msg.action === 'discard' && msg.nextTurnUserId === myUserId
               ? 'player_turn_draw'
@@ -307,12 +318,12 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
       break;
 
     case 'yaniv_called':
-      set({ yanivCalled: msg, phase: 'yaniv_called' });
+      set({ yanivCalled: msg, phase: 'yaniv_called', pauseState: null });
       playYaniv();
       break;
 
     case 'round_result':
-      set({ roundResult: msg, yanivCalled: null, phase: 'between_rounds' });
+      set({ roundResult: msg, yanivCalled: null, phase: 'between_rounds', pauseState: null });
       // Update scores in players list
       set((s) => ({
         players: s.players.map((p) => ({
@@ -342,7 +353,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
       break;
 
     case 'game_over':
-      set({ gameOver: msg, roundResult: null, yanivCalled: null, phase: 'game_over' });
+      set({ gameOver: msg, roundResult: null, yanivCalled: null, phase: 'game_over', pauseState: null });
       if (msg.winnerId === myUserId) {
         playGameWin();
       } else {

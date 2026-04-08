@@ -40,7 +40,7 @@ export function DiscardPile() {
                 zIndex: 3 - offset,
               }}
             >
-              <img src="/yaniv-deck.svg" alt="" className="w-full h-full object-cover" draggable={false} />
+              <img src="/yaniv-deck.png" alt="" className="w-full h-full object-cover" draggable={false} />
             </div>
           ))}
           <div
@@ -49,7 +49,7 @@ export function DiscardPile() {
               canDiscardAndDraw ? 'ring-2 ring-yellow-400 shadow-lg shadow-yellow-400/20' : '',
             ].join(' ')}
           >
-            <img src="/yaniv-deck.svg" alt="" className="w-full h-full object-cover" draggable={false} />
+            <img src="/yaniv-deck.png" alt="" className="w-full h-full object-cover" draggable={false} />
           </div>
         </motion.div>
       </div>
