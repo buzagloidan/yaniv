@@ -4,7 +4,9 @@ import { handTotal, parseCard, isJoker } from '../../utils/cardUtils';
 import { useStrings } from '../../strings';
 import type { CardId } from '../../shared/types';
 
-function sortHandDesc(hand: CardId[]): CardId[] {
+function sortHandForRTL(hand: CardId[]): CardId[] {
+  // In RTL layout first item renders on the RIGHT — sort ascending so highest
+  // value card ends up visually on the LEFT and lowest on the RIGHT.
   const order: Record<string, number> = {
     K: 13, Q: 12, J: 11, '10': 10, '9': 9, '8': 8, '7': 7,
     '6': 6, '5': 5, '4': 4, '3': 3, '2': 2, A: 1, joker: 0,
@@ -12,7 +14,7 @@ function sortHandDesc(hand: CardId[]): CardId[] {
   return [...hand].sort((a, b) => {
     const ra = isJoker(a) ? 0 : (order[parseCard(a).rank] ?? 0);
     const rb = isJoker(b) ? 0 : (order[parseCard(b).rank] ?? 0);
-    return rb - ra;
+    return ra - rb; // ascending → RTL renders as highest-left, lowest-right
   });
 }
 
@@ -26,7 +28,7 @@ export function PlayerHand() {
   const total = handTotal(myHand);
 
   const canSelect = isMyTurn && phase === 'player_turn_discard';
-  const sortedHand = sortHandDesc(myHand);
+  const sortedHand = sortHandForRTL(myHand);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -35,7 +37,7 @@ export function PlayerHand() {
         {s.game.handTotal(total)}
       </div>
 
-      {/* Cards — fan layout, sorted K→A left to right */}
+      {/* Cards — fan layout, highest value left, lowest value right (RTL) */}
       <div className="flex items-end justify-center" style={{ minHeight: 96 }}>
         {sortedHand.map((cardId, i) => {
           const mid = (sortedHand.length - 1) / 2;

@@ -28,7 +28,7 @@ export function DiscardPile() {
               key={offset}
               className="absolute rounded-lg overflow-hidden opacity-50"
               style={{
-                width: 64, height: 96,
+                width: 80, height: 112,
                 top: -offset * 2,
                 left: -offset * 2,
                 zIndex: 3 - offset,
@@ -39,14 +39,13 @@ export function DiscardPile() {
           ))}
           <div
             className={[
-              'relative z-10 w-16 h-24 rounded-lg overflow-hidden transition-all',
+              'relative z-10 w-20 h-28 rounded-lg overflow-hidden transition-all',
               canDiscardAndDraw ? 'ring-2 ring-yellow-400 shadow-lg shadow-yellow-400/20' : '',
             ].join(' ')}
           >
             <img src="/yaniv-deck.svg" alt="" className="w-full h-full object-cover" draggable={false} />
           </div>
         </motion.div>
-        <span className="text-white/50 text-xs">{s.game.cardsLeft(deckCount)}</span>
         {canDiscardAndDraw && (
           <button
             onClick={() => discardAndDraw('deck')}
