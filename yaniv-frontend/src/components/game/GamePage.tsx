@@ -427,16 +427,6 @@ export function GamePage() {
         </div>
       )}
 
-      {!isLoading && !isWaiting && !isWaitingPlayer && (
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-          <TurnCountdown
-            phase={phase}
-            turnDeadlineEpoch={turnDeadlineEpoch}
-            show={isMyTurn}
-          />
-        </div>
-      )}
-
       {/* ── Center: room waiting panel ── */}
       {!isLoading && isWaiting && !isWaitingPlayer && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-4" style={{ zIndex: 6 }}>
@@ -517,6 +507,15 @@ export function GamePage() {
       {/* ── My hand + action bar ── */}
       {!isLoading && !isWaitingPlayer && (
         <div className="absolute bottom-8 inset-x-0 flex flex-col items-center gap-4 px-4" style={{ zIndex: 5 }}>
+          {!isWaiting && (
+            <div className="pointer-events-none">
+              <TurnCountdown
+                phase={phase}
+                turnDeadlineEpoch={turnDeadlineEpoch}
+                show={isMyTurn}
+              />
+            </div>
+          )}
           <ActionBar />
           <PlayerHand />
           {me && (

@@ -24,11 +24,11 @@ export function ScoreBoard() {
     <div className="absolute top-3 start-3 z-20">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="bg-black/40 hover:bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-white/70 text-sm flex items-center gap-2 transition-colors"
+        className="w-10 h-10 bg-black/40 hover:bg-black/60 border border-white/10 rounded-xl text-white/80 text-lg flex items-center justify-center transition-colors"
+        aria-label={s.game.score}
+        title={s.game.score}
       >
         <span>📊</span>
-        <span>{s.game.score}</span>
-        {roundNumber > 0 && <span className="text-white/30">| {s.game.round(roundNumber)}</span>}
       </button>
 
       <AnimatePresence>
@@ -37,8 +37,13 @@ export function ScoreBoard() {
             initial={{ opacity: 0, y: -8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
-            className="absolute top-10 start-0 bg-gray-900/95 border border-white/10 rounded-2xl p-4 min-w-[200px] shadow-2xl"
+            className="absolute top-12 start-0 bg-gray-900/95 border border-white/10 rounded-2xl p-4 min-w-[200px] shadow-2xl"
           >
+            {roundNumber > 0 && (
+              <div className="text-white/45 text-xs text-center mb-3">
+                {s.game.round(roundNumber)}
+              </div>
+            )}
             <div className="space-y-2 mb-4">
               {[...players]
                 .sort((a, b) => a.score - b.score)

@@ -28,10 +28,11 @@ export function Chat() {
       {/* Toggle button with unread badge */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="bg-black/40 hover:bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-white/70 text-sm flex items-center gap-2 transition-colors"
+        className="w-10 h-10 bg-black/40 hover:bg-black/60 border border-white/10 rounded-xl text-white/80 text-lg flex items-center justify-center transition-colors"
+        aria-label={s.game.chat}
+        title={s.game.chat}
       >
         <span>💬</span>
-        <span>{s.game.chat}</span>
       </button>
 
       <AnimatePresence>
@@ -40,7 +41,7 @@ export function Chat() {
             initial={{ opacity: 0, y: 8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
-            className="absolute bottom-10 end-0 w-72 bg-gray-900/95 border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="absolute bottom-12 end-0 w-72 bg-gray-900/95 border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Messages */}
             <div
