@@ -1,16 +1,16 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { CardView } from './CardView';
-import { useGameStore, selectCanDraw } from '../../store/gameStore';
+import { useGameStore, selectCanDiscardAndDraw } from '../../store/gameStore';
 import { useStrings } from '../../strings';
 
 export function DiscardPile() {
   const s = useStrings();
   const discardPile = useGameStore((s) => s.discardPile);
-  const draw = useGameStore((s) => s.draw);
-  const canDraw = useGameStore(selectCanDraw);
+  const discardAndDraw = useGameStore((s) => s.discardAndDraw);
+  const canDiscardAndDraw = useGameStore(selectCanDiscardAndDraw);
 
   const { currentSet, deckCount } = discardPile;
-  const canDrawFromDiscard = canDraw && currentSet.length > 0;
+  const canInteractWithPile = canDiscardAndDraw && currentSet.length > 0;
 
   return (
     <div className="flex items-center justify-center gap-8">
@@ -18,9 +18,9 @@ export function DiscardPile() {
       <div className="flex flex-col items-center gap-2">
         <motion.div
           className="relative cursor-pointer"
-          whileHover={canDraw ? { scale: 1.05 } : undefined}
-          whileTap={canDraw ? { scale: 0.97 } : undefined}
-          onClick={() => canDraw && draw('deck')}
+          whileHover={canDiscardAndDraw ? { scale: 1.05 } : undefined}
+          whileTap={canDiscardAndDraw ? { scale: 0.97 } : undefined}
+          onClick={() => canDiscardAndDraw && discardAndDraw('deck')}
         >
           {/* Stack effect — 3 offset backs */}
           {[2, 1, 0].map((offset) => (
@@ -41,16 +41,16 @@ export function DiscardPile() {
           <div
             className={[
               'relative z-10 w-16 h-24 rounded-lg bg-emerald-800 border-2 flex items-center justify-center transition-colors',
-              canDraw ? 'border-yellow-400 shadow-lg shadow-yellow-400/20' : 'border-emerald-600/40',
+              canDiscardAndDraw ? 'border-yellow-400 shadow-lg shadow-yellow-400/20' : 'border-emerald-600/40',
             ].join(' ')}
           >
             <span className="text-white/30 text-2xl">✦</span>
           </div>
         </motion.div>
         <span className="text-white/50 text-xs">{s.game.cardsLeft(deckCount)}</span>
-        {canDraw && (
+        {canDiscardAndDraw && (
           <button
-            onClick={() => draw('deck')}
+            onClick={() => discardAndDraw('deck')}
             className="text-yellow-300 text-xs hover:text-yellow-100 transition-colors"
           >
             {s.game.drawFromDeck}
@@ -70,7 +70,7 @@ export function DiscardPile() {
               currentSet.map((cardId, i) => {
                 const isFirst = i === 0;
                 const isLast = i === currentSet.length - 1;
-                const canDrawThis = canDrawFromDiscard && (isFirst || isLast);
+                const canPickThis = canInteractWithPile && (isFirst || isLast);
 
                 return (
                   <motion.div
@@ -82,8 +82,8 @@ export function DiscardPile() {
                   >
                     <CardView
                       cardId={cardId}
-                      onClick={canDrawThis ? () => draw(isFirst ? 'discard_first' : 'discard_last') : undefined}
-                      className={canDrawThis ? 'ring-2 ring-yellow-400 ring-offset-1 ring-offset-transparent' : ''}
+                      onClick={canPickThis ? () => discardAndDraw(isFirst ? 'discard_first' : 'discard_last') : undefined}
+                      className={canPickThis ? 'ring-2 ring-yellow-400 ring-offset-1 ring-offset-transparent' : ''}
                     />
                   </motion.div>
                 );
@@ -91,22 +91,22 @@ export function DiscardPile() {
             )}
           </AnimatePresence>
         </div>
-        {canDrawFromDiscard && currentSet.length > 1 && (
+        {canInteractWithPile && currentSet.length > 1 && (
           <div className="flex gap-3 text-xs text-yellow-300">
-            <button onClick={() => draw('discard_first')} className="hover:text-yellow-100">
+            <button onClick={() => discardAndDraw('discard_first')} className="hover:text-yellow-100">
               {s.game.drawFirst}
             </button>
-            <button onClick={() => draw('discard_last')} className="hover:text-yellow-100">
+            <button onClick={() => discardAndDraw('discard_last')} className="hover:text-yellow-100">
               {s.game.drawLast}
             </button>
           </div>
         )}
-        {canDrawFromDiscard && currentSet.length === 1 && (
+        {canInteractWithPile && currentSet.length === 1 && (
           <button
-            onClick={() => draw('discard_first')}
+            onClick={() => discardAndDraw('discard_first')}
             className="text-yellow-300 text-xs hover:text-yellow-100"
           >
-            {s.game.drawFromDeck /* reuse — means "draw from pile" */}
+            {s.game.drawFromDeck}
           </button>
         )}
       </div>

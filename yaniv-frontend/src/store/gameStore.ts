@@ -59,14 +59,16 @@ interface GameStore {
   disconnect: () => void;
   toggleCard: (cardId: CardId) => void;
   clearSelection: () => void;
-  discard: () => void;
-  draw: (source: DrawSource) => void;
+  discardAndDraw: (source: DrawSource) => void;
   callYaniv: () => void;
   readyUp: () => void;
   sendChat: (text: string) => void;
   dismissRoundResult: () => void;
   addToast: (message: string, kind?: Toast['kind']) => void;
   removeToast: (id: number) => void;
+
+  // internal — pending draw source after a discard is sent
+  _pendingDrawSource: DrawSource | null;
 }
 
 // Keep WS manager outside store to avoid Zustand serialization issues
@@ -92,6 +94,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   selectedCards: [],
   toasts: [],
   waitingPlayerIds: [],
+  _pendingDrawSource: null,
 
   connect: (tableId, roomCode, token, userId) => {
     myUserId = userId;
@@ -140,15 +143,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   clearSelection: () => set({ selectedCards: [] }),
 
-  discard: () => {
+  discardAndDraw: (source) => {
     const { selectedCards } = get();
     if (!isValidDiscard(selectedCards)) return;
+    set({ _pendingDrawSource: source, selectedCards: [] });
     wsManager?.send({ type: 'discard', cards: selectedCards });
-    set({ selectedCards: [] });
-  },
-
-  draw: (source) => {
-    wsManager?.send({ type: 'draw', source });
   },
 
   callYaniv: () => {
@@ -188,13 +187,11 @@ export const selectCanCallYaniv = (s: GameStore, threshold: number) =>
   s.currentTurnUserId === myUserId &&
   handTotal(s.myHand) <= threshold;
 
-export const selectCanDiscard = (s: GameStore) =>
+// True when the player has a valid selection and can trigger a discard+draw
+export const selectCanDiscardAndDraw = (s: GameStore) =>
   s.phase === 'player_turn_discard' &&
   s.currentTurnUserId === myUserId &&
   isValidDiscard(s.selectedCards);
-
-export const selectCanDraw = (s: GameStore) =>
-  s.phase === 'player_turn_draw' && s.currentTurnUserId === myUserId;
 
 export const selectMe = (s: GameStore) =>
   s.players.find((p) => p.userId === myUserId);
@@ -251,6 +248,14 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
           selectedCards: [],
         };
       });
+      // If we just discarded and have a queued draw source, send it immediately
+      if (msg.action === 'discard' && msg.nextTurnUserId === myUserId) {
+        const pending = get()._pendingDrawSource;
+        if (pending) {
+          set({ _pendingDrawSource: null });
+          wsManager?.send({ type: 'draw', source: pending });
+        }
+      }
       break;
 
     case 'yaniv_called':
@@ -283,6 +288,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
       break;
 
     case 'error':
+      set({ _pendingDrawSource: null });
       get().addToast(getStrings().errors[msg.code] ?? getStrings().errors.unknown, 'error');
       break;
 
