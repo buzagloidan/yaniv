@@ -187,13 +187,6 @@ export function LobbyPage() {
             </span>
           </button>
 
-          {/* Subtitle */}
-          <p
-            className="text-center text-sm mt-2 opacity-60"
-            style={{ color: '#3A2008', fontFamily: 'Noto Sans Hebrew, sans-serif' }}
-          >
-            {isEn ? '4 players · threshold 7 · 100 pts · 15s/turn' : '4 שחקנים · ספף 7 · 100 נקודות · 15 שניות לתור'}
-          </p>
         </motion.div>
 
         {/* Secondary buttons */}
