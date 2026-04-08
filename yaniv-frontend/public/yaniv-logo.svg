@@ -20,6 +20,8 @@
     <!-- main word -->
     <text x="500" y="275"
           text-anchor="middle"
+          direction="rtl"
+          unicode-bidi="bidi-override"
           font-family="Arial Black, Arial, Helvetica, sans-serif"
           font-size="250"
           font-weight="900"
@@ -32,6 +34,8 @@
     <!-- warm inner accent -->
     <text x="500" y="275"
           text-anchor="middle"
+          direction="rtl"
+          unicode-bidi="bidi-override"
           font-family="Arial Black, Arial, Helvetica, sans-serif"
           font-size="250"
           font-weight="900"

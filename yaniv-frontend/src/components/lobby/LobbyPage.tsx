@@ -51,13 +51,8 @@ export function LobbyPage() {
 
   const handleJoin = async (code: string) => {
     if (!user) return;
-    setError(null);
-    try {
-      const data = await joinTable(token, code);
-      navigate(`/game/${data.tableId}?code=${data.roomCode}`);
-    } catch (e) {
-      setError((e as Error).message ?? s.errors.unknown);
-    }
+    const data = await joinTable(token, code);
+    navigate(`/game/${data.tableId}?code=${data.roomCode}`);
   };
 
   return (

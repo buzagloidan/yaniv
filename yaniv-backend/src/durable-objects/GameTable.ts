@@ -734,12 +734,9 @@ export class GameTable implements DurableObject {
         newState = { ...newState, hostId: body.userId };
       }
       await this.saveState(newState);
-      this.broadcast.broadcastAll({
-        type: 'presence',
-        userId: body.userId,
-        connected: false,
-        reconnectWindowMs: 0,
-      });
+      // Existing waiting-room players need a full snapshot so seat count and host controls
+      // update as soon as someone claims a seat, even before their WebSocket finishes joining.
+      this.broadcast.broadcastSnapshot(newState);
       return json({ ok: true, seatIndex: newState.players[body.userId].seatIndex });
     }
 

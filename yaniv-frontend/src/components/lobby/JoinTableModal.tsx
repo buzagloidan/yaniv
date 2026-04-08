@@ -15,10 +15,23 @@ export function JoinTableModal({ open, onClose, onJoin }: Props) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const mapJoinError = (message: string) => {
+    switch (message) {
+      case 'Table not found':
+        return s.joinTable.notFound;
+      case 'Table full':
+        return s.joinTable.full;
+      case 'Game already started':
+        return s.joinTable.started;
+      default:
+        return message || s.errors.unknown;
+    }
+  };
+
   const handleJoin = async () => {
     const trimmed = code.trim();
     if (trimmed.length !== 4 || !/^\d{4}$/.test(trimmed)) {
-      setError('יש להזין קוד בן 4 ספרות');
+      setError(s.joinTable.invalidCode);
       return;
     }
     setLoading(true);
@@ -27,7 +40,7 @@ export function JoinTableModal({ open, onClose, onJoin }: Props) {
       await onJoin(trimmed);
       onClose();
     } catch (e) {
-      setError((e as Error).message);
+      setError(mapJoinError((e as Error).message));
     } finally {
       setLoading(false);
     }
