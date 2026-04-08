@@ -43,7 +43,7 @@ function CardTable({ rows }: { rows: { card: string; value: string }[] }) {
 const CARD_ROWS = [
   { card: "ג'וקר / Joker", value: '0' },
   { card: 'אס / Ace', value: '1' },
-  { card: 'קלף מספרי / Number card (2–10)', value: 'face value' },
+  { card: 'קלף מספרי / Number card (2–10)', value: '2-10' },
   { card: 'נסיך, מלכה, מלך / Jack, Queen, King (J, Q, K)', value: '10' },
 ];
 
@@ -60,7 +60,7 @@ function HebrewContent() {
       <Section title="מטרת המשחק">
         <p>
           לצבור את מספר הנקודות <strong>הנמוך ביותר</strong>.
-          כל סיבוב מסתיים כשאחד השחקנים מכריז <strong>&quot;יניב&quot;</strong> — כלומר נשארו בידיו קלפים בסכום של <strong>ספף המשחק ומטה</strong> (ברירת מחדל: 7).
+          כל סיבוב מסתיים כשאחד השחקנים מכריז <strong>&quot;יניב&quot;</strong> — כלומר נשארו בידיו קלפים בסכום של <strong>סף המשחק ומטה</strong> (ברירת מחדל: 7).
           לשחקן המנצח לא מתווספות נקודות; לשאר מוסיפים את ערך הקלפים שנותרו בידם.
         </p>
       </Section>
@@ -71,7 +71,7 @@ function HebrewContent() {
           המשחק מתקדם בכיוון השעון.
         </p>
         <ul className="list-disc list-inside space-y-1 mr-2">
-          <li>להכריז <strong>יניב</strong> אם סכום ידו ≤ לספף.</li>
+          <li>להכריז <strong>יניב</strong> אם סכום ידו ≤ לסף.</li>
           <li>להשליך קלף אחד או יותר ולקחת קלף מהקופה הסגורה או מהערימה הגלויה.</li>
         </ul>
       </Section>
@@ -93,6 +93,7 @@ function HebrewContent() {
           <li>אם סכום המכריז הוא הנמוך — הוא מנצח ואינו מקבל נקודות.</li>
           <li>
             אם לשחקן אחר יש סכום <strong>קטן או שווה</strong> למכריז — <strong>אסף!</strong>
+            <br />
             המכריז מקבל <strong>30 נקודות עונשין</strong>.
           </li>
         </ul>
@@ -101,7 +102,7 @@ function HebrewContent() {
       <Section title="ניקוד מיוחד">
         <ul className="list-disc list-inside space-y-1 mr-2">
           <li>
-            <strong>הגעה לסף הניקוד בדיוק</strong> — הניקוד מאופס לחצי מהסף.
+            <strong>הגעה בדיוק ל-50 / 100 / 150 / 200</strong> — הניקוד מתאפס חזרה לאפס.
           </li>
           <li>
             <strong>מעבר לסף</strong> — השחקן מודח מהמשחק.
@@ -163,6 +164,7 @@ function EnglishContent() {
           <li>If the caller has the lowest total — they win the round and score 0.</li>
           <li>
             If another player has a total <strong>equal to or lower</strong> than the caller — <strong>Assaf!</strong>
+            <br />
             The caller receives a <strong>+30 point penalty</strong> instead.
           </li>
         </ul>
@@ -170,7 +172,7 @@ function EnglishContent() {
 
       <Section title="Special Scoring">
         <ul className="list-disc list-inside space-y-1">
-          <li><strong>Hitting the limit exactly</strong> — your score resets to half the limit.</li>
+          <li><strong>Landing exactly on 50 / 100 / 150 / 200</strong> — your score resets back to 0.</li>
           <li><strong>Exceeding the limit</strong> — you are eliminated from the game.</li>
         </ul>
       </Section>

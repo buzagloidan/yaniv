@@ -34,7 +34,7 @@ export const he = {
   createTable: {
     title: 'צור שולחן',
     maxPlayers: 'שחקנים',
-    threshold: 'ספף יניב',
+    threshold: 'סף יניב',
     pointsLimit: 'מגבלת נקודות',
     create: 'שחק',
     cancel: 'ביטול',
