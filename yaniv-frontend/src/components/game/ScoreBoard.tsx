@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
-import { he } from '../../strings/he';
+import { useStrings } from '../../strings';
 
 export function ScoreBoard() {
+  const s = useStrings();
   const players = useGameStore((s) => s.players);
   const roundNumber = useGameStore((s) => s.roundNumber);
   const roomCode = useGameStore((s) => s.roomCode);
@@ -25,8 +26,8 @@ export function ScoreBoard() {
         className="bg-black/40 hover:bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-white/70 text-sm flex items-center gap-2 transition-colors"
       >
         <span>📊</span>
-        <span>{he.game.score}</span>
-        {roundNumber > 0 && <span className="text-white/30">| {he.game.round(roundNumber)}</span>}
+        <span>{s.game.score}</span>
+        {roundNumber > 0 && <span className="text-white/30">| {s.game.round(roundNumber)}</span>}
       </button>
 
       <AnimatePresence>
@@ -51,7 +52,7 @@ export function ScoreBoard() {
                       {p.displayName}
                     </span>
                     <span className={p.isEliminated ? 'text-red-400 text-sm' : 'text-white/80 text-sm font-mono'}>
-                      {p.isEliminated ? he.game.eliminated : p.score}
+                      {p.isEliminated ? s.game.eliminated : p.score}
                     </span>
                   </div>
                 ))}
@@ -62,7 +63,7 @@ export function ScoreBoard() {
                 onClick={copyCode}
                 className="w-full text-center text-white/40 hover:text-white/70 text-xs border-t border-white/5 pt-3 transition-colors"
               >
-                {copied ? he.game.copied : he.game.roomCode(roomCode)}
+                {copied ? s.game.copied : s.game.roomCode(roomCode)}
               </button>
             )}
           </motion.div>

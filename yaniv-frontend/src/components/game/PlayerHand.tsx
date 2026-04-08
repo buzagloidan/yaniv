@@ -1,9 +1,10 @@
 import { CardView } from './CardView';
 import { useGameStore, selectIsMyTurn } from '../../store/gameStore';
 import { handTotal } from '../../utils/cardUtils';
-import { he } from '../../strings/he';
+import { useStrings } from '../../strings';
 
 export function PlayerHand() {
+  const s = useStrings();
   const myHand = useGameStore((s) => s.myHand);
   const selectedCards = useGameStore((s) => s.selectedCards);
   const toggleCard = useGameStore((s) => s.toggleCard);
@@ -17,7 +18,7 @@ export function PlayerHand() {
     <div className="flex flex-col items-center gap-3">
       {/* Hand total */}
       <div className="text-white/60 text-sm">
-        {he.game.handTotal(total)}
+        {s.game.handTotal(total)}
       </div>
 
       {/* Cards — fan layout */}

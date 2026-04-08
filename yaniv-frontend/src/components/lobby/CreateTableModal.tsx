@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { he } from '../../strings/he';
+import { useStrings } from '../../strings';
 
 interface Props {
   open: boolean;
@@ -64,6 +64,7 @@ function Spinner<T extends number>({
 }
 
 export function CreateTableModal({ open, onClose, onCreate }: Props) {
+  const s = useStrings();
   const [maxPlayers, setMaxPlayers] = useState<2 | 3 | 4>(4);
   const [threshold, setThreshold] = useState<1 | 3 | 5 | 7>(7);
   const [scoreLimit, setScoreLimit] = useState<50 | 100 | 200>(100);
@@ -132,7 +133,7 @@ export function CreateTableModal({ open, onClose, onCreate }: Props) {
                     className="text-xl font-bold"
                     style={{ color: '#E8D5B7', fontFamily: 'Syne, sans-serif' }}
                   >
-                    {he.createTable.title}
+                    {s.createTable.title}
                   </h2>
                 </div>
 
@@ -142,21 +143,21 @@ export function CreateTableModal({ open, onClose, onCreate }: Props) {
                 {/* Spinners */}
                 <div className="space-y-1">
                   <Spinner
-                    label={he.createTable.maxPlayers}
+                    label={s.createTable.maxPlayers}
                     options={[2, 3, 4] as (2 | 3 | 4)[]}
                     value={maxPlayers}
                     onChange={setMaxPlayers}
                   />
                   <div className="h-px" style={{ background: 'rgba(232,213,183,0.12)' }} />
                   <Spinner
-                    label={he.createTable.threshold}
+                    label={s.createTable.threshold}
                     options={[1, 3, 5, 7] as (1 | 3 | 5 | 7)[]}
                     value={threshold}
                     onChange={setThreshold}
                   />
                   <div className="h-px" style={{ background: 'rgba(232,213,183,0.12)' }} />
                   <Spinner
-                    label={he.createTable.pointsLimit}
+                    label={s.createTable.pointsLimit}
                     options={[50, 100, 200] as (50 | 100 | 200)[]}
                     value={scoreLimit}
                     onChange={setScoreLimit}
@@ -180,7 +181,7 @@ export function CreateTableModal({ open, onClose, onCreate }: Props) {
                     boxShadow: loading ? 'none' : '0 4px 16px rgba(242,100,25,0.4)',
                   }}
                 >
-                  {loading ? '...' : he.createTable.create}
+                  {loading ? '...' : s.createTable.create}
                 </button>
               </div>
             </div>

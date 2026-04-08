@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/Button';
-import { he } from '../../strings/he';
+import { useStrings } from '../../strings';
 import { addBot } from '../../networking/api';
 import { useAuthStore } from '../../store/authStore';
 import { useGameStore, selectCanDiscard, selectCanCallYaniv, selectIsMyTurn } from '../../store/gameStore';
@@ -9,6 +9,7 @@ import { useGameStore, selectCanDiscard, selectCanCallYaniv, selectIsMyTurn } fr
 const DEFAULT_THRESHOLD = 7;
 
 export function ActionBar() {
+  const s = useStrings();
   const phase = useGameStore((s) => s.phase);
   const roomCode = useGameStore((s) => s.roomCode);
   const discard = useGameStore((s) => s.discard);
@@ -44,7 +45,7 @@ export function ActionBar() {
     return (
       <div className="flex flex-col items-center gap-3 w-full">
         <Button size="lg" onClick={readyUp} className="w-full">
-          {he.game.startGame}
+          {s.game.startGame}
         </Button>
 
         <button
@@ -123,10 +124,10 @@ export function ActionBar() {
               className="bg-amber-500 hover:bg-amber-400 text-gray-900"
               onClick={() => { callYaniv(); setShowYanivConfirm(false); }}
             >
-              {he.game.yanivYes}
+              {s.game.yanivYes}
             </Button>
             <Button variant="secondary" size="lg" onClick={() => setShowYanivConfirm(false)}>
-              {he.game.yanivCancel}
+              {s.game.yanivCancel}
             </Button>
           </motion.div>
         ) : (
@@ -140,7 +141,7 @@ export function ActionBar() {
             {phase === 'player_turn_discard' && (
               <>
                 <Button size="lg" disabled={!canDiscard} onClick={discard}>
-                  {he.game.discard}
+                  {s.game.discard}
                   {selectedCards.length > 0 && ` (${selectedCards.length})`}
                 </Button>
                 {canYaniv && (
@@ -149,7 +150,7 @@ export function ActionBar() {
                     className="bg-amber-500 hover:bg-amber-400 text-gray-900 animate-pulse"
                     onClick={() => setShowYanivConfirm(true)}
                   >
-                    {he.game.callYaniv}
+                    {s.game.callYaniv}
                   </Button>
                 )}
               </>

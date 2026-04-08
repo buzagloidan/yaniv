@@ -1,9 +1,10 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
-import { he } from '../../strings/he';
+import { useStrings } from '../../strings';
 
 export function Chat() {
+  const s = useStrings();
   const messages = useGameStore((s) => s.chatMessages);
   const sendChat = useGameStore((s) => s.sendChat);
   const [open, setOpen] = useState(false);
@@ -30,7 +31,7 @@ export function Chat() {
         className="bg-black/40 hover:bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-white/70 text-sm flex items-center gap-2 transition-colors"
       >
         <span>💬</span>
-        <span>{he.game.chat}</span>
+        <span>{s.game.chat}</span>
       </button>
 
       <AnimatePresence>
@@ -67,7 +68,7 @@ export function Chat() {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && send()}
-                placeholder={he.game.chatPlaceholder}
+                placeholder={s.game.chatPlaceholder}
                 maxLength={200}
                 className="flex-1 bg-white/5 rounded-lg px-3 py-1.5 text-sm text-white placeholder-white/20 outline-none focus:bg-white/10"
               />
@@ -76,7 +77,7 @@ export function Chat() {
                 disabled={!text.trim()}
                 className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 rounded-lg text-white text-sm transition-colors"
               >
-                {he.game.send}
+                {s.game.send}
               </button>
             </div>
           </motion.div>

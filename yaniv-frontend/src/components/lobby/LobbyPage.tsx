@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
 import { createTable, addBot, joinTable } from '../../networking/api';
+import { useStrings } from '../../strings';
+import { useLangStore } from '../../store/langStore';
 import { RulesModal } from '../ui/RulesModal';
 import { CreateTableModal } from './CreateTableModal';
 import { JoinTableModal } from './JoinTableModal';
@@ -18,6 +20,8 @@ export function LobbyPage() {
   const [quickStarting, setQuickStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const s = useStrings();
+  const isEn = useLangStore((l) => l.lang) === 'en';
   const token = user!.sessionToken;
 
   /** Create a table with 3 bots and navigate straight to the game */
@@ -179,7 +183,7 @@ export function LobbyPage() {
               />
             )}
             <span className="relative">
-              {quickStarting ? '🌴 מתחיל...' : '🏄 התחל משחק'}
+              {quickStarting ? `🌴 ${isEn ? 'Starting...' : 'מתחיל...'}` : `🏄 ${isEn ? 'Start Game' : 'התחל משחק'}`}
             </span>
           </button>
 
@@ -188,7 +192,7 @@ export function LobbyPage() {
             className="text-center text-sm mt-2 opacity-60"
             style={{ color: '#3A2008', fontFamily: 'Noto Sans Hebrew, sans-serif' }}
           >
-            4 שחקנים · ספף 7 · 100 נקודות · 15 שניות לתור
+            {isEn ? '4 players · threshold 7 · 100 pts · 15s/turn' : '4 שחקנים · ספף 7 · 100 נקודות · 15 שניות לתור'}
           </p>
         </motion.div>
 
@@ -212,7 +216,7 @@ export function LobbyPage() {
             }}
           >
             <span className="text-lg">#</span>
-            הצטרף עם קוד
+            {isEn ? 'Join with Code' : 'הצטרף עם קוד'}
           </button>
 
           {/* Create table */}
@@ -228,7 +232,7 @@ export function LobbyPage() {
             }}
           >
             <span className="text-lg">＋</span>
-            צור שולחן
+            {isEn ? 'Create Table' : 'צור שולחן'}
           </button>
         </motion.div>
       </div>

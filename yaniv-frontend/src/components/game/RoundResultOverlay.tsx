@@ -1,10 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { CardView } from './CardView';
 import { useGameStore } from '../../store/gameStore';
-import { he } from '../../strings/he';
+import { useStrings } from '../../strings';
 import { Button } from '../ui/Button';
 
 export function RoundResultOverlay() {
+  const s = useStrings();
   const result = useGameStore((s) => s.roundResult);
   const dismiss = useGameStore((s) => s.dismissRoundResult);
   const players = useGameStore((s) => s.players);
@@ -37,7 +38,7 @@ export function RoundResultOverlay() {
                 <div>
                   <div className="text-3xl mb-1">💥</div>
                   <h2 className="text-2xl font-bold text-red-400">
-                    {he.round.assaf(
+                    {s.round.assaf(
                       getName(result.callerId),
                       getName(result.assafByIds[0] ?? ''),
                     )}
@@ -47,7 +48,7 @@ export function RoundResultOverlay() {
                 <div>
                   <div className="text-3xl mb-1">🎉</div>
                   <h2 className="text-2xl font-bold text-yellow-400">
-                    {he.round.yanivCalled(getName(result.callerId))}
+                    {s.round.yanivCalled(getName(result.callerId))}
                   </h2>
                 </div>
               )}
@@ -96,14 +97,14 @@ export function RoundResultOverlay() {
                       <div className={['font-bold', delta > 0 ? 'text-red-400' : 'text-green-400'].join(' ')}>
                         {delta > 0 ? `+${delta}` : '0'}
                         {isCaller && result.callType === 'assaf' && (
-                          <span className="text-xs ms-1">{he.round.penalty}</span>
+                          <span className="text-xs ms-1">{s.round.penalty}</span>
                         )}
                       </div>
                       <div className="text-xs text-white/40">
                         {isElim ? (
-                          <span className="text-red-400">{he.game.eliminated}</span>
+                          <span className="text-red-400">{s.game.eliminated}</span>
                         ) : isReset ? (
-                          <span className="text-amber-400">{he.round.scoreReset}</span>
+                          <span className="text-amber-400">{s.round.scoreReset}</span>
                         ) : (
                           <span>{newScore} נק׳</span>
                         )}

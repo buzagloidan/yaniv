@@ -1,11 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
 import { useAuthStore } from '../../store/authStore';
-import { he } from '../../strings/he';
+import { useStrings } from '../../strings';
 import { Button } from '../ui/Button';
 import { useNavigate } from 'react-router-dom';
 
 export function GameOverOverlay() {
+  const s = useStrings();
   const gameOver = useGameStore((s) => s.gameOver);
   const players = useGameStore((s) => s.players);
   const disconnect = useGameStore((s) => s.disconnect);
@@ -37,10 +38,10 @@ export function GameOverOverlay() {
           >
             <div className="text-5xl mb-4">{iWon ? '🏆' : '😔'}</div>
             <h1 className="text-3xl font-bold text-white mb-1">
-              {he.gameOver.title}
+              {s.gameOver.title}
             </h1>
             <p className={['text-xl mb-6', iWon ? 'text-yellow-400' : 'text-white/60'].join(' ')}>
-              {iWon ? he.gameOver.youWon : he.gameOver.winner(gameOver.winnerName)}
+              {iWon ? s.gameOver.youWon : s.gameOver.winner(gameOver.winnerName)}
             </p>
 
             {/* Standings */}
@@ -64,7 +65,7 @@ export function GameOverOverlay() {
             </div>
 
             <Button size="lg" onClick={handleLobby} className="w-full">
-              {he.gameOver.lobby}
+              {s.gameOver.lobby}
             </Button>
           </motion.div>
         </motion.div>

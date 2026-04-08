@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { WSManager } from '../networking/wsManager';
 import { isValidDiscard, handTotal } from '../utils/cardUtils';
-import { he } from '../strings/he';
+import { getStrings } from '../strings';
 import type {
   CardId,
   DrawSource,
@@ -279,7 +279,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
       break;
 
     case 'error':
-      get().addToast(he.errors[msg.code] ?? he.errors.unknown, 'error');
+      get().addToast(getStrings().errors[msg.code] ?? getStrings().errors.unknown, 'error');
       break;
 
     case 'chat':

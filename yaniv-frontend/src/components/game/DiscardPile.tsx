@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { CardView } from './CardView';
 import { useGameStore, selectCanDraw } from '../../store/gameStore';
-import { he } from '../../strings/he';
+import { useStrings } from '../../strings';
 
 export function DiscardPile() {
+  const s = useStrings();
   const discardPile = useGameStore((s) => s.discardPile);
   const draw = useGameStore((s) => s.draw);
   const canDraw = useGameStore(selectCanDraw);
@@ -46,13 +47,13 @@ export function DiscardPile() {
             <span className="text-white/30 text-2xl">✦</span>
           </div>
         </motion.div>
-        <span className="text-white/50 text-xs">{he.game.cardsLeft(deckCount)}</span>
+        <span className="text-white/50 text-xs">{s.game.cardsLeft(deckCount)}</span>
         {canDraw && (
           <button
             onClick={() => draw('deck')}
             className="text-yellow-300 text-xs hover:text-yellow-100 transition-colors"
           >
-            {he.game.drawFromDeck}
+            {s.game.drawFromDeck}
           </button>
         )}
       </div>
@@ -93,10 +94,10 @@ export function DiscardPile() {
         {canDrawFromDiscard && currentSet.length > 1 && (
           <div className="flex gap-3 text-xs text-yellow-300">
             <button onClick={() => draw('discard_first')} className="hover:text-yellow-100">
-              {he.game.drawFirst}
+              {s.game.drawFirst}
             </button>
             <button onClick={() => draw('discard_last')} className="hover:text-yellow-100">
-              {he.game.drawLast}
+              {s.game.drawLast}
             </button>
           </div>
         )}
@@ -105,7 +106,7 @@ export function DiscardPile() {
             onClick={() => draw('discard_first')}
             className="text-yellow-300 text-xs hover:text-yellow-100"
           >
-            {he.game.drawFromDeck /* reuse — means "draw from pile" */}
+            {s.game.drawFromDeck /* reuse — means "draw from pile" */}
           </button>
         )}
       </div>

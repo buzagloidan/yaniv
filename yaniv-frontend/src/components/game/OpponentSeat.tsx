@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { CardView } from './CardView';
-import { he } from '../../strings/he';
+import { useStrings } from '../../strings';
 import type { PublicPlayerInfo } from '../../shared/types';
 
 interface Props {
@@ -9,6 +9,7 @@ interface Props {
 }
 
 export function OpponentSeat({ player, isCurrentTurn }: Props) {
+  const s = useStrings();
   return (
     <motion.div
       className="flex flex-col items-center gap-2"
@@ -17,7 +18,7 @@ export function OpponentSeat({ player, isCurrentTurn }: Props) {
       {/* Card backs */}
       <div className="flex items-center" style={{ minHeight: 56 }}>
         {player.isEliminated ? (
-          <span className="text-red-400 text-xs font-medium">{he.game.eliminated}</span>
+          <span className="text-red-400 text-xs font-medium">{s.game.eliminated}</span>
         ) : (
           Array.from({ length: player.cardCount }).map((_, i) => (
             <div
@@ -46,11 +47,11 @@ export function OpponentSeat({ player, isCurrentTurn }: Props) {
       >
         {isCurrentTurn && '• '}
         {player.displayName}
-        {!player.isConnected && !player.isEliminated && ` (${he.game.disconnected})`}
+        {!player.isConnected && !player.isEliminated && ` (${s.game.disconnected})`}
       </div>
 
       {/* Score */}
-      <span className="text-white/40 text-xs">{player.score} {he.game.score ?? 'נק׳'}</span>
+      <span className="text-white/40 text-xs">{player.score} {s.game.score ?? 'נק׳'}</span>
     </motion.div>
   );
 }

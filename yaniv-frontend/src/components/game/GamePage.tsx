@@ -3,7 +3,7 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
 import { useGameStore, selectIsMyTurn, selectMe, selectIsWaitingPlayer } from '../../store/gameStore';
-import { he } from '../../strings/he';
+import { useStrings } from '../../strings';
 import { leaveTable } from '../../networking/api';
 import { RulesModal } from '../ui/RulesModal';
 import { PlayerHand } from './PlayerHand';
@@ -75,6 +75,7 @@ function OceanStrip() {
 }
 
 export function GamePage() {
+  const s = useStrings();
   const { tableId } = useParams<{ tableId: string }>();
   const [searchParams] = useSearchParams();
   const roomCode = searchParams.get('code') ?? '';
@@ -170,7 +171,7 @@ export function GamePage() {
             className="absolute top-0 inset-x-0 z-30 text-white text-center text-sm py-2 font-medium"
             style={{ background: 'linear-gradient(90deg, #F26419, #D9560E)' }}
           >
-            {he.game.reconnecting}
+            {s.game.reconnecting}
           </motion.div>
         )}
       </AnimatePresence>
@@ -215,7 +216,7 @@ export function GamePage() {
                 className="text-lg font-semibold mb-1"
                 style={{ color: '#1A3352', fontFamily: 'Syne, sans-serif' }}
               >
-                {he.game.waitingForPlayers}
+                {s.game.waitingForPlayers}
               </p>
               <p className="text-sm mb-4" style={{ color: '#7C6A50' }}>
                 ממתינים לשחקן נוסף... 🌴
@@ -339,7 +340,7 @@ export function GamePage() {
                   boxShadow: '0 4px 20px rgba(242,100,25,0.45)',
                 }}
               >
-                {he.game.yourTurn} 🌟
+                {s.game.yourTurn} 🌟
               </motion.div>
             )}
             {!isMyTurn && currentTurnUserId && (
@@ -356,7 +357,7 @@ export function GamePage() {
                   border: '1px solid rgba(226,201,154,0.5)',
                 }}
               >
-                {he.game.waitingFor(
+                {s.game.waitingFor(
                   players.find((p) => p.userId === currentTurnUserId)?.displayName ?? '...',
                 )}
               </motion.div>
