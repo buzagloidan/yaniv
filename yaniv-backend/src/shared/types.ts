@@ -56,9 +56,10 @@ export interface PlayerRecord {
 }
 
 export interface DiscardPileState {
-  // The set that was most recently discarded (drawable from first/last)
+  // The set most recently discarded — shown on top of the pile; drawable by the NEXT player
   currentSet: CardId[];
-  // Previous sets available for reshuffling into the draw pile (not drawable)
+  // Older sets. The last entry is what the current player saw before discarding — that's
+  // what discard_first / discard_last draw from. All entries are also used for reshuffling.
   previousSets: CardId[][];
 }
 

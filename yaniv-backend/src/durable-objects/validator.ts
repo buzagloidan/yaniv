@@ -65,8 +65,9 @@ export function validateDraw(
     const reshufflePool = state.discardPile.previousSets.flat().length + state.deck.length;
     if (reshufflePool === 0) return err(ErrorCode.INVALID_DRAW_SOURCE);
   } else {
-    // discard_first or discard_last
-    if (state.discardPile.currentSet.length === 0) return err(ErrorCode.INVALID_DRAW_SOURCE);
+    // discard_first or discard_last — draw from what was on top before the player discarded
+    const prevSet = state.discardPile.previousSets[state.discardPile.previousSets.length - 1];
+    if (!prevSet || prevSet.length === 0) return err(ErrorCode.INVALID_DRAW_SOURCE);
   }
 
   return ok();

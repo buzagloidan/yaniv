@@ -320,13 +320,28 @@ export function applyDraw(state: GameState, playerId: string, source: DrawSource
     }
     drawnCard = deck.shift()!;
   } else if (source === 'discard_first') {
-    drawnCard = pile.currentSet[0];
-    pile = { ...pile, currentSet: pile.currentSet.slice(1) };
+    // Draw from the set the player saw before they discarded (previousSets[last])
+    const prevSet = pile.previousSets[pile.previousSets.length - 1];
+    drawnCard = prevSet[0];
+    const trimmed = prevSet.slice(1);
+    pile = {
+      ...pile,
+      previousSets: trimmed.length > 0
+        ? [...pile.previousSets.slice(0, -1), trimmed]
+        : pile.previousSets.slice(0, -1),
+    };
   } else {
-    // discard_last
-    const lastIdx = pile.currentSet.length - 1;
-    drawnCard = pile.currentSet[lastIdx];
-    pile = { ...pile, currentSet: pile.currentSet.slice(0, lastIdx) };
+    // discard_last — draw from the set the player saw before they discarded
+    const prevSet = pile.previousSets[pile.previousSets.length - 1];
+    const lastIdx = prevSet.length - 1;
+    drawnCard = prevSet[lastIdx];
+    const trimmed = prevSet.slice(0, lastIdx);
+    pile = {
+      ...pile,
+      previousSets: trimmed.length > 0
+        ? [...pile.previousSets.slice(0, -1), trimmed]
+        : pile.previousSets.slice(0, -1),
+    };
   }
 
   const player = state.players[playerId];
