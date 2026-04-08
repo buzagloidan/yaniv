@@ -63,6 +63,7 @@ export const en = {
     roomCode: (code: string) => `Code: ${code}`,
     copyCode: 'Copy Code',
     copied: 'Copied!',
+    turnTimer: (n: number) => `Time: ${n}s`,
     eliminated: 'Eliminated',
     disconnected: 'Disconnected',
     reconnecting: 'Reconnecting...',

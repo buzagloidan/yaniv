@@ -14,6 +14,7 @@ import { Chat } from './Chat';
 import { RoundResultOverlay } from './RoundResultOverlay';
 import { GameOverOverlay } from './GameOverOverlay';
 import { HadabakaOverlay } from './HadabakaOverlay';
+import { TurnCountdown } from './TurnCountdown';
 import { ToastContainer } from '../ui/Toast';
 
 function opponentPositions(count: number): Array<{ top: string; left?: string; right?: string; transform?: string }> {
@@ -88,6 +89,7 @@ export function GamePage() {
   const phase = useGameStore((s) => s.phase);
   const players = useGameStore((s) => s.players);
   const currentTurnUserId = useGameStore((s) => s.currentTurnUserId);
+  const turnDeadlineEpoch = useGameStore((s) => s.turnDeadlineEpoch);
   const isMyTurn = useGameStore(selectIsMyTurn);
   const me = useGameStore(selectMe);
   const isWaitingPlayer = useGameStore(selectIsWaitingPlayer);
@@ -304,44 +306,48 @@ export function GamePage() {
       {/* ── Turn indicator ── */}
       {!isWaiting && !isWaitingPlayer && (
         <div className="absolute top-1/3 inset-x-0 flex justify-center pointer-events-none z-10">
-          <AnimatePresence>
-            {isMyTurn && phase === 'player_turn_discard' && (
-              <motion.div
-                key="my-turn"
-                initial={{ opacity: 0, scale: 0.7, y: 8 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="px-5 py-2 rounded-full font-bold text-sm shadow-lg"
-                style={{
-                  background: 'linear-gradient(135deg, #F26419, #D9560E)',
-                  color: 'white',
-                  fontFamily: 'Syne, sans-serif',
-                  boxShadow: '0 4px 20px rgba(242,100,25,0.45)',
-                }}
-              >
-                {s.game.yourTurn} 🌟
-              </motion.div>
-            )}
-            {!isMyTurn && currentTurnUserId && (
-              <motion.div
-                key="their-turn"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="px-4 py-1.5 rounded-full text-xs font-medium"
-                style={{
-                  background: 'rgba(255,255,255,0.65)',
-                  backdropFilter: 'blur(8px)',
-                  color: '#2D4F7C',
-                  border: '1px solid rgba(226,201,154,0.5)',
-                }}
-              >
-                {s.game.waitingFor(
-                  players.find((p) => p.userId === currentTurnUserId)?.displayName ?? '...',
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div className="flex flex-col items-center gap-3">
+            <AnimatePresence>
+              {isMyTurn && phase === 'player_turn_discard' && (
+                <motion.div
+                  key="my-turn"
+                  initial={{ opacity: 0, scale: 0.7, y: 8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="px-5 py-2 rounded-full font-bold text-sm shadow-lg"
+                  style={{
+                    background: 'linear-gradient(135deg, #F26419, #D9560E)',
+                    color: 'white',
+                    fontFamily: 'Syne, sans-serif',
+                    boxShadow: '0 4px 20px rgba(242,100,25,0.45)',
+                  }}
+                >
+                  {s.game.yourTurn} 🌟
+                </motion.div>
+              )}
+              {!isMyTurn && currentTurnUserId && (
+                <motion.div
+                  key="their-turn"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="px-4 py-1.5 rounded-full text-xs font-medium"
+                  style={{
+                    background: 'rgba(255,255,255,0.65)',
+                    backdropFilter: 'blur(8px)',
+                    color: '#2D4F7C',
+                    border: '1px solid rgba(226,201,154,0.5)',
+                  }}
+                >
+                  {s.game.waitingFor(
+                    players.find((p) => p.userId === currentTurnUserId)?.displayName ?? '...',
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <TurnCountdown phase={phase} turnDeadlineEpoch={turnDeadlineEpoch} />
+          </div>
         </div>
       )}
 

@@ -63,6 +63,7 @@ export const ar = {
     roomCode: (code: string) => `الكود: ${code}`,
     copyCode: 'نسخ الكود',
     copied: 'تم النسخ!',
+    turnTimer: (n: number) => `الوقت: ${n}ث`,
     eliminated: 'خرج من اللعبة',
     disconnected: 'غير متصل',
     reconnecting: 'جارٍ إعادة الاتصال...',

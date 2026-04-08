@@ -63,6 +63,7 @@ export const ru = {
     roomCode: (code: string) => `Код: ${code}`,
     copyCode: 'Копировать код',
     copied: 'Скопировано!',
+    turnTimer: (n: number) => `Время: ${n}с`,
     eliminated: 'Выбыл',
     disconnected: 'Отключён',
     reconnecting: 'Переподключение...',

@@ -75,6 +75,7 @@ export const he = {
     roomCode: (code: string) => `קוד: ${code}`,
     copyCode: 'העתק קוד',
     copied: 'הועתק!',
+    turnTimer: (n: number) => `עוד ${n} שנ׳`,
     eliminated: 'הודח',
     disconnected: 'מנותק',
     reconnecting: 'מתחבר מחדש...',
