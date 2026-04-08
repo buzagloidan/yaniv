@@ -205,7 +205,7 @@ export function GamePage() {
             >
               {/* Animated logo */}
               <motion.img
-                src="/yaniv-logo.png"
+                src="/yaniv-logo.svg"
                 alt="יניב"
                 className="w-16 h-16 object-contain mx-auto mb-3"
                 animate={{ y: [0, -6, 0] }}

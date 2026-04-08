@@ -22,29 +22,28 @@ export function DiscardPile() {
           whileTap={canDiscardAndDraw ? { scale: 0.97 } : undefined}
           onClick={() => canDiscardAndDraw && discardAndDraw('deck')}
         >
-          {/* Stack effect — 3 offset backs */}
-          {[2, 1, 0].map((offset) => (
+          {/* Stack effect — offset shadow cards */}
+          {[2, 1].map((offset) => (
             <div
               key={offset}
-              className={[
-                'absolute rounded-lg bg-emerald-800 border border-emerald-600/40',
-                offset > 0 ? 'opacity-60' : '',
-              ].join(' ')}
+              className="absolute rounded-lg overflow-hidden opacity-50"
               style={{
                 width: 64, height: 96,
-                top: -offset * 1.5,
-                left: -offset * 1.5,
+                top: -offset * 2,
+                left: -offset * 2,
                 zIndex: 3 - offset,
               }}
-            />
+            >
+              <img src="/yaniv-deck.svg" alt="" className="w-full h-full object-cover" draggable={false} />
+            </div>
           ))}
           <div
             className={[
-              'relative z-10 w-16 h-24 rounded-lg bg-emerald-800 border-2 flex items-center justify-center transition-colors',
-              canDiscardAndDraw ? 'border-yellow-400 shadow-lg shadow-yellow-400/20' : 'border-emerald-600/40',
+              'relative z-10 w-16 h-24 rounded-lg overflow-hidden transition-all',
+              canDiscardAndDraw ? 'ring-2 ring-yellow-400 shadow-lg shadow-yellow-400/20' : '',
             ].join(' ')}
           >
-            <span className="text-white/30 text-2xl">✦</span>
+            <img src="/yaniv-deck.svg" alt="" className="w-full h-full object-cover" draggable={false} />
           </div>
         </motion.div>
         <span className="text-white/50 text-xs">{s.game.cardsLeft(deckCount)}</span>

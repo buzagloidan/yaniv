@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1600" height="1200" viewBox="0 0 1600 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tableBg" x1="0" y1="0" x2="1600" y2="1200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F3D7A2"/>
+      <stop offset="100%" stop-color="#E2B970"/>
+    </linearGradient>
+
+    <linearGradient id="cardBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#63B5FF"/>
+      <stop offset="100%" stop-color="#2D78D8"/>
+    </linearGradient>
+
+    <linearGradient id="titleFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFF27A"/>
+      <stop offset="100%" stop-color="#FFD84D"/>
+    </linearGradient>
+
+    <filter id="stackShadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#684B1A" flood-opacity="0.30"/>
+    </filter>
+
+    <filter id="textShadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#173763" flood-opacity="0.35"/>
+    </filter>
+
+    <g id="palm">
+      <path d="M0 0 C 18 -38, 58 -66, 118 -78 C 80 -46, 56 -18, 42 12 C 28 8, 14 4, 0 0 Z" fill="#A9D8FF" opacity="0.28"/>
+      <path d="M0 0 C -18 -38, -58 -66, -118 -78 C -80 -46, -56 -18, -42 12 C -28 8, -14 4, 0 0 Z" fill="#A9D8FF" opacity="0.28"/>
+      <path d="M0 0 C 36 -22, 86 -26, 138 -12 C 94 2, 56 16, 28 38 C 18 24, 10 12, 0 0 Z" fill="#A9D8FF" opacity="0.24"/>
+      <path d="M0 0 C -36 -22, -86 -26, -138 -12 C -94 2, -56 16, -28 38 C -18 24, -10 12, 0 0 Z" fill="#A9D8FF" opacity="0.24"/>
+      <path d="M0 0 C 10 44, 10 92, 0 148 C -10 92, -10 44, 0 0 Z" fill="#A9D8FF" opacity="0.20"/>
+    </g>
+
+    <g id="cardBack">
+      <rect x="0" y="0" width="420" height="620" rx="38" fill="url(#cardBg)"/>
+      <rect x="10" y="10" width="400" height="600" rx="30" fill="none" stroke="#F5FBFF" stroke-width="8"/>
+      <rect x="20" y="20" width="380" height="580" rx="24" fill="none" stroke="#214E8C" stroke-width="4" stroke-opacity="0.8"/>
+
+      <g transform="translate(112 125) scale(0.52)">
+        <use href="#palm"/>
+      </g>
+      <g transform="translate(312 470) scale(0.52)">
+        <use href="#palm"/>
+      </g>
+      <g transform="translate(315 130) scale(0.34) rotate(18)">
+        <use href="#palm"/>
+      </g>
+      <g transform="translate(110 470) scale(0.34) rotate(-18)">
+        <use href="#palm"/>
+      </g>
+
+      <rect x="84" y="226" width="252" height="150" rx="20" fill="#2B6DC8" fill-opacity="0.22" stroke="#D8F0FF" stroke-opacity="0.45" stroke-width="3"/>
+
+      <g filter="url(#textShadow)">
+        <text x="210" y="320"
+              text-anchor="middle"
+              font-family="Arial, Helvetica, sans-serif"
+              font-size="68"
+              font-weight="900"
+              letter-spacing="0.5"
+              fill="url(#titleFill)"
+              stroke="#27486E"
+              stroke-width="8"
+              paint-order="stroke fill">Yaniv</text>
+      </g>
+
+      <g opacity="0.55">
+        <text x="36" y="56" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#EAF7FF">Y</text>
+        <text x="384" y="56" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#EAF7FF">Y</text>
+        <text x="36" y="588" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#EAF7FF">Y</text>
+        <text x="384" y="588" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#EAF7FF">Y</text>
+      </g>
+    </g>
+  </defs>
+
+  <rect width="1600" height="1200" fill="url(#tableBg)"/>
+
+  <!-- soft vignette -->
+  <ellipse cx="800" cy="620" rx="620" ry="360" fill="#FFFFFF" opacity="0.10"/>
+  <ellipse cx="800" cy="640" rx="540" ry="300" fill="#000000" opacity="0.04"/>
+
+  <g filter="url(#stackShadow)">
+    <!-- bottom cards -->
+    <g transform="translate(505 315) rotate(-18)">
+      <use href="#cardBack"/>
+    </g>
+    <g transform="translate(565 282) rotate(-10)">
+      <use href="#cardBack"/>
+    </g>
+    <g transform="translate(640 260) rotate(-3)">
+      <use href="#cardBack"/>
+    </g>
+    <g transform="translate(720 262) rotate(5)">
+      <use href="#cardBack"/>
+    </g>
+    <g transform="translate(790 285) rotate(12)">
+      <use href="#cardBack"/>
+    </g>
+    <g transform="translate(845 325) rotate(19)">
+      <use href="#cardBack"/>
+    </g>
+
+    <!-- front focal card -->
+    <g transform="translate(590 220) rotate(2)">
+      <use href="#cardBack"/>
+    </g>
+  </g>
+</svg>

@@ -82,7 +82,7 @@ export function LobbyPage() {
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between px-5 pt-safe pt-4 pb-2">
         <div className="flex items-center gap-2">
-          <img src="/yaniv-logo.png" alt="יניב" className="w-9 h-9 object-contain drop-shadow" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          <img src="/yaniv-logo.svg" alt="יניב" className="w-9 h-9 object-contain drop-shadow" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           <span
             className="text-xl font-bold text-white drop-shadow"
             style={{ fontFamily: 'Syne, sans-serif', textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}
