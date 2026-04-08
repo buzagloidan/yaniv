@@ -36,9 +36,11 @@ export class WSManager {
     if (this.destroyed) return;
     this.clearTimers();
 
-    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = location.host;
-    const url = `${protocol}//${host}/game/${this.tableId}/ws?token=${encodeURIComponent(this.token)}`;
+    const apiBase = import.meta.env.VITE_API_URL ?? '';
+    const wsBase = apiBase
+      ? apiBase.replace(/^http/, 'ws')
+      : `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}`;
+    const url = `${wsBase}/game/${this.tableId}/ws?token=${encodeURIComponent(this.token)}`;
 
     this.ws = new WebSocket(url);
 

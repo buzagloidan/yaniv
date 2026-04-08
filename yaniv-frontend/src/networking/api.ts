@@ -1,6 +1,6 @@
 import type { TableSummary, GameSettings } from '../shared/types';
 
-const BASE = ''; // proxied via Vite dev server; set VITE_API_URL for production builds
+const BASE = import.meta.env.VITE_API_URL ?? '';
 
 async function request<T>(
   path: string,
