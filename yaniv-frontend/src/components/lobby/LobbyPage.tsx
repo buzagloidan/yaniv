@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
 import { createTable, addBot, joinTable } from '../../networking/api';
-import { useStrings } from '../../strings';
 import { useLangStore } from '../../store/langStore';
 import { RulesModal } from '../ui/RulesModal';
 import { CreateTableModal } from './CreateTableModal';
@@ -20,7 +19,6 @@ export function LobbyPage() {
   const [quickStarting, setQuickStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const s = useStrings();
   const isEn = useLangStore((l) => l.lang) === 'en';
   const token = user!.sessionToken;
 
