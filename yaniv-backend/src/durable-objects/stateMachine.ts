@@ -433,6 +433,7 @@ export interface RoundResolutionResult {
 export function applyRoundResolution(state: GameState): RoundResolutionResult {
   const callerId = state.yanivCallerId;
   if (!callerId) throw new Error('applyRoundResolution called without yanivCallerId');
+  const now = Date.now();
 
   // Collect active players' hands
   const hands: Record<string, CardId[]> = {};
@@ -469,7 +470,7 @@ export function applyRoundResolution(state: GameState): RoundResolutionResult {
     players: updatedPlayers,
     yanivCallerId: null,
     lastRoundCallerId: nextRoundStarterId,
-    turnDeadlineEpoch: null,
+    turnDeadlineEpoch: isMatchOver ? null : now + DEFAULTS.BETWEEN_ROUNDS_DELAY_MS,
   };
 
   return { newState, resolution, isMatchOver, winnerId };

@@ -285,6 +285,7 @@ export function GamePage() {
 
       {/* Chat */}
       <Chat />
+      <ActionBar />
 
       {/* ── Waiting room overlay (before game starts) ── */}
       <AnimatePresence>
@@ -557,7 +558,6 @@ export function GamePage() {
       {/* ── My hand + action bar ── */}
       {!isLoading && !isWaitingPlayer && (
         <div className="absolute inset-x-0 flex flex-col items-center gap-1.5 px-3" style={{ zIndex: 5, bottom: '1.75rem' }}>
-          <ActionBar />
           {me && (
             <motion.div
               animate={isMyTurn ? { scale: 1.04, y: [0, -2, 0] } : { scale: 1, y: 0 }}
