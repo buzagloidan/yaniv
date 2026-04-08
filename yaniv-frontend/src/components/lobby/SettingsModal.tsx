@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLangStore, Lang } from '../../store/langStore';
+import { useLangStore } from '../../store/langStore';
+import type { Lang } from '../../store/langStore';
 import { useState } from 'react';
 import { AboutModal } from './AboutModal';
 import { PrivacyModal } from './PrivacyModal';
