@@ -690,7 +690,14 @@ export class GameTable implements DurableObject {
       ? null
       : { userId: body.hostId, displayName: body.hostDisplayName, accountId: body.hostAccountId };
 
-    const state = initGameState(body.tableId, body.roomCode, body.hostId, host, settings);
+    const state = initGameState(
+      body.tableId,
+      body.roomCode,
+      body.hostId,
+      host,
+      settings,
+      body.isPrivateTable ?? false,
+    );
 
     await this.saveState(state);
     return json({ ok: true });
@@ -705,6 +712,7 @@ export class GameTable implements DurableObject {
     const state = await this.loadState();
 
     if (!state) return json({ error: 'Table not found' }, 404);
+    if (state.isPrivateTable) return json({ error: 'Table not found' }, 404);
 
     // Already an active player (reconnect scenario)
     if (state.players[body.userId]) {

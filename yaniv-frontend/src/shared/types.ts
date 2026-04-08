@@ -128,6 +128,7 @@ export interface StateSnapshotMessage {
   type: 'state_snapshot';
   tableId: string;
   hostId: string;
+  isPrivateTable: boolean;
   maxPlayers: number;
   phase: GamePhase;
   roundNumber: number;

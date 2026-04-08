@@ -74,6 +74,7 @@ export interface GameState {
   tableId: string;
   roomCode: string;
   hostId: string;
+  isPrivateTable: boolean;
   settings: GameSettings;
   phase: GamePhase;
   // Keyed by userId
@@ -139,6 +140,7 @@ export interface StateSnapshotMessage {
   type: 'state_snapshot';
   tableId: string;
   hostId: string;
+  isPrivateTable: boolean;
   maxPlayers: number;
   phase: GamePhase;
   roundNumber: number;
@@ -296,6 +298,7 @@ export interface InitTablePayload {
   tableId: string;
   roomCode: string;
   hostId: string;
+  isPrivateTable?: boolean;
   hostDisplayName: string;
   hostAccountId: number;
   settings: GameSettings;

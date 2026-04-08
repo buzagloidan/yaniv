@@ -46,6 +46,7 @@ export function initGameState(
   hostId: string,
   host: { userId: string; displayName: string; accountId: number } | null,
   settings: GameSettings,
+  isPrivateTable = false,
 ): GameState {
   const now = Date.now();
   const players = host
@@ -69,6 +70,7 @@ export function initGameState(
     tableId,
     roomCode,
     hostId,
+    isPrivateTable,
     settings,
     phase: 'waiting_for_players',
     players,

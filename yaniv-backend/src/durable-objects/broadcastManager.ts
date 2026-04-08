@@ -104,6 +104,7 @@ export function buildSnapshot(state: GameState, forUserId: string): StateSnapsho
     type: 'state_snapshot',
     tableId: state.tableId,
     hostId: state.hostId,
+    isPrivateTable: state.isPrivateTable,
     maxPlayers: state.settings.maxPlayers,
     phase: state.phase,
     roundNumber: state.roundNumber,

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
 import { useGameStore, selectIsMyTurn, selectMe, selectIsWaitingPlayer } from '../../store/gameStore';
 import { useStrings } from '../../strings';
-import { leaveTable } from '../../networking/api';
+import { leaveTable, leaveTableById } from '../../networking/api';
 import { PlayerHand } from './PlayerHand';
 import { DiscardPile } from './DiscardPile';
 import { OpponentSeat } from './OpponentSeat';
@@ -122,6 +122,7 @@ export function GamePage() {
   const disconnect = useGameStore((s) => s.disconnect);
   const connectionState = useGameStore((s) => s.connectionState);
   const hostId = useGameStore((s) => s.hostId);
+  const isPrivateTable = useGameStore((s) => s.isPrivateTable);
   const maxPlayers = useGameStore((s) => s.maxPlayers);
   const phase = useGameStore((s) => s.phase);
   const players = useGameStore((s) => s.players);
@@ -142,10 +143,14 @@ export function GamePage() {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
   async function handleLeaveTable() {
-    if (!user || !roomCode || leaving) return;
+    if (!user || !tableId || leaving) return;
     setLeaving(true);
     try {
-      await leaveTable(user.sessionToken, roomCode);
+      if (roomCode) {
+        await leaveTable(user.sessionToken, roomCode);
+      } else {
+        await leaveTableById(user.sessionToken, tableId);
+      }
     } catch {
       // ignore — navigate away regardless
     }
@@ -450,7 +455,7 @@ export function GamePage() {
               {s.game.playersInRoom(players.length, maxPlayers)}
             </div>
 
-            {roomCode && (
+            {!isPrivateTable && roomCode && (
               <div
                 className="rounded-2xl px-4 py-3 mb-4 flex flex-col items-center gap-1"
                 style={{ background: 'linear-gradient(135deg, #E0F2FE, #BAE6FD)' }}

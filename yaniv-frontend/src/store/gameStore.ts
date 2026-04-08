@@ -42,6 +42,7 @@ interface GameStore {
 
   // ── Server-authoritative state ──────────────────────────
   hostId: string | null;
+  isPrivateTable: boolean;
   maxPlayers: number;
   phase: GamePhase | null;
   roundNumber: number;
@@ -97,6 +98,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   tableId: null,
   roomCode: null,
   hostId: null,
+  isPrivateTable: false,
   maxPlayers: 0,
   phase: null,
   roundNumber: 0,
@@ -142,6 +144,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       tableId: null,
       roomCode: null,
       hostId: null,
+      isPrivateTable: false,
       maxPlayers: 0,
       phase: null,
       players: [],
@@ -237,6 +240,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
         msg.phase !== 'between_rounds' && msg.phase !== 'yaniv_called';
       set({
         hostId: msg.hostId,
+        isPrivateTable: msg.isPrivateTable,
         maxPlayers: msg.maxPlayers,
         phase: msg.phase,
         roundNumber: msg.roundNumber,

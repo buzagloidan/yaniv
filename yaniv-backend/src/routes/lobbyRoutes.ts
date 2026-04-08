@@ -58,6 +58,7 @@ lobby.post('/', async (ctx) => {
     maxPlayers?: number;
     yanivThreshold?: number;
     scoreLimit?: number;
+    isPrivateTable?: boolean;
   };
   try {
     body = await ctx.req.json();
@@ -75,6 +76,7 @@ lobby.post('/', async (ctx) => {
     : DEFAULTS.SCORE_LIMIT;
   const resetScoreAt = Math.round(scoreLimit / 2);
   const turnTimeoutSeconds = DEFAULTS.TURN_TIMEOUT_SECONDS;
+  const isPrivateTable = body.isPrivateTable === true;
 
   // Generate unique 4-digit room code
   const roomCode = await generateRoomCode(ctx.env.DB);
@@ -103,6 +105,7 @@ lobby.post('/', async (ctx) => {
     tableId,
     roomCode,
     hostId: userId,
+    isPrivateTable,
     hostDisplayName: user.display_name,
     hostAccountId: user.account_id,
     settings,
@@ -167,7 +170,7 @@ lobby.post('/:code/join', async (ctx) => {
 
   if (!doRes.ok) {
     const errBody = (await doRes.json()) as { error?: string };
-    const status = doRes.status as 400 | 409 | 500;
+    const status = doRes.status as 400 | 404 | 409 | 500;
     return ctx.json({ error: errBody.error ?? 'Failed to join table' }, status);
   }
 
@@ -194,6 +197,35 @@ lobby.post('/:code/leave', async (ctx) => {
   const roomCode = ctx.req.param('code');
 
   const table = await getTableByRoomCode(ctx.env.DB, roomCode);
+  if (!table) return ctx.json({ error: 'Table not found' }, 404);
+  if (table.status !== 'waiting') return ctx.json({ error: 'Cannot leave after game has started' }, 409);
+
+  const doId = ctx.env.GAME_TABLE.idFromName(table.id);
+  const stub = ctx.env.GAME_TABLE.get(doId);
+  const doRes = await stub.fetch('https://do/internal/remove-player', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId }),
+  });
+
+  if (!doRes.ok) {
+    const err = (await doRes.json()) as { error?: string };
+    return ctx.json({ error: err.error ?? 'Failed to leave table' }, doRes.status as 409 | 500);
+  }
+
+  await removeTablePlayer(ctx.env.DB, table.id, userId);
+  return ctx.json({ ok: true });
+});
+
+// ============================================================
+// POST /tables/id/:id/leave  — leave a waiting table by id
+// ============================================================
+
+lobby.post('/id/:id/leave', async (ctx) => {
+  const userId = ctx.var.userId;
+  const tableId = ctx.req.param('id');
+
+  const table = await getTableById(ctx.env.DB, tableId);
   if (!table) return ctx.json({ error: 'Table not found' }, 404);
   if (table.status !== 'waiting') return ctx.json({ error: 'Cannot leave after game has started' }, 409);
 

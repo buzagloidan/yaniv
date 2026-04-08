@@ -8,6 +8,7 @@ export function ScoreBoard() {
   const players = useGameStore((s) => s.players);
   const roundNumber = useGameStore((s) => s.roundNumber);
   const roomCode = useGameStore((s) => s.roomCode);
+  const isPrivateTable = useGameStore((s) => s.isPrivateTable);
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -58,7 +59,7 @@ export function ScoreBoard() {
                 ))}
             </div>
 
-            {roomCode && (
+            {roomCode && !isPrivateTable && (
               <button
                 onClick={copyCode}
                 className="w-full text-center text-white/40 hover:text-white/70 text-xs border-t border-white/5 pt-3 transition-colors"

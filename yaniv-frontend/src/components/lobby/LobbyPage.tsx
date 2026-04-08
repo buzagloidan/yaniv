@@ -33,9 +33,10 @@ export function LobbyPage() {
         maxPlayers: 4,
         yanivThreshold: 7,
         scoreLimit: 100,
+        isPrivateTable: true,
       });
       await addBot(token, data.roomCode, 3);
-      navigate(`/game/${data.tableId}?code=${data.roomCode}`);
+      navigate(`/game/${data.tableId}`);
     } catch (e) {
       setError((e as Error).message ?? s.errors.unknown);
       setQuickStarting(false);
@@ -83,22 +84,8 @@ export function LobbyPage() {
         </div>
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 px-5 pt-safe pt-4 pb-2">
-        {user && (
-          <div
-            className="inline-flex items-center px-4 py-2 rounded-full"
-            style={{ background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(10px)' }}
-          >
-            <span
-              className="text-sm sm:text-base font-medium text-white drop-shadow"
-              style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
-            >
-              {s.lobby.greeting(user.displayName)}
-            </span>
-          </div>
-        )}
-      </header>
+      {/* Header spacer */}
+      <header className="relative z-10 px-5 pt-safe pt-4 pb-2" />
 
       {/* Water wave separator */}
       <div className="relative" style={{ marginTop: '10vh' }}>
@@ -114,7 +101,7 @@ export function LobbyPage() {
           initial={{ opacity: 0, y: 18, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ delay: 0.05, type: 'spring', stiffness: 220, damping: 20 }}
-          className="mb-8 sm:mb-10"
+          className="mb-4"
         >
           <img
             src="/yaniv-logo.svg"
@@ -123,6 +110,27 @@ export function LobbyPage() {
             onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
         </motion.div>
+
+        {user && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, type: 'spring', stiffness: 220, damping: 20 }}
+            className="mb-8"
+          >
+            <div
+              className="inline-flex items-center px-5 py-2.5 rounded-full"
+              style={{ background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(10px)' }}
+            >
+              <span
+                className="text-sm sm:text-base font-medium text-white drop-shadow"
+                style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+              >
+                {s.lobby.greeting(user.displayName)}
+              </span>
+            </div>
+          </motion.div>
+        )}
 
         {/* Error banner */}
         {error && (
@@ -195,7 +203,7 @@ export function LobbyPage() {
               border: '1px solid rgba(8,145,178,0.2)',
             }}
           >
-            <span className="text-lg">#</span>
+            <span className="text-lg">🔑</span>
             {s.lobby.joinWithCode}
           </button>
 
@@ -211,7 +219,7 @@ export function LobbyPage() {
               border: '1px solid rgba(8,145,178,0.2)',
             }}
           >
-            <span className="text-lg">＋</span>
+            <span className="text-lg">🃏</span>
             {s.lobby.createTable}
           </button>
 

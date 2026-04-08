@@ -57,7 +57,7 @@ export async function getTables(token: string): Promise<{ tables: TableSummary[]
 
 export async function createTable(
   token: string,
-  settings: Partial<Pick<GameSettings, 'maxPlayers' | 'yanivThreshold' | 'scoreLimit'>>,
+  settings: Partial<Pick<GameSettings, 'maxPlayers' | 'yanivThreshold' | 'scoreLimit'>> & { isPrivateTable?: boolean },
 ): Promise<{ tableId: string; roomCode: string }> {
   return request('/tables', { method: 'POST', body: JSON.stringify(settings) }, token);
 }
@@ -82,4 +82,11 @@ export async function leaveTable(
   roomCode: string,
 ): Promise<{ ok: boolean }> {
   return request(`/tables/${roomCode}/leave`, { method: 'POST' }, token);
+}
+
+export async function leaveTableById(
+  token: string,
+  tableId: string,
+): Promise<{ ok: boolean }> {
+  return request(`/tables/id/${tableId}/leave`, { method: 'POST' }, token);
 }
