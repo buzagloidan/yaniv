@@ -31,7 +31,7 @@ export function PlayerHand() {
   const total = handTotal(myHand);
   const isWaitingRoom = phase === 'waiting_for_players';
 
-  const canSelect = isMyTurn && phase === 'player_turn_discard';
+  const canSelect = phase === 'player_turn_discard' || phase === 'player_turn_draw';
   const isHadabakaPhase = isMyTurn && phase === 'player_turn_hadabaka';
   const sortedHand = sortHandForRTL(myHand);
 

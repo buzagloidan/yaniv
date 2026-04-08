@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { WSManager } from '../networking/wsManager';
-import { isValidDiscard, handTotal } from '../utils/cardUtils';
+import { canSelectionBecomeValidDiscard, isValidDiscard, handTotal } from '../utils/cardUtils';
 import { getStrings } from '../strings';
 import {
   playYaniv,
@@ -96,6 +96,28 @@ let wsManager: WSManager | null = null;
 let myUserId = '';
 let toastCounter = 0;
 
+function canPreselectInPhase(phase: GamePhase | null): boolean {
+  return phase === 'player_turn_discard' || phase === 'player_turn_draw';
+}
+
+function sanitizeSelectedCards(
+  selectedCards: CardId[],
+  myHand: CardId[],
+  phase: GamePhase | null,
+): CardId[] {
+  if (!canPreselectInPhase(phase)) {
+    return [];
+  }
+
+  const handSet = new Set(myHand);
+  const filtered = selectedCards.filter((cardId) => handSet.has(cardId));
+  if (filtered.length === 0) {
+    return [];
+  }
+
+  return canSelectionBecomeValidDiscard(filtered, myHand) ? filtered : [];
+}
+
 export const useGameStore = create<GameStore>((set, get) => ({
   connectionState: 'idle',
   tableId: null,
@@ -162,11 +184,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   toggleCard: (cardId) => {
-    const { selectedCards, phase, currentTurnUserId } = get();
-    if (phase !== 'player_turn_discard' || currentTurnUserId !== myUserId) return;
+    const { selectedCards, phase, myHand } = get();
+    if (!canPreselectInPhase(phase)) return;
     const idx = selectedCards.indexOf(cardId);
     const next =
       idx === -1 ? [...selectedCards, cardId] : selectedCards.filter((c) => c !== cardId);
+    if (idx === -1 && !canSelectionBecomeValidDiscard(next, myHand)) {
+      return;
+    }
     set({ selectedCards: next });
   },
 
@@ -247,6 +272,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
     case 'state_snapshot':
       const shouldClearRoundOverlay =
         msg.phase !== 'between_rounds' && msg.phase !== 'yaniv_called';
+      const preservedSelection = sanitizeSelectedCards(get().selectedCards, msg.myHand, msg.phase);
       set({
         hostId: msg.hostId,
         isPrivateTable: msg.isPrivateTable,
@@ -261,7 +287,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
         waitingPlayerIds: msg.waitingPlayerIds ?? [],
         hadabakaCard: msg.hadabakaCard ?? null,
         pauseState: msg.pauseState ?? null,
-        selectedCards: [],
+        selectedCards: preservedSelection,
         ...(shouldClearRoundOverlay ? { roundResult: null, yanivCalled: null } : {}),
         ...(msg.phase === 'waiting_for_players' ? { gameOver: null } : {}),
       });
@@ -279,6 +305,14 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
           (msg.action === 'discard' && msg.actingUserId === myUserId && msg.discardedCards
             ? s.myHand.filter((c) => !msg.discardedCards!.includes(c))
             : s.myHand);
+        const nextPhase =
+          msg.action === 'discard' && msg.nextTurnUserId === myUserId
+            ? 'player_turn_draw'
+            : 'player_turn_discard';
+        const selectedCards =
+          msg.actingUserId === myUserId
+            ? []
+            : sanitizeSelectedCards(s.selectedCards, myHand, nextPhase);
         return {
           players: updatedPlayers,
           myHand,
@@ -286,11 +320,8 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
           currentTurnUserId: msg.nextTurnUserId,
           turnDeadlineEpoch: msg.turnDeadlineEpoch,
           pauseState: null,
-          phase:
-            msg.action === 'discard' && msg.nextTurnUserId === myUserId
-              ? 'player_turn_draw'
-              : 'player_turn_discard',
-          selectedCards: [],
+          phase: nextPhase,
+          selectedCards,
         };
       });
       // Play sound based on action
@@ -318,12 +349,18 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
       break;
 
     case 'yaniv_called':
-      set({ yanivCalled: msg, phase: 'yaniv_called', pauseState: null });
+      set({ yanivCalled: msg, phase: 'yaniv_called', pauseState: null, selectedCards: [] });
       playYaniv();
       break;
 
     case 'round_result':
-      set({ roundResult: msg, yanivCalled: null, phase: 'between_rounds', pauseState: null });
+      set({
+        roundResult: msg,
+        yanivCalled: null,
+        phase: 'between_rounds',
+        pauseState: null,
+        selectedCards: [],
+      });
       // Update scores in players list
       set((s) => ({
         players: s.players.map((p) => ({
@@ -353,7 +390,14 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
       break;
 
     case 'game_over':
-      set({ gameOver: msg, roundResult: null, yanivCalled: null, phase: 'game_over', pauseState: null });
+      set({
+        gameOver: msg,
+        roundResult: null,
+        yanivCalled: null,
+        phase: 'game_over',
+        pauseState: null,
+        selectedCards: [],
+      });
       if (msg.winnerId === myUserId) {
         playGameWin();
       } else {

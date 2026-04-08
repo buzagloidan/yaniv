@@ -72,6 +72,41 @@ export function isValidDiscard(cards: CardId[]): boolean {
   return false;
 }
 
+export function canSelectionBecomeValidDiscard(
+  selectedCards: CardId[],
+  hand: CardId[],
+): boolean {
+  if (selectedCards.length === 0) return true;
+
+  const handSet = new Set(hand);
+  if (!selectedCards.every((cardId) => handSet.has(cardId))) {
+    return false;
+  }
+
+  if (isValidDiscard(selectedCards)) {
+    return true;
+  }
+
+  const selectedSet = new Set(selectedCards);
+  const remainingCards = hand.filter((cardId) => !selectedSet.has(cardId));
+
+  function search(startIndex: number, extraCards: CardId[]): boolean {
+    for (let i = startIndex; i < remainingCards.length; i++) {
+      const nextExtra = [...extraCards, remainingCards[i]];
+      if (isValidDiscard([...selectedCards, ...nextExtra])) {
+        return true;
+      }
+      if (search(i + 1, nextExtra)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  return search(0, []);
+}
+
 // ── Display helpers ──────────────────────────────────────────
 
 export const SUIT_SYMBOL: Record<string, string> = {
