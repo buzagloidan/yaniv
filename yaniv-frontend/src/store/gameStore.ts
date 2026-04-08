@@ -2,6 +2,17 @@ import { create } from 'zustand';
 import { WSManager } from '../networking/wsManager';
 import { isValidDiscard, handTotal } from '../utils/cardUtils';
 import { getStrings } from '../strings';
+import {
+  playYaniv,
+  playAsaf,
+  playCardDiscard,
+  playCardDraw,
+  playMyTurn,
+  playOpponentPlay,
+  playRoundWin,
+  playPenalty,
+  playGameWin,
+} from '../utils/soundManager';
 import type {
   CardId,
   DrawSource,
@@ -257,6 +268,20 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
           selectedCards: [],
         };
       });
+      // Play sound based on action
+      if (msg.action === 'discard') {
+        if (msg.actingUserId === myUserId) {
+          playCardDiscard();
+        } else {
+          playOpponentPlay();
+        }
+        // Notify when it becomes my turn to discard
+        if (msg.nextTurnUserId === myUserId) {
+          playMyTurn();
+        }
+      } else if (msg.action === 'draw') {
+        playCardDraw();
+      }
       // If we just discarded and have a queued draw source, send it immediately
       if (msg.action === 'discard' && msg.nextTurnUserId === myUserId) {
         const pending = get()._pendingDrawSource;
@@ -269,6 +294,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
 
     case 'yaniv_called':
       set({ yanivCalled: msg, phase: 'yaniv_called' });
+      playYaniv();
       break;
 
     case 'round_result':
@@ -282,6 +308,15 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
             msg.eliminatedThisRound.includes(p.userId),
         })),
       }));
+      // Play sound based on round outcome
+      if (msg.callType === 'assaf') {
+        // Small delay so yaniv.wav finishes first
+        setTimeout(() => playAsaf(), 800);
+      } else if (msg.callerId === myUserId) {
+        playRoundWin();
+      } else {
+        playPenalty();
+      }
       break;
 
     case 'presence':
@@ -294,6 +329,11 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
 
     case 'game_over':
       set({ gameOver: msg, phase: 'game_over' });
+      if (msg.winnerId === myUserId) {
+        playGameWin();
+      } else {
+        playPenalty();
+      }
       break;
 
     case 'error':
