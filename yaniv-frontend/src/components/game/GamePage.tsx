@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
 import { useGameStore, selectIsMyTurn, selectMe, selectIsWaitingPlayer } from '../../store/gameStore';
 import { he } from '../../strings/he';
+import { leaveTable } from '../../networking/api';
+import { RulesModal } from '../ui/RulesModal';
 import { PlayerHand } from './PlayerHand';
 import { DiscardPile } from './DiscardPile';
 import { OpponentSeat } from './OpponentSeat';
@@ -95,6 +97,21 @@ export function GamePage() {
     return () => { disconnect(); };
   }, [tableId]);
 
+  const [leaving, setLeaving] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
+
+  async function handleLeaveTable() {
+    if (!user || !roomCode || leaving) return;
+    setLeaving(true);
+    try {
+      await leaveTable(user.sessionToken, roomCode);
+    } catch {
+      // ignore — navigate away regardless
+    }
+    disconnect();
+    navigate('/');
+  }
+
   const opponents = players.filter((p) => p.userId !== user?.userId);
   const positions = opponentPositions(opponents.length);
   const isWaiting = phase === 'waiting_for_players' || !phase;
@@ -105,6 +122,27 @@ export function GamePage() {
       <CornerPalm side="left" />
       <CornerPalm side="right" />
       <OceanStrip />
+
+      {/* Rules button */}
+      <button
+        onClick={() => setRulesOpen(true)}
+        className="absolute top-3 z-20 flex items-center justify-center rounded-full text-sm font-bold shadow-md transition-transform hover:scale-105"
+        style={{
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 32,
+          height: 32,
+          background: 'rgba(255,255,255,0.82)',
+          backdropFilter: 'blur(8px)',
+          color: '#0891B2',
+          border: '1.5px solid rgba(8,145,178,0.35)',
+        }}
+        title="חוקי המשחק"
+      >
+        ?
+      </button>
+
+      <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
 
       {/* Connection banner */}
       <AnimatePresence>
@@ -182,6 +220,20 @@ export function GamePage() {
                 </div>
               )}
               <ActionBar />
+
+              <button
+                onClick={handleLeaveTable}
+                disabled={leaving}
+                className="mt-3 w-full py-2 rounded-2xl text-sm font-medium transition-opacity"
+                style={{
+                  background: 'rgba(242,100,25,0.1)',
+                  color: '#D9560E',
+                  border: '1px solid rgba(242,100,25,0.25)',
+                  opacity: leaving ? 0.5 : 1,
+                }}
+              >
+                {leaving ? 'עוזב...' : 'עזוב שולחן'}
+              </button>
             </motion.div>
           </motion.div>
         )}
@@ -220,9 +272,20 @@ export function GamePage() {
               >
                 ממתין למשחק הבא
               </p>
-              <p className="text-sm" style={{ color: '#7C6A50' }}>
+              <p className="text-sm mb-5" style={{ color: '#7C6A50' }}>
                 תצטרף לסיבוב הבא ברגע שהמשחק הנוכחי יסתיים 🌊
               </p>
+              <button
+                onClick={() => { disconnect(); navigate('/'); }}
+                className="w-full py-2 rounded-2xl text-sm font-medium"
+                style={{
+                  background: 'rgba(242,100,25,0.1)',
+                  color: '#D9560E',
+                  border: '1px solid rgba(242,100,25,0.25)',
+                }}
+              >
+                עזוב שולחן
+              </button>
             </motion.div>
           </motion.div>
         )}

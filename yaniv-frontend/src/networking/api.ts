@@ -76,3 +76,10 @@ export async function joinTable(
 ): Promise<{ tableId: string; roomCode: string }> {
   return request(`/tables/${roomCode}/join`, { method: 'POST' }, token);
 }
+
+export async function leaveTable(
+  token: string,
+  roomCode: string,
+): Promise<{ ok: boolean }> {
+  return request(`/tables/${roomCode}/leave`, { method: 'POST' }, token);
+}

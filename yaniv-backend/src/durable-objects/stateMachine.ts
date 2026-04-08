@@ -175,6 +175,35 @@ export function addPlayer(
 }
 
 // ============================================================
+// Remove a player from the waiting room (before game starts)
+// ============================================================
+
+export function removePlayer(state: GameState, userId: string): GameState {
+  if (state.phase !== 'waiting_for_players') return state;
+  if (!state.players[userId]) return state;
+
+  const { [userId]: _removed, ...remainingPlayers } = state.players;
+  const newSeatOrder = state.seatOrder.filter((id) => id !== userId);
+
+  // Re-index seatIndex for remaining players
+  const reindexed: GameState['players'] = {};
+  for (const [i, id] of newSeatOrder.entries()) {
+    reindexed[id] = { ...remainingPlayers[id], seatIndex: i };
+  }
+
+  // If the leaving player was the host, transfer host to first remaining player
+  const newHostId =
+    state.hostId === userId ? (newSeatOrder[0] ?? state.hostId) : state.hostId;
+
+  return {
+    ...state,
+    players: reindexed,
+    seatOrder: newSeatOrder,
+    hostId: newHostId,
+  };
+}
+
+// ============================================================
 // Deal (used at game start and between rounds)
 // ============================================================
 

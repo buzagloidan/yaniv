@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/authStore';
 import { getTables, createTable, joinTable } from '../../networking/api';
 import { he } from '../../strings/he';
 import { Button } from '../ui/Button';
+import { RulesModal } from '../ui/RulesModal';
 import { CreateTableModal } from './CreateTableModal';
 import { JoinTableModal } from './JoinTableModal';
 import type { TableSummary } from '../../shared/types';
@@ -142,6 +143,7 @@ export function LobbyPage() {
   const [joiningCode, setJoiningCode] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
+  const [showRules, setShowRules] = useState(false);
 
   const token = user!.sessionToken;
 
@@ -206,6 +208,14 @@ export function LobbyPage() {
 
           {/* User + sign out */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowRules(true)}
+              className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors"
+              style={{ background: 'rgba(255,255,255,0.18)', color: 'white' }}
+              title="חוקי המשחק"
+            >
+              ?
+            </button>
             <div className="flex items-center gap-2 rounded-full px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.15)' }}>
               <span className="text-sm text-white/90 font-medium">{user?.displayName}</span>
             </div>
@@ -308,6 +318,7 @@ export function LobbyPage() {
         onClose={() => setShowJoin(false)}
         onJoin={handleJoin}
       />
+      <RulesModal open={showRules} onClose={() => setShowRules(false)} />
     </div>
   );
 }

@@ -17,6 +17,7 @@ import { DEFAULTS } from '../shared/constants';
 import {
   initGameState,
   addPlayer,
+  removePlayer,
   startGame,
   startNextRound,
   resetTableState,
@@ -71,6 +72,8 @@ export class GameTable implements DurableObject {
         return this.handleAddPlayer(request);
       case '/internal/add-bot':
         return this.handleAddBot(request);
+      case '/internal/remove-player':
+        return this.handleRemovePlayer(request);
       case '/internal/status':
         return this.handleStatus();
       default:
@@ -870,6 +873,35 @@ export class GameTable implements DurableObject {
     } else {
       await this.ctx.storage.setAlarm(Date.now() + DEFAULTS.BETWEEN_ROUNDS_DELAY_MS);
     }
+  }
+
+  // ============================================================
+  // Internal HTTP: /internal/remove-player
+  // ============================================================
+
+  private async handleRemovePlayer(request: Request): Promise<Response> {
+    const { userId } = (await request.json()) as { userId: string };
+    const state = await this.loadState();
+
+    if (!state) return json({ error: 'Table not found' }, 404);
+    if (state.phase !== 'waiting_for_players') {
+      return json({ error: 'Cannot leave after game has started' }, 409);
+    }
+    if (!state.players[userId]) return json({ ok: true, notFound: true });
+
+    const newState = removePlayer(state, userId);
+    await this.saveState(newState);
+
+    // Close any open WebSocket for this user
+    for (const ws of this.ctx.getWebSockets()) {
+      if (this.ctx.getTags(ws)[0] === userId) {
+        try { ws.close(1000, 'left'); } catch { /* ignore */ }
+      }
+    }
+    this.broadcast.remove(userId);
+
+    this.broadcast.broadcastSnapshot(newState);
+    return json({ ok: true });
   }
 
   // ============================================================

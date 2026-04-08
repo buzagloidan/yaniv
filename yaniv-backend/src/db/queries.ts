@@ -226,6 +226,18 @@ export async function clearTablePlayers(db: D1Database, tableId: string): Promis
   await db.prepare('DELETE FROM table_players WHERE table_id = ?').bind(tableId).run();
 }
 
+/** Remove a single player from a table. */
+export async function removeTablePlayer(
+  db: D1Database,
+  tableId: string,
+  userId: string,
+): Promise<void> {
+  await db
+    .prepare('DELETE FROM table_players WHERE table_id = ? AND user_id = ?')
+    .bind(tableId, userId)
+    .run();
+}
+
 export async function updatePlayerResult(
   db: D1Database,
   tableId: string,
