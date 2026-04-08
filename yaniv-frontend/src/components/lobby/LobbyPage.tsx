@@ -57,7 +57,7 @@ export function LobbyPage() {
 
   return (
     <div
-      className="min-h-screen flex flex-col relative overflow-hidden"
+      className="h-[100svh] flex flex-col relative overflow-hidden overscroll-none"
       style={{
         background: 'linear-gradient(180deg, #87CEEB 0%, #56B4D3 25%, #0891B2 55%, #E8D5B7 55%, #D4A96A 75%, #C49A50 100%)',
       }}
@@ -83,7 +83,7 @@ export function LobbyPage() {
       <header className="relative z-10 px-5 pt-safe pt-4 pb-2" />
 
       {/* Water wave separator */}
-      <div className="relative" style={{ marginTop: '10vh' }}>
+      <div className="relative" style={{ marginTop: 'clamp(0.75rem, 4vh, 10vh)' }}>
         <svg viewBox="0 0 1440 40" preserveAspectRatio="none" className="w-full" style={{ height: 40, display: 'block' }}>
           <path d="M0,20 C240,40 480,0 720,20 C960,40 1200,5 1440,20 L1440,40 L0,40Z" fill="rgba(8,145,178,0.35)" />
           <path d="M0,30 C300,10 600,40 900,25 C1100,15 1300,35 1440,22 L1440,40 L0,40Z" fill="rgba(8,145,178,0.25)" />
@@ -91,7 +91,7 @@ export function LobbyPage() {
       </div>
 
       {/* Main content — sits on the sand */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pt-6 pb-16">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pt-4 pb-10 sm:pt-6 sm:pb-16">
         <motion.div
           initial={{ opacity: 0, y: 18, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
