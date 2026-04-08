@@ -44,7 +44,7 @@ export function OpponentSeat({ player, isCurrentTurn }: Props) {
           !player.isConnected && !player.isEliminated ? 'opacity-50' : '',
         ].join(' ')}
       >
-        {player.isCurrentTurn && '• '}
+        {isCurrentTurn && '• '}
         {player.displayName}
         {!player.isConnected && !player.isEliminated && ` (${he.game.disconnected})`}
       </div>

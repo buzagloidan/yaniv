@@ -17,14 +17,19 @@ export class WSManager {
   private pongTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
+  private readonly onMessage: MessageHandler;
+  private readonly onStateChange: StateHandler;
+
   constructor(
     tableId: string,
     token: string,
-    private readonly onMessage: MessageHandler,
-    private readonly onStateChange: StateHandler,
+    onMessage: MessageHandler,
+    onStateChange: StateHandler,
   ) {
     this.tableId = tableId;
     this.token = token;
+    this.onMessage = onMessage;
+    this.onStateChange = onStateChange;
   }
 
   connect(): void {

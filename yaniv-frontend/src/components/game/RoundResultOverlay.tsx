@@ -1,17 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { CardView } from './CardView';
 import { useGameStore } from '../../store/gameStore';
-import { useAuthStore } from '../../store/authStore';
 import { he } from '../../strings/he';
-import { handTotal } from '../../utils/cardUtils';
 import { Button } from '../ui/Button';
 
 export function RoundResultOverlay() {
   const result = useGameStore((s) => s.roundResult);
-  const yanivCalled = useGameStore((s) => s.yanivCalled);
   const dismiss = useGameStore((s) => s.dismissRoundResult);
   const players = useGameStore((s) => s.players);
-  const user = useAuthStore((s) => s.user);
 
   const open = !!result;
 

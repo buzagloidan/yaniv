@@ -1,14 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { CardView } from './CardView';
-import { useGameStore, selectCanDraw, selectIsMyTurn } from '../../store/gameStore';
+import { useGameStore, selectCanDraw } from '../../store/gameStore';
 import { he } from '../../strings/he';
 
 export function DiscardPile() {
   const discardPile = useGameStore((s) => s.discardPile);
   const draw = useGameStore((s) => s.draw);
   const canDraw = useGameStore(selectCanDraw);
-  const isMyTurn = useGameStore(selectIsMyTurn);
-  const phase = useGameStore((s) => s.phase);
 
   const { currentSet, deckCount } = discardPile;
   const canDrawFromDiscard = canDraw && currentSet.length > 0;
