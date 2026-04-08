@@ -48,7 +48,7 @@ export const ar = {
   game: {
     yourTurn: 'دورك!',
     waitingFor: (name: string) => `في انتظار ${name}...`,
-    handTotal: (n: number) => `المجموع: ${n}`,
+    handTotal: (n: number) => `اليد: ${n}`,
     cardsLeft: (n: number) => `${n} ورقات`,
     discard: 'رمي',
     drawFromDeck: 'سحب من الرزمة',
@@ -100,6 +100,7 @@ export const ar = {
     scoreReset: '🎉 تم إعادة النقاط إلى الصفر!',
     eliminated: (name: string) => `${name} خرج من اللعبة`,
     nextRound: 'الجولة القادمة تبدأ...',
+    nextRoundIn: (n: number) => `الجولة القادمة تبدأ خلال ${n} ث`,
     pointsAdded: (n: number) => `+${n}`,
   },
   gameOver: {

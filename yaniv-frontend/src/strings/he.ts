@@ -60,7 +60,7 @@ export const he = {
   game: {
     yourTurn: 'תורך!',
     waitingFor: (name: string) => `מחכה ל${name}...`,
-    handTotal: (n: number) => `סכום: ${n}`,
+    handTotal: (n: number) => `יד: ${n}`,
     cardsLeft: (n: number) => `${n} קלפים`,
     discard: 'השלך',
     drawFromDeck: 'שלוף מהחפיסה',
@@ -114,6 +114,7 @@ export const he = {
     scoreReset: '🎉 ניקוד אופס לאפס!',
     eliminated: (name: string) => `${name} הודח`,
     nextRound: 'הסיבוב הבא מתחיל...',
+    nextRoundIn: (n: number) => `הסיבוב הבא מתחיל בעוד ${n} שנ׳`,
     pointsAdded: (n: number) => `+${n}`,
   },
 

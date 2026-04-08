@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CardView } from './CardView';
 import { useGameStore } from '../../store/gameStore';
@@ -7,11 +8,45 @@ export function RoundResultOverlay() {
   const s = useStrings();
   const result = useGameStore((s) => s.roundResult);
   const players = useGameStore((s) => s.players);
+  const pauseState = useGameStore((s) => s.pauseState);
+  const [nextRoundDeadline, setNextRoundDeadline] = useState<number | null>(null);
+  const [now, setNow] = useState(Date.now());
 
   const open = !!result;
 
   const getName = (id: string) =>
     players.find((p) => p.userId === id)?.displayName ?? id;
+
+  useEffect(() => {
+    if (!result || result.nextRoundStartsIn <= 0 || pauseState) {
+      setNextRoundDeadline(null);
+      return;
+    }
+
+    setNextRoundDeadline(Date.now() + result.nextRoundStartsIn);
+  }, [result, pauseState]);
+
+  useEffect(() => {
+    if (!nextRoundDeadline) return;
+
+    setNow(Date.now());
+    const timer = window.setInterval(() => {
+      setNow(Date.now());
+    }, 250);
+
+    return () => window.clearInterval(timer);
+  }, [nextRoundDeadline]);
+
+  const nextRoundSeconds =
+    nextRoundDeadline === null
+      ? null
+      : Math.max(0, Math.ceil((nextRoundDeadline - now) / 1000));
+
+  const footerText = pauseState
+    ? s.game.pausedTitle
+    : nextRoundSeconds === null
+      ? s.round.nextRound
+      : s.round.nextRoundIn(nextRoundSeconds);
 
   return (
     <AnimatePresence>
@@ -87,7 +122,7 @@ export function RoundResultOverlay() {
                         {isCaller && result.callType === 'yaniv' && ' 🎉'}
                         {isCaller && result.callType === 'assaf' && ' 💥'}
                       </div>
-                      <div className="text-xs text-white/50">סכום: {total}</div>
+                      <div className="text-xs text-white/50">{s.game.handTotal(total)}</div>
                     </div>
 
                     {/* Score delta */}
@@ -120,7 +155,7 @@ export function RoundResultOverlay() {
                 color: 'rgba(255,255,255,0.72)',
               }}
             >
-              {s.round.nextRound}
+              {footerText}
             </div>
           </motion.div>
         </motion.div>

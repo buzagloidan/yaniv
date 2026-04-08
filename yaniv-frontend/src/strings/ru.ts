@@ -48,7 +48,7 @@ export const ru = {
   game: {
     yourTurn: 'Ваш ход!',
     waitingFor: (name: string) => `Ждём ${name}...`,
-    handTotal: (n: number) => `Сумма: ${n}`,
+    handTotal: (n: number) => `Рука: ${n}`,
     cardsLeft: (n: number) => `${n} карт`,
     discard: 'Сбросить',
     drawFromDeck: 'Взять из колоды',
@@ -100,6 +100,7 @@ export const ru = {
     scoreReset: '🎉 Очки сброшены до нуля!',
     eliminated: (name: string) => `${name} выбыл`,
     nextRound: 'Следующий раунд начинается...',
+    nextRoundIn: (n: number) => `Следующий раунд начнётся через ${n} с`,
     pointsAdded: (n: number) => `+${n}`,
   },
   gameOver: {

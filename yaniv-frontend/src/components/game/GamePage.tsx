@@ -22,21 +22,21 @@ function opponentPositions(count: number): Array<{ top: string; left?: string; r
   }
   if (count === 2) {
     return [
-      { top: '19%', left: '7%' },
-      { top: '19%', right: '7%' },
+      { top: '16%', left: '7%' },
+      { top: '16%', right: '7%' },
     ];
   }
   if (count === 3) {
     return [
-      { top: '19%', left: '7%' },
-      { top: '7%', left: '50%', transform: 'translateX(-50%)' },
-      { top: '19%', right: '7%' },
+      { top: '16%', left: '7%' },
+      { top: '5%', left: '50%', transform: 'translateX(-50%)' },
+      { top: '16%', right: '7%' },
     ];
   }
   return [
-    { top: '19%', left: '7%' },
-    { top: '7%', left: '50%', transform: 'translateX(-50%)' },
-    { top: '19%', right: '7%' },
+    { top: '16%', left: '7%' },
+    { top: '5%', left: '50%', transform: 'translateX(-50%)' },
+    { top: '16%', right: '7%' },
     { top: '48%', right: '4%', transform: 'translateY(-50%)' },
   ];
 }
@@ -437,7 +437,7 @@ export function GamePage() {
       {!isLoading && !isWaitingPlayer && waitingSeatEntries.map((opponent, i) => (
         <div
           key={opponent?.userId ?? `empty-seat-${i}`}
-          className="absolute"
+          className="absolute pointer-events-none z-10"
           style={positions[i] ?? { top: '5%', left: '5%' }}
         >
           {opponent ? (
@@ -540,8 +540,8 @@ export function GamePage() {
 
       {/* ── Center: discard + draw pile ── */}
       {!isLoading && !isWaiting && !isWaitingPlayer && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="pointer-events-none flex flex-col items-center gap-2 -translate-y-7 sm:-translate-y-5">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 4 }}>
+          <div className="pointer-events-none flex flex-col items-center gap-2 translate-y-4 sm:translate-y-2">
             <TurnCountdown
               phase={phase}
               turnDeadlineEpoch={turnDeadlineEpoch}

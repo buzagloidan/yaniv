@@ -48,7 +48,7 @@ export const en = {
   game: {
     yourTurn: 'Your turn!',
     waitingFor: (name: string) => `Waiting for ${name}...`,
-    handTotal: (n: number) => `Total: ${n}`,
+    handTotal: (n: number) => `Hand: ${n}`,
     cardsLeft: (n: number) => `${n} cards`,
     discard: 'Discard',
     drawFromDeck: 'Draw from deck',
@@ -100,6 +100,7 @@ export const en = {
     scoreReset: '🎉 Score reset to zero!',
     eliminated: (name: string) => `${name} eliminated`,
     nextRound: 'Next round starting...',
+    nextRoundIn: (n: number) => `Next round starts in ${n}s`,
     pointsAdded: (n: number) => `+${n}`,
   },
   gameOver: {
