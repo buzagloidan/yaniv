@@ -462,34 +462,34 @@ export function GamePage() {
                 className="rounded-2xl px-4 py-3 mb-4 flex flex-col items-center gap-2"
                 style={{ background: 'linear-gradient(135deg, #E0F2FE, #BAE6FD)' }}
               >
-                <div className="w-full flex items-center justify-between gap-3">
-                  <span className="text-xs font-medium" style={{ color: '#0E7490' }}>
-                    {s.game.roomCodeLabel}
-                  </span>
-                  {whatsAppShareUrl && (
-                    <a
-                      href={whatsAppShareUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={s.game.shareOnWhatsApp}
-                      title={s.game.shareOnWhatsApp}
-                      className="inline-flex items-center justify-center w-10 h-10 rounded-full transition-transform active:scale-95"
-                      style={{
-                        background: '#25D366',
-                        color: '#FFFFFF',
-                        boxShadow: '0 8px 18px rgba(37,211,102,0.32)',
-                      }}
-                    >
-                      <WhatsAppIcon />
-                    </a>
-                  )}
-                </div>
+                <span className="text-xs font-medium" style={{ color: '#0E7490' }}>
+                  {s.game.roomCodeLabel}
+                </span>
                 <span
                   className="text-3xl font-bold tracking-widest"
                   style={{ color: '#0E7490', fontFamily: 'Syne, sans-serif' }}
                 >
                   {roomCode}
                 </span>
+                {whatsAppShareUrl && (
+                  <a
+                    href={whatsAppShareUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={s.game.shareOnWhatsApp}
+                    title={s.game.shareOnWhatsApp}
+                    className="mt-1 inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition-transform active:scale-95"
+                    style={{
+                      background: 'rgba(255,255,255,0.78)',
+                      color: '#128C7E',
+                      border: '1px solid rgba(18,140,126,0.16)',
+                      boxShadow: '0 8px 18px rgba(12,74,110,0.08)',
+                    }}
+                  >
+                    <WhatsAppIcon />
+                    <span>{s.game.shareOnWhatsApp}</span>
+                  </a>
+                )}
               </div>
             )}
 

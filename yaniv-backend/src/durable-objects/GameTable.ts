@@ -54,6 +54,15 @@ export class GameTable implements DurableObject {
     this.env = env;
   }
 
+  private hydrateBroadcastMap(): void {
+    for (const ws of this.ctx.getWebSockets()) {
+      const userId = this.ctx.getTags(ws)[0];
+      if (userId && !this.broadcast.has(userId)) {
+        this.broadcast.add(userId, ws);
+      }
+    }
+  }
+
   // ============================================================
   // fetch() — entry point for all HTTP and WebSocket requests
   // ============================================================
@@ -65,6 +74,10 @@ export class GameTable implements DurableObject {
     if (request.headers.get('Upgrade') === 'websocket') {
       return this.handleWsUpgrade(request);
     }
+
+    // Internal HTTP fetches can wake a hibernated DO. Rebuild the live socket map
+    // first so waiting-room broadcasts still reach already connected players.
+    this.hydrateBroadcastMap();
 
     // Internal HTTP calls from the Worker (not exposed to the internet)
     switch (url.pathname) {
@@ -172,13 +185,7 @@ export class GameTable implements DurableObject {
     const state = await this.loadState();
     if (!state) return;
 
-    // Rebuild socket references from DO's hibernated WebSocket list
-    for (const ws of this.ctx.getWebSockets()) {
-      const userId = this.ctx.getTags(ws)[0];
-      if (userId && !this.broadcast.has(userId)) {
-        this.broadcast.add(userId, ws);
-      }
-    }
+    this.hydrateBroadcastMap();
 
     const currentPlayerId = state.seatOrder[state.currentTurnIndex];
     const isBot = state.players[currentPlayerId]?.isBot;
@@ -814,11 +821,7 @@ export class GameTable implements DurableObject {
     const playerId = state.seatOrder[state.currentTurnIndex];
     const player = state.players[playerId];
 
-    // Rebuild broadcast map after hibernation
-    for (const ws of this.ctx.getWebSockets()) {
-      const uid = this.ctx.getTags(ws)[0];
-      if (uid && !this.broadcast.has(uid)) this.broadcast.add(uid, ws);
-    }
+    this.hydrateBroadcastMap();
 
     if (state.phase === 'player_turn_discard') {
       // Call Yaniv if possible
