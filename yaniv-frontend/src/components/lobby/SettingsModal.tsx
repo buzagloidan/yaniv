@@ -1,8 +1,22 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLangStore } from '../../store/langStore';
+import { useLangStore, Lang } from '../../store/langStore';
 import { useState } from 'react';
 import { AboutModal } from './AboutModal';
 import { PrivacyModal } from './PrivacyModal';
+
+const LABELS: Record<Lang, Record<string, string>> = {
+  he: { settings: 'הגדרות', sounds: 'צלילים', language: 'שפה', rules: 'חוקי המשחק', about: 'אודות', privacy: 'מדיניות פרטיות', support: 'תמיכה', signOut: 'התנתק' },
+  en: { settings: 'Settings', sounds: 'Sounds', language: 'Language', rules: 'Game Rules', about: 'About', privacy: 'Privacy Policy', support: 'Support', signOut: 'Sign Out' },
+  ar: { settings: 'الإعدادات', sounds: 'الأصوات', language: 'اللغة', rules: 'قواعد اللعبة', about: 'حول', privacy: 'سياسة الخصوصية', support: 'الدعم', signOut: 'تسجيل الخروج' },
+  ru: { settings: 'Настройки', sounds: 'Звуки', language: 'Язык', rules: 'Правила', about: 'О приложении', privacy: 'Конфиденциальность', support: 'Поддержка', signOut: 'Выйти' },
+};
+
+const LANG_OPTIONS: { value: Lang; flag: string; label: string }[] = [
+  { value: 'he', flag: '🇮🇱', label: 'עב' },
+  { value: 'en', flag: '🇬🇧', label: 'EN' },
+  { value: 'ar', flag: '🇸🇦', label: 'عر' },
+  { value: 'ru', flag: '🇷🇺', label: 'РУ' },
+];
 
 interface Props {
   open: boolean;
@@ -60,7 +74,8 @@ function SettingsRow({
 
 export function SettingsModal({ open, onClose, onShowRules, onSignOut }: Props) {
   const { lang, setLang } = useLangStore();
-  const isEn = lang === 'en';
+  const L = LABELS[lang];
+  const isRtl = lang === 'he' || lang === 'ar';
 
   const [soundsOn, setSoundsOn] = useState(() => {
     try { return localStorage.getItem('yaniv_sounds') !== 'off'; } catch { return true; }
@@ -99,7 +114,7 @@ export function SettingsModal({ open, onClose, onShowRules, onSignOut }: Props) 
                 background: '#FFFBF0',
                 boxShadow: '0 -8px 40px rgba(0,0,0,0.15)',
               }}
-              dir="rtl"
+              dir={isRtl ? 'rtl' : 'ltr'}
             >
               {/* Handle */}
               <div className="flex justify-center pt-3 pb-2">
@@ -112,7 +127,7 @@ export function SettingsModal({ open, onClose, onShowRules, onSignOut }: Props) 
                   className="text-lg font-bold"
                   style={{ color: '#1A3352', fontFamily: 'Syne, sans-serif' }}
                 >
-                  {isEn ? 'Settings' : 'הגדרות'}
+                  {L.settings}
                 </h2>
                 <button
                   onClick={onClose}
@@ -127,17 +142,27 @@ export function SettingsModal({ open, onClose, onShowRules, onSignOut }: Props) 
 
               {/* Toggles */}
               <div className="px-2 pt-2 space-y-0.5">
-                <SettingsRow icon="🔊" label={isEn ? 'Sounds' : 'צלילים'}>
+                <SettingsRow icon="🔊" label={L.sounds}>
                   <Toggle on={soundsOn} onToggle={toggleSounds} />
                 </SettingsRow>
-                <SettingsRow
-                  icon="🌐"
-                  label={isEn ? 'Language: English' : 'שפה: עברית'}
-                >
-                  <Toggle
-                    on={isEn}
-                    onToggle={() => setLang(isEn ? 'he' : 'en')}
-                  />
+                <SettingsRow icon="🌐" label={L.language}>
+                  <div className="flex gap-1">
+                    {LANG_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setLang(opt.value)}
+                        className="flex flex-col items-center justify-center w-10 h-10 rounded-lg text-xs font-bold transition-all"
+                        style={{
+                          background: lang === opt.value ? '#0891B2' : 'rgba(0,0,0,0.07)',
+                          color: lang === opt.value ? '#fff' : '#1A3352',
+                          border: lang === opt.value ? '2px solid #0891B2' : '2px solid transparent',
+                        }}
+                      >
+                        <span className="text-base leading-none">{opt.flag}</span>
+                        <span className="leading-none mt-0.5">{opt.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </SettingsRow>
               </div>
 
@@ -147,22 +172,22 @@ export function SettingsModal({ open, onClose, onShowRules, onSignOut }: Props) 
               <div className="px-2 space-y-0.5">
                 <SettingsRow
                   icon="📖"
-                  label={isEn ? 'Game Rules' : 'חוקי המשחק'}
+                  label={L.rules}
                   onClick={() => { onClose(); onShowRules(); }}
                 />
                 <SettingsRow
                   icon="ℹ️"
-                  label={isEn ? 'About' : 'אודות'}
+                  label={L.about}
                   onClick={() => setShowAbout(true)}
                 />
                 <SettingsRow
                   icon="🔒"
-                  label={isEn ? 'Privacy Policy' : 'מדיניות פרטיות'}
+                  label={L.privacy}
                   onClick={() => setShowPrivacy(true)}
                 />
                 <SettingsRow
                   icon="💬"
-                  label={isEn ? 'Support' : 'תמיכה'}
+                  label={L.support}
                   onClick={() => { window.location.href = 'mailto:support@yaniv.app'; }}
                 />
               </div>
@@ -180,7 +205,7 @@ export function SettingsModal({ open, onClose, onShowRules, onSignOut }: Props) 
                     className="text-base font-medium"
                     style={{ color: '#B91C1C', fontFamily: 'Noto Sans Hebrew, sans-serif' }}
                   >
-                    {isEn ? 'Sign Out' : 'התנתק'}
+                    {L.signOut}
                   </span>
                 </button>
               </div>
