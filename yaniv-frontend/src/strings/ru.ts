@@ -12,9 +12,11 @@ export const ru = {
   },
   lobby: {
     title: 'Лобби',
+    greeting: (name: string) => `Привет, ${name}!`,
     createTable: 'Создать стол',
     quickStartBots: 'Быстрая игра против ботов',
     joinWithCode: 'Войти по коду',
+    settings: 'Настройки',
     noTables: 'Нет открытых столов',
     loading: 'Загрузка...',
     players: (n: number, max: number) => `${n}/${max} игроков`,

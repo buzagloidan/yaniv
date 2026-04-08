@@ -84,48 +84,20 @@ export function LobbyPage() {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-5 pt-safe pt-4 pb-2">
-        <div className="flex items-center">
-          <img
-            src="/yaniv-logo.svg"
-            alt="יניב"
-            className="w-28 sm:w-32 h-auto object-contain drop-shadow-lg"
-            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          {user && (
-            <div
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-              style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)' }}
+      <header className="relative z-10 px-5 pt-safe pt-4 pb-2">
+        {user && (
+          <div
+            className="inline-flex items-center px-4 py-2 rounded-full"
+            style={{ background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(10px)' }}
+          >
+            <span
+              className="text-sm sm:text-base font-medium text-white drop-shadow"
+              style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
             >
-              <span className="text-sm font-medium text-white drop-shadow" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
-                {user.displayName}
-              </span>
-            </div>
-          )}
-
-          {/* Rules button */}
-          <button
-            onClick={() => setShowRules(true)}
-            className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-base transition-all active:scale-90"
-            style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
-            title="חוקי המשחק"
-          >
-            ?
-          </button>
-
-          {/* Settings button */}
-          <button
-            onClick={() => setShowSettings(true)}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-base transition-all active:scale-90"
-            style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', color: 'white' }}
-            title="הגדרות"
-          >
-            ⚙️
-          </button>
-        </div>
+              {s.lobby.greeting(user.displayName)}
+            </span>
+          </div>
+        )}
       </header>
 
       {/* Water wave separator */}
@@ -138,6 +110,19 @@ export function LobbyPage() {
 
       {/* Main content — sits on the sand */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pt-6 pb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 18, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 0.05, type: 'spring', stiffness: 220, damping: 20 }}
+          className="mb-8 sm:mb-10"
+        >
+          <img
+            src="/yaniv-logo.svg"
+            alt="יניב"
+            className="w-48 sm:w-56 md:w-64 h-auto object-contain drop-shadow-[0_10px_24px_rgba(12,74,110,0.28)]"
+            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        </motion.div>
 
         {/* Error banner */}
         {error && (
@@ -228,6 +213,22 @@ export function LobbyPage() {
           >
             <span className="text-lg">＋</span>
             {s.lobby.createTable}
+          </button>
+
+          {/* Settings */}
+          <button
+            onClick={() => setShowSettings(true)}
+            className="w-full py-4 rounded-2xl text-base font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
+            style={{
+              background: 'rgba(255,255,255,0.85)',
+              color: '#0C4A6E',
+              fontFamily: 'Noto Sans Hebrew, sans-serif',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)',
+              border: '1px solid rgba(8,145,178,0.2)',
+            }}
+          >
+            <span className="text-lg">⚙️</span>
+            {s.lobby.settings}
           </button>
         </motion.div>
       </div>

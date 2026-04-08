@@ -12,9 +12,11 @@ export const ar = {
   },
   lobby: {
     title: 'الردهة',
+    greeting: (name: string) => `مرحباً، ${name}!`,
     createTable: 'إنشاء طاولة',
     quickStartBots: 'لعبة سريعة ضد البوتات',
     joinWithCode: 'انضم بكود',
+    settings: 'الإعدادات',
     noTables: 'لا توجد طاولات مفتوحة الآن',
     loading: 'جارٍ التحميل...',
     players: (n: number, max: number) => `${n}/${max} لاعبين`,

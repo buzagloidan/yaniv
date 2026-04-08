@@ -12,9 +12,11 @@ export const en = {
   },
   lobby: {
     title: 'Lobby',
+    greeting: (name: string) => `Hello, ${name}!`,
     createTable: 'Create Table',
     quickStartBots: 'Quick Game vs Bots',
     joinWithCode: 'Join with Code',
+    settings: 'Settings',
     noTables: 'No open tables right now',
     loading: 'Loading...',
     players: (n: number, max: number) => `${n}/${max} players`,

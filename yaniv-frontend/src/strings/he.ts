@@ -18,9 +18,11 @@ export const he = {
   // ── Lobby ─────────────────────────────────────────────────
   lobby: {
     title: 'לובי',
+    greeting: (name: string) => `שלום, ${name}!`,
     createTable: 'צור שולחן',
     quickStartBots: 'משחק מהיר נגד בוטים',
     joinWithCode: 'הצטרף עם קוד',
+    settings: 'הגדרות',
     noTables: 'אין שולחנות פתוחים כרגע',
     loading: 'טוען...',
     players: (n: number, max: number) => `${n}/${max} שחקנים`,
