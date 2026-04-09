@@ -34,6 +34,8 @@ export function LobbyPage() {
         return s.joinTable.full;
       case 'Game already started':
         return s.joinTable.started;
+      case 'Table has ended':
+        return s.joinTable.ended;
       default:
         return message || s.errors.unknown;
     }

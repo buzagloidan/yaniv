@@ -282,7 +282,7 @@ type GetFn = () => GameStore;
 function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
 
   switch (msg.type) {
-    case 'state_snapshot':
+    case 'state_snapshot': {
       const shouldClearRoundOverlay =
         msg.phase !== 'between_rounds' && msg.phase !== 'yaniv_called';
       const preservedSelection = sanitizeSelectedCards(get().selectedCards, msg.myHand, msg.phase);
@@ -305,7 +305,17 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
         ...(shouldClearRoundOverlay ? { roundResult: null, yanivCalled: null } : {}),
         ...(msg.phase === 'waiting_for_players' ? { gameOver: null } : {}),
       });
+      // If we had a pending draw queued but missed the turn_delta (e.g. reconnect),
+      // fire it now that the server confirms it's still our draw turn.
+      if (msg.phase === 'player_turn_draw' && msg.currentTurnUserId === myUserId) {
+        const pending = get()._pendingDrawSource;
+        if (pending) {
+          set({ _pendingDrawSource: null });
+          wsManager?.send({ type: 'draw', source: pending });
+        }
+      }
       break;
+    }
 
     case 'turn_delta':
       set((s) => {
@@ -359,6 +369,9 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
         }
       } else if (msg.action === 'draw') {
         playCardDraw();
+        if (msg.deckWasReshuffled) {
+          get().addToast(getStrings().game.deckReshuffled, 'info');
+        }
       }
       // If we just discarded and have a queued draw source, send it immediately
       if (msg.action === 'discard' && msg.nextTurnUserId === myUserId) {

@@ -53,6 +53,7 @@ export const he = {
     notFound: 'לא מצאנו שולחן עם הקוד הזה. אפשר ליצור אחד חדש בעצמך.',
     full: 'השולחן מלא',
     started: 'המשחק כבר התחיל',
+    ended: 'השולחן הסתיים',
   },
 
   // ── Game ──────────────────────────────────────────────────
@@ -95,6 +96,7 @@ export const he = {
     copied: 'הועתק!',
     shareOnWhatsApp: 'שתף ב-WhatsApp',
     shareInvite: (code: string, url: string) => `בואו לשחק יניב איתי! קוד החדר: ${code}\n${url}`,
+    deckReshuffled: 'החפיסה הסתיימה — ערבוב מחדש!',
     turnTimer: (n: number) => `עוד ${n} שנ׳`,
     eliminated: 'הודח',
     spectating: 'צופה',

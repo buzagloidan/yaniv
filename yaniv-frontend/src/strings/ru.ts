@@ -43,6 +43,7 @@ export const ru = {
     notFound: 'Мы не нашли стол с таким кодом. Вы можете создать свой.',
     full: 'Стол заполнен',
     started: 'Игра уже началась',
+    ended: 'Этот стол уже завершён',
   },
   game: {
     yourTurn: 'Ваш ход!',
@@ -83,6 +84,7 @@ export const ru = {
     copied: 'Скопировано!',
     shareOnWhatsApp: 'Поделиться в WhatsApp',
     shareInvite: (code: string, url: string) => `Заходи играть со мной в Yaniv! Код комнаты: ${code}\n${url}`,
+    deckReshuffled: 'Колода закончилась — перемешиваем!',
     turnTimer: (n: number) => `Время: ${n}с`,
     eliminated: 'Выбыл',
     spectating: 'Наблюдение',

@@ -43,6 +43,7 @@ export const en = {
     notFound: "We couldn't find a table with that code. You can create one yourself.",
     full: 'Table is full',
     started: 'Game already started',
+    ended: 'This table has already ended',
   },
   game: {
     yourTurn: 'Your turn!',
@@ -83,6 +84,7 @@ export const en = {
     copied: 'Copied!',
     shareOnWhatsApp: 'Share on WhatsApp',
     shareInvite: (code: string, url: string) => `Join my Yaniv room! Room code: ${code}\n${url}`,
+    deckReshuffled: 'Deck exhausted — reshuffled!',
     turnTimer: (n: number) => `Time: ${n}s`,
     eliminated: 'Eliminated',
     spectating: 'Spectating',

@@ -420,7 +420,7 @@ export class GameTable implements DurableObject {
       return;
     }
 
-    const { newState, drawnCard, isHadabaka } = applyDraw(state, userId, source);
+    const { newState, drawnCard, isHadabaka, deckWasReshuffled } = applyDraw(state, userId, source);
     await this.saveState(newState);
     await this.setAlarm(newState);
 
@@ -456,6 +456,7 @@ export class GameTable implements DurableObject {
         opponentCardCounts,
         myNewCard: isDrawer ? drawnCard : null,
         myHand: isDrawer ? newState.players[userId].hand : null,
+        ...(deckWasReshuffled ? { deckWasReshuffled: true as const } : {}),
       };
       this.broadcast.sendTo(recipientId, delta);
     }

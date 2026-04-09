@@ -28,11 +28,23 @@ function getCtx(): AudioContext {
   return ctx;
 }
 
-function isSoundEnabled(): boolean {
+export function isSoundEnabled(): boolean {
   try {
     return localStorage.getItem('yaniv_sounds') !== 'off';
   } catch {
     return true;
+  }
+}
+
+export function setSoundEnabled(enabled: boolean): void {
+  try {
+    if (enabled) {
+      localStorage.removeItem('yaniv_sounds');
+    } else {
+      localStorage.setItem('yaniv_sounds', 'off');
+    }
+  } catch {
+    // ignore
   }
 }
 

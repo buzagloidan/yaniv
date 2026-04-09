@@ -43,6 +43,7 @@ export const ar = {
     notFound: 'لم نعثر على طاولة بهذا الكود. يمكنك إنشاء واحدة بنفسك.',
     full: 'الطاولة ممتلئة',
     started: 'اللعبة بدأت بالفعل',
+    ended: 'انتهت هذه الطاولة بالفعل',
   },
   game: {
     yourTurn: 'دورك!',
@@ -83,6 +84,7 @@ export const ar = {
     copied: 'تم النسخ!',
     shareOnWhatsApp: 'مشاركة عبر WhatsApp',
     shareInvite: (code: string, url: string) => `تعال العب يانيف معي! كود الغرفة: ${code}\n${url}`,
+    deckReshuffled: 'انتهت أوراق الحزمة — تم الخلط من جديد!',
     turnTimer: (n: number) => `الوقت: ${n}ث`,
     eliminated: 'خرج من اللعبة',
     spectating: 'مشاهدة',

@@ -168,6 +168,8 @@ export interface TurnDeltaMessage {
   // Only populated for the player who just drew
   myNewCard: CardId | null;
   myHand: CardId[] | null;
+  // True when the discard pile was reshuffled into the draw deck this turn
+  deckWasReshuffled?: true;
 }
 
 export interface YanivCalledMessage {

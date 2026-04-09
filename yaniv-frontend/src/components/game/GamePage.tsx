@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useGameStore, selectIsMyTurn, selectMe, selectIsWaitingPlayer } from '../../store/gameStore';
 import { useStrings } from '../../strings';
 import { leaveTable, leaveTableById } from '../../networking/api';
+import { isSoundEnabled, setSoundEnabled } from '../../utils/soundManager';
 import { PlayerHand } from './PlayerHand';
 import { DiscardPile } from './DiscardPile';
 import { OpponentSeat } from './OpponentSeat';
@@ -167,6 +168,13 @@ export function GamePage() {
 
   const [leaving, setLeaving] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [soundOn, setSoundOn] = useState(isSoundEnabled);
+
+  function toggleSound() {
+    const next = !soundOn;
+    setSoundOn(next);
+    setSoundEnabled(next);
+  }
 
   async function handleLeaveTable() {
     if (!user || !tableId || leaving) return;
@@ -237,6 +245,23 @@ export function GamePage() {
       <CornerPalm side="left" />
       <CornerPalm side="right" />
       <OceanStrip />
+
+      {/* Top-start controls: sound toggle */}
+      <div className="absolute top-3 start-3 z-20">
+        <button
+          onClick={toggleSound}
+          aria-label={soundOn ? 'Mute sounds' : 'Unmute sounds'}
+          className="flex items-center justify-center w-9 h-9 rounded-xl text-lg shadow-md transition-transform active:scale-95"
+          style={{
+            background: 'rgba(255,255,255,0.18)',
+            backdropFilter: 'blur(8px)',
+            border: '1.5px solid rgba(255,255,255,0.3)',
+            color: '#FFFBF0',
+          }}
+        >
+          {soundOn ? '🔊' : '🔇'}
+        </button>
+      </div>
 
       {/* Top-end controls: exit */}
       <div className="absolute top-3 end-3 z-20">
