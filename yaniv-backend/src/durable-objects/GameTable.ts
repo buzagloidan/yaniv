@@ -767,9 +767,7 @@ export class GameTable implements DurableObject {
         body.settings.isRanked ? 7 : body.settings.yanivThreshold,
     };
 
-    const host = body.isPublicTable
-      ? null
-      : { userId: body.hostId, displayName: body.hostDisplayName, accountId: body.hostAccountId };
+    const host = { userId: body.hostId, displayName: body.hostDisplayName, accountId: body.hostAccountId };
 
     const state = initGameState(
       body.tableId,

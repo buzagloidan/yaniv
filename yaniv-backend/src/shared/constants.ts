@@ -25,10 +25,6 @@ export const DEFAULTS = {
   // Window (ms) for a player to accept a הדבקה (same-rank deck draw) before auto-decline
   HADABAKA_WINDOW_MS: 2_000,
   BOT_NAMES: ['דני 🤖', 'מיכל 🤖', 'יוסי 🤖', 'רותי 🤖'] as readonly string[],
-  // Public tables always kept alive in the lobby
-  NUM_PUBLIC_TABLES: 5,
-  // System user hosts the public tables
-  SYSTEM_USER_ID: 'system_yaniv',
   // How long after game_over before the table auto-resets for a new game
   TABLE_RESET_DELAY_MS: 15_000,
 } as const;

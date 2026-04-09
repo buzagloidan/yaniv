@@ -1,4 +1,4 @@
-import type { TableSummary, GameSettings } from '../shared/types';
+import type { GameSettings } from '../shared/types';
 
 const BASE = import.meta.env.VITE_API_URL ?? '';
 
@@ -50,10 +50,6 @@ export async function signOut(token: string): Promise<void> {
 }
 
 // ── Lobby ────────────────────────────────────────────────────
-
-export async function getTables(token: string): Promise<{ tables: TableSummary[] }> {
-  return request('/tables', {}, token);
-}
 
 export async function createTable(
   token: string,

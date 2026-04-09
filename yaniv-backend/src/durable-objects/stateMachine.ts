@@ -79,7 +79,7 @@ export function initGameState(
     roomCode,
     hostId,
     isPrivateTable,
-    requiresManualStart: false,
+    requiresManualStart: !isPrivateTable,
     settings,
     phase: 'waiting_for_players',
     players,
@@ -143,7 +143,7 @@ export function resetTableState(
 
   return {
     ...state,
-    requiresManualStart: state.requiresManualStart,
+    requiresManualStart: false,
     phase: 'waiting_for_players',
     players,
     seatOrder,

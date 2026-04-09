@@ -241,17 +241,3 @@ export type ServerMessage =
 // ============================================================
 // API response shapes (client-facing)
 // ============================================================
-
-export interface TableSummary {
-  id: string;
-  room_code: string;
-  host_id: string;
-  host_name?: string;
-  status: 'waiting' | 'in_progress' | 'finished' | 'cancelled';
-  max_players: number;
-  yaniv_threshold: number;
-  turn_timeout_seconds: number;
-  is_ranked: number;
-  created_at: number;
-  player_count?: number;
-}

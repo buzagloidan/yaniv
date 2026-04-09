@@ -2,9 +2,6 @@ import { Hono } from 'hono';
 import type { Env, GameSettings, InitTablePayload, AddPlayerPayload } from '../shared/types';
 import { authMiddleware } from '../auth/middleware';
 import {
-  getActiveTables,
-  countActiveTables,
-  ensureSystemUser,
   getTableByRoomCode,
   getTableById,
   isRoomCodeTaken,
@@ -26,23 +23,8 @@ lobby.use('*', authMiddleware);
 // GET /tables  — list open tables
 // ============================================================
 
-lobby.get('/', async (ctx) => {
-  // Seed public tables up to NUM_PUBLIC_TABLES if needed
-  await ensureSystemUser(ctx.env.DB);
-  const activeCount = await countActiveTables(ctx.env.DB);
-  if (activeCount < DEFAULTS.NUM_PUBLIC_TABLES) {
-    const needed = DEFAULTS.NUM_PUBLIC_TABLES - activeCount;
-    for (let i = 0; i < needed; i++) {
-      try {
-        await seedPublicTable(ctx.env);
-      } catch {
-        // Non-critical — skip if seeding fails
-      }
-    }
-  }
-
-  const tables = await getActiveTables(ctx.env.DB);
-  return ctx.json({ tables });
+lobby.get('/', async (_ctx) => {
+  return _ctx.json({ tables: [] });
 });
 
 // ============================================================
@@ -312,42 +294,5 @@ async function generateRoomCode(db: D1Database): Promise<string> {
   throw new Error('Failed to generate unique room code after 20 attempts');
 }
 
-/** Create one public table hosted by the system user. */
-async function seedPublicTable(env: Env): Promise<void> {
-  const roomCode = await generateRoomCode(env.DB);
-  const tableId = crypto.randomUUID();
-
-  const settings: GameSettings = {
-    maxPlayers: DEFAULTS.MAX_PLAYERS,
-    yanivThreshold: DEFAULTS.YANIV_THRESHOLD,
-    penaltyOnAssaf: DEFAULTS.PENALTY_ASSAF,
-    scoreLimit: DEFAULTS.SCORE_LIMIT,
-    resetScoreAt: DEFAULTS.RESET_SCORE_AT,
-    turnTimeoutSeconds: DEFAULTS.TURN_TIMEOUT_SECONDS,
-    initialCardCount: DEFAULTS.INITIAL_CARD_COUNT,
-    isRanked: false,
-  };
-
-  await createTable(env.DB, tableId, roomCode, DEFAULTS.SYSTEM_USER_ID, settings);
-
-  const initPayload: InitTablePayload = {
-    tableId,
-    roomCode,
-    hostId: DEFAULTS.SYSTEM_USER_ID,
-    hostDisplayName: 'מערכת',
-    hostAccountId: 0,
-    isPublicTable: true, // no ghost player added to DO state
-    settings,
-  };
-
-  const doId = env.GAME_TABLE.idFromName(tableId);
-  const stub = env.GAME_TABLE.get(doId);
-  await stub.fetch('https://do/internal/init', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(initPayload),
-  });
-  // System user is NOT added to table_players — table starts empty
-}
 
 export default lobby;

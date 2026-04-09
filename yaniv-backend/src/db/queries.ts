@@ -81,39 +81,6 @@ export async function getOpenTables(db: D1Database): Promise<TableRow[]> {
   return result.results;
 }
 
-/** Returns all waiting + in_progress tables (shown in lobby). */
-export async function getActiveTables(db: D1Database): Promise<TableRow[]> {
-  const result = await db
-    .prepare(
-      `SELECT t.*, u.display_name AS host_name,
-              (SELECT COUNT(*) FROM table_players tp WHERE tp.table_id = t.id) AS player_count
-       FROM tables t
-       JOIN users u ON u.id = t.host_id
-       WHERE t.status IN ('waiting', 'in_progress')
-       ORDER BY t.created_at ASC
-       LIMIT 50`,
-    )
-    .all<TableRow & { player_count: number }>();
-  return result.results;
-}
-
-/** Count of non-finished tables (used to know how many public tables to seed). */
-export async function countActiveTables(db: D1Database): Promise<number> {
-  const row = await db
-    .prepare("SELECT COUNT(*) AS cnt FROM tables WHERE status IN ('waiting','in_progress')")
-    .first<{ cnt: number }>();
-  return row?.cnt ?? 0;
-}
-
-/** Ensure the system user exists (hosts public tables). */
-export async function ensureSystemUser(db: D1Database): Promise<void> {
-  await db
-    .prepare(
-      'INSERT OR IGNORE INTO users (id, account_id, display_name, created_at, last_seen_at) VALUES (?, 0, ?, 0, 0)',
-    )
-    .bind('system_yaniv', 'מערכת')
-    .run();
-}
 
 export async function getTableByRoomCode(
   db: D1Database,

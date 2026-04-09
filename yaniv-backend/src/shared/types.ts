@@ -314,6 +314,4 @@ export interface InitTablePayload {
   hostDisplayName: string;
   hostAccountId: number;
   settings: GameSettings;
-  /** When true the host is NOT added as a player (used for public/seeded tables). */
-  isPublicTable?: boolean;
 }
