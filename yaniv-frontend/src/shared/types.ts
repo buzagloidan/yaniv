@@ -69,6 +69,7 @@ export interface GameState {
   tableId: string;
   roomCode: string;
   hostId: string;
+  requiresManualStart: boolean;
   settings: GameSettings;
   phase: GamePhase;
   // Keyed by userId

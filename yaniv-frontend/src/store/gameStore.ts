@@ -382,14 +382,15 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
       break;
 
     case 'round_result':
-      set({
+      set((s) => ({
         roundResult: msg,
         yanivCalled: null,
         phase: 'between_rounds',
         pauseState: null,
         lastTurnAnimation: null,
         selectedCards: [],
-      });
+        myHand: msg.eliminatedThisRound.includes(myUserId) ? [] : s.myHand,
+      }));
       // Update scores in players list
       set((s) => ({
         players: s.players.map((p) => ({
@@ -419,7 +420,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
       break;
 
     case 'game_over':
-      set({
+      set((s) => ({
         gameOver: msg,
         roundResult: null,
         yanivCalled: null,
@@ -427,7 +428,8 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
         pauseState: null,
         lastTurnAnimation: null,
         selectedCards: [],
-      });
+        myHand: msg.winnerId === myUserId ? s.myHand : [],
+      }));
       if (msg.winnerId === myUserId) {
         playGameWin();
       } else {

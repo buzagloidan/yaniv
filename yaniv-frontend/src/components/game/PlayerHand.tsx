@@ -22,9 +22,10 @@ function sortHandForRTL(hand: CardId[]): CardId[] {
 
 interface Props {
   handRef?: Ref<HTMLDivElement>;
+  cardRef?: (cardId: CardId, node: HTMLDivElement | null) => void;
 }
 
-export function PlayerHand({ handRef }: Props) {
+export function PlayerHand({ handRef, cardRef }: Props) {
   const s = useStrings();
   const myHand = useGameStore((s) => s.myHand);
   const selectedCards = useGameStore((s) => s.selectedCards);
@@ -37,6 +38,7 @@ export function PlayerHand({ handRef }: Props) {
   const lastTurnAnimation = useGameStore((s) => s.lastTurnAnimation);
   const total = handTotal(myHand);
   const isWaitingRoom = phase === 'waiting_for_players';
+  const isSpectating = !!me?.isEliminated;
 
   const canSelect = phase === 'player_turn_discard' || phase === 'player_turn_draw';
   const isHadabakaPhase = isMyTurn && phase === 'player_turn_hadabaka';
@@ -70,6 +72,42 @@ export function PlayerHand({ handRef }: Props) {
               />
             );
           })}
+        </div>
+      </div>
+    );
+  }
+
+  if (isSpectating) {
+    return (
+      <div className="flex flex-col items-center gap-2.5">
+        <div
+          className="px-3 py-1 rounded-full text-xs font-semibold tabular-nums"
+          style={{
+            background: 'rgba(255,251,240,0.72)',
+            color: '#0C4A6E',
+            border: '1px solid rgba(12,74,110,0.12)',
+            boxShadow: '0 8px 20px rgba(12,74,110,0.08)',
+          }}
+        >
+          {s.game.spectating}
+        </div>
+
+        <div
+          ref={handRef}
+          className="flex min-h-[124px] items-center justify-center px-4 text-center"
+        >
+          <div
+            className="rounded-[1.75rem] px-5 py-4 text-sm font-medium"
+            style={{
+              background: 'rgba(255,255,255,0.4)',
+              color: '#7C5533',
+              border: '1px solid rgba(255,255,255,0.5)',
+              boxShadow: '0 12px 30px rgba(12,74,110,0.08)',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            {s.game.eliminated}
+          </div>
         </div>
       </div>
     );
@@ -117,7 +155,9 @@ export function PlayerHand({ handRef }: Props) {
             >
               <motion.div
                 initial={
-                  isFreshDrawnCard
+                  isHadabakaCandidate
+                    ? false
+                    : isFreshDrawnCard
                     ? { x: 42, y: -30, scale: 0.78, rotate: 10, opacity: 0 }
                     : false
                 }
@@ -125,25 +165,27 @@ export function PlayerHand({ handRef }: Props) {
                   isHadabakaCandidate
                     ? { y: [0, -8, 0], scale: [1, 1.04, 1] }
                     : isFreshDrawnCard
-                      ? { x: 0, y: 0, scale: [0.78, 1.06, 1], rotate: 0, opacity: 1 }
+                      ? { x: 0, y: 0, scale: 1, rotate: 0, opacity: [0, 0, 1] }
                       : { y: 0, scale: 1, x: 0, opacity: 1, rotate: 0 }
                 }
                 transition={
                   isHadabakaCandidate
                     ? { duration: 0.68, repeat: Infinity, ease: 'easeInOut' }
                     : isFreshDrawnCard
-                      ? { type: 'spring', stiffness: 280, damping: 22 }
+                      ? { duration: 0.82, ease: 'easeOut', times: [0, 0.8, 1] }
                       : { duration: 0.18 }
                 }
                 className={isHadabakaCandidate ? 'animate-hadabaka-glow' : undefined}
               >
-                <CardView
-                  cardId={cardId}
-                  size="lg"
-                  selected={selectedCards.includes(cardId)}
-                  onClick={isHadabakaCandidate ? hadabakaAccept : canSelect ? () => toggleCard(cardId) : undefined}
-                  className={isHadabakaCandidate ? 'ring-4 ring-amber-400 ring-offset-2 ring-offset-transparent' : undefined}
-                />
+                <div ref={(node) => cardRef?.(cardId, node)}>
+                  <CardView
+                    cardId={cardId}
+                    size="lg"
+                    selected={selectedCards.includes(cardId)}
+                    onClick={isHadabakaCandidate ? hadabakaAccept : canSelect ? () => toggleCard(cardId) : undefined}
+                    className={isHadabakaCandidate ? 'ring-4 ring-amber-400 ring-offset-2 ring-offset-transparent' : undefined}
+                  />
+                </div>
               </motion.div>
             </div>
           );

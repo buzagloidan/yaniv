@@ -489,7 +489,11 @@ export class GameTable implements DurableObject {
 
     // 2. Resolve round
     const { newState, resolution, isMatchOver, winnerId } = applyRoundResolution(yanivState);
-    const persistedState = this.pauseIfNeededAfterRound(newState, userId);
+    const shouldStopAfterLastHumanLoss =
+      !isMatchOver && this.shouldStopBotTableWithoutActiveHumans(newState);
+    const persistedState = shouldStopAfterLastHumanLoss
+      ? newState
+      : this.pauseIfNeededAfterRound(newState, userId);
     await this.saveState(persistedState);
     await this.ctx.storage.deleteAlarm();
 
@@ -510,7 +514,10 @@ export class GameTable implements DurableObject {
       newScores: resolution.newScores,
       eliminatedThisRound: resolution.eliminatedPlayerIds,
       scoreResetApplied: resolution.resetPlayerIds,
-      nextRoundStartsIn: isMatchOver ? 0 : DEFAULTS.BETWEEN_ROUNDS_DELAY_MS,
+      nextRoundStartsIn:
+        isMatchOver || shouldStopAfterLastHumanLoss
+          ? 0
+          : DEFAULTS.BETWEEN_ROUNDS_DELAY_MS,
     };
     this.broadcast.broadcastAll(roundResult);
 
@@ -521,6 +528,8 @@ export class GameTable implements DurableObject {
     // 4. End or continue
     if (isMatchOver) {
       await this.concludeMatch(persistedState, winnerId);
+    } else if (shouldStopAfterLastHumanLoss) {
+      await this.concludeBotTableWithoutActiveHumans(persistedState);
     } else if (!persistedState.pauseState) {
       await this.setAlarm(persistedState);
     }
@@ -627,6 +636,8 @@ export class GameTable implements DurableObject {
 
         if (isMatchOver) {
           await this.concludeMatch(afterElim, winnerId);
+        } else if (this.shouldStopBotTableWithoutActiveHumans(afterElim)) {
+          await this.concludeBotTableWithoutActiveHumans(afterElim);
         } else {
           // Auto-draw for eliminated player is skipped; their hand is discarded
           await this.setAlarm(afterElim);
@@ -976,7 +987,11 @@ export class GameTable implements DurableObject {
     });
 
     const { newState, resolution, isMatchOver, winnerId } = applyRoundResolution(yanivState);
-    const persistedState = this.pauseIfNeededAfterRound(newState, playerId);
+    const shouldStopAfterLastHumanLoss =
+      !isMatchOver && this.shouldStopBotTableWithoutActiveHumans(newState);
+    const persistedState = shouldStopAfterLastHumanLoss
+      ? newState
+      : this.pauseIfNeededAfterRound(newState, playerId);
     await this.saveState(persistedState);
     await this.ctx.storage.deleteAlarm();
 
@@ -996,7 +1011,10 @@ export class GameTable implements DurableObject {
       newScores: resolution.newScores,
       eliminatedThisRound: resolution.eliminatedPlayerIds,
       scoreResetApplied: resolution.resetPlayerIds,
-      nextRoundStartsIn: isMatchOver ? 0 : DEFAULTS.BETWEEN_ROUNDS_DELAY_MS,
+      nextRoundStartsIn:
+        isMatchOver || shouldStopAfterLastHumanLoss
+          ? 0
+          : DEFAULTS.BETWEEN_ROUNDS_DELAY_MS,
     });
 
     if (persistedState.pauseState) {
@@ -1005,6 +1023,8 @@ export class GameTable implements DurableObject {
 
     if (isMatchOver) {
       await this.concludeMatch(persistedState, winnerId);
+    } else if (shouldStopAfterLastHumanLoss) {
+      await this.concludeBotTableWithoutActiveHumans(persistedState);
     } else if (!persistedState.pauseState) {
       await this.setAlarm(persistedState);
     }
@@ -1124,12 +1144,29 @@ export class GameTable implements DurableObject {
 
   private canAutoStartWaitingTable(state: GameState): boolean {
     if (state.phase !== 'waiting_for_players') return false;
+    if (state.requiresManualStart) return false;
 
     const connectedPlayers = Object.values(state.players).filter((p) => p.isConnected).length;
     const connectedHumans = Object.values(state.players).filter((p) => !p.isBot && p.isConnected).length;
     const hasBot = Object.values(state.players).some((p) => p.isBot);
 
     return connectedPlayers >= DEFAULTS.MIN_PLAYERS && (!hasBot || connectedHumans > 0);
+  }
+
+  private shouldStopBotTableWithoutActiveHumans(state: GameState): boolean {
+    if (
+      state.phase === 'waiting_for_players' ||
+      state.phase === 'game_over' ||
+      state.phase === 'abandoned'
+    ) {
+      return false;
+    }
+
+    const activePlayers = Object.values(state.players).filter((p) => !p.isEliminated);
+    const activeHumans = activePlayers.filter((p) => !p.isBot).length;
+    const activeBots = activePlayers.filter((p) => p.isBot).length;
+
+    return activeBots > 0 && activeHumans === 0;
   }
 
   private shouldPauseForMissingHumans(
@@ -1167,6 +1204,40 @@ export class GameTable implements DurableObject {
 
   private pickPauseOwnerId(state: GameState, fallbackUserId: string): string {
     return state.seatOrder.find((userId) => !state.players[userId]?.isBot) ?? fallbackUserId;
+  }
+
+  private pickBotTableWinnerId(state: GameState): string | null {
+    let winner: GameState['players'][string] | null = null;
+
+    for (const userId of state.seatOrder) {
+      const player = state.players[userId];
+      if (!player || player.isEliminated) continue;
+
+      if (
+        winner === null ||
+        player.score < winner.score ||
+        (player.score === winner.score && player.seatIndex < winner.seatIndex)
+      ) {
+        winner = player;
+      }
+    }
+
+    return winner?.userId ?? null;
+  }
+
+  private async concludeBotTableWithoutActiveHumans(state: GameState): Promise<void> {
+    const finalState: GameState = {
+      ...state,
+      phase: 'game_over',
+      requiresManualStart: true,
+      turnDeadlineEpoch: null,
+      pauseState: null,
+    };
+    const winnerId = this.pickBotTableWinnerId(finalState);
+
+    await this.saveState(finalState);
+    this.broadcast.broadcastSnapshot(finalState);
+    await this.concludeMatch(finalState, winnerId);
   }
 }
 

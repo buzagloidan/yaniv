@@ -16,6 +16,7 @@ import { GameOverOverlay } from './GameOverOverlay';
 import { TurnCountdown } from './TurnCountdown';
 import { ToastContainer } from '../ui/Toast';
 import { CardFlightLayer } from './CardFlightLayer';
+import type { CardId, DrawSource } from '../../shared/types';
 
 function opponentPositions(count: number): Array<{ top: string; left?: string; right?: string; transform?: string }> {
   if (count === 1) {
@@ -139,6 +140,7 @@ export function GamePage() {
   const pauseState = useGameStore((s) => s.pauseState);
   const readyUp = useGameStore((s) => s.readyUp);
   const continuePausedGame = useGameStore((s) => s.continuePausedGame);
+  const selectedCards = useGameStore((s) => s.selectedCards);
   const isMyTurn = useGameStore(selectIsMyTurn);
   const me = useGameStore(selectMe);
   const isWaitingPlayer = useGameStore(selectIsWaitingPlayer);
@@ -146,6 +148,8 @@ export function GamePage() {
   const deckRef = useRef<HTMLDivElement | null>(null);
   const discardRef = useRef<HTMLDivElement | null>(null);
   const opponentHandRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const myCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const pendingMyDiscardAnchorsRef = useRef<Record<CardId, { x: number; y: number }>>({});
 
   useEffect(() => {
     if (!tableId || !user) { navigate('/'); return; }
@@ -170,6 +174,28 @@ export function GamePage() {
     }
     disconnect();
     navigate('/');
+  }
+
+  function registerMyCardRef(cardId: CardId, node: HTMLDivElement | null) {
+    if (node) {
+      myCardRefs.current[cardId] = node;
+      return;
+    }
+    delete myCardRefs.current[cardId];
+  }
+
+  function capturePendingLocalFlight(_source: DrawSource) {
+    const anchors: Record<CardId, { x: number; y: number }> = {};
+    for (const cardId of selectedCards) {
+      const el = myCardRefs.current[cardId];
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      anchors[cardId] = {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      };
+    }
+    pendingMyDiscardAnchorsRef.current = anchors;
   }
 
   const opponents = players.filter((p) => p.userId !== user?.userId);
@@ -296,7 +322,9 @@ export function GamePage() {
         deckEl={deckRef.current}
         discardEl={discardRef.current}
         myHandEl={myHandRef.current}
+        myCardEls={myCardRefs.current}
         opponentHandEls={opponentHandRefs.current}
+        pendingMyDiscardAnchorsRef={pendingMyDiscardAnchorsRef}
       />
 
       {/* ── Waiting room overlay (before game starts) ── */}
@@ -564,7 +592,11 @@ export function GamePage() {
               show={isMyTurn}
             />
             <div className="pointer-events-auto">
-              <DiscardPile deckRef={deckRef} discardRef={discardRef} />
+              <DiscardPile
+                deckRef={deckRef}
+                discardRef={discardRef}
+                onBeforeDiscardAndDraw={capturePendingLocalFlight}
+              />
             </div>
           </div>
         </div>
@@ -592,10 +624,10 @@ export function GamePage() {
                   : '0 8px 20px rgba(12,74,110,0.1)',
               }}
             >
-              {me.displayName} · {me.score} נק׳
+              {me.displayName} · {me.isEliminated ? s.game.spectating : `${me.score} נק׳`}
             </motion.div>
           )}
-          <PlayerHand handRef={myHandRef} />
+          <PlayerHand handRef={myHandRef} cardRef={registerMyCardRef} />
         </div>
       )}
 

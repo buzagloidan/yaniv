@@ -86,6 +86,7 @@ export const ru = {
     shareInvite: (code: string, url: string) => `Заходи играть со мной в Yaniv! Код комнаты: ${code}\n${url}`,
     turnTimer: (n: number) => `Время: ${n}с`,
     eliminated: 'Выбыл',
+    spectating: 'Наблюдение',
     disconnected: 'Отключён',
     reconnecting: 'Переподключение...',
     pausedTitle: 'Игра приостановлена',

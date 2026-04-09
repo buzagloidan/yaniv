@@ -98,6 +98,7 @@ export const he = {
     shareInvite: (code: string, url: string) => `בואו לשחק יניב איתי! קוד החדר: ${code}\n${url}`,
     turnTimer: (n: number) => `עוד ${n} שנ׳`,
     eliminated: 'הודח',
+    spectating: 'צופה',
     disconnected: 'מנותק',
     reconnecting: 'מתחבר מחדש...',
     pausedTitle: 'המשחק הושהה',

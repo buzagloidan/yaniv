@@ -1,15 +1,18 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGameStore } from '../../store/gameStore';
+import { useGameStore, selectMe } from '../../store/gameStore';
 import { useStrings } from '../../strings';
 
 export function Chat() {
   const s = useStrings();
   const messages = useGameStore((s) => s.chatMessages);
   const sendChat = useGameStore((s) => s.sendChat);
+  const players = useGameStore((s) => s.players);
+  const me = useGameStore(selectMe);
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const hasAnotherHuman = players.some((player) => !player.isBot && player.userId !== me?.userId);
 
   useEffect(() => {
     if (open && scrollRef.current) {
@@ -17,11 +20,21 @@ export function Chat() {
     }
   }, [messages, open]);
 
+  useEffect(() => {
+    if (!hasAnotherHuman && open) {
+      setOpen(false);
+    }
+  }, [hasAnotherHuman, open]);
+
   const send = () => {
     if (!text.trim()) return;
     sendChat(text);
     setText('');
   };
+
+  if (!hasAnotherHuman) {
+    return null;
+  }
 
   return (
     <div className="absolute bottom-36 end-3 z-20">

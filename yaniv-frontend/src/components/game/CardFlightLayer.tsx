@@ -20,6 +20,7 @@ interface FlightCard {
   to: Point;
   startRotate: number;
   endRotate: number;
+  arcLift: number;
   delay: number;
   duration: number;
 }
@@ -29,7 +30,9 @@ interface Props {
   deckEl: HTMLDivElement | null;
   discardEl: HTMLDivElement | null;
   myHandEl: HTMLDivElement | null;
+  myCardEls: Record<string, HTMLDivElement | null>;
   opponentHandEls: Record<string, HTMLDivElement | null>;
+  pendingMyDiscardAnchorsRef: { current: Record<CardId, Point> };
 }
 
 function centerPoint(element: HTMLElement | null): Point | null {
@@ -47,6 +50,14 @@ function spreadOffset(index: number, count: number, gap: number): number {
 
 function placeholderCardId(): CardId {
   return 'AS';
+}
+
+function clonePoint(point: Point): Point {
+  return { x: point.x, y: point.y };
+}
+
+function fallbackArcLift(from: Point, to: Point): number {
+  return Math.min(110, Math.max(56, Math.abs(to.y - from.y) * 0.18 + 34));
 }
 
 function targetForDraw(
@@ -79,7 +90,9 @@ function buildDiscardFlights(
   myUserId: string | null,
   myHandEl: HTMLDivElement | null,
   discardEl: HTMLDivElement | null,
+  myCardEls: Record<string, HTMLDivElement | null>,
   opponentHandEls: Record<string, HTMLDivElement | null>,
+  pendingMyDiscardAnchors: Record<CardId, Point>,
   discardedCards: CardId[] | null,
 ): FlightCard[] {
   if (!discardedCards || discardedCards.length === 0) return [];
@@ -90,23 +103,32 @@ function buildDiscardFlights(
   const target = centerPoint(discardEl);
   if (!source || !target) return [];
 
-  return discardedCards.map((cardId, index) => ({
-    id: `discard-${seq}-${cardId}-${index}`,
-    cardId,
-    faceDown: false,
-    from: {
+  return discardedCards.map((cardId, index) => {
+    const fallbackFrom = {
       x: source.x + spreadOffset(index, discardedCards.length, 22),
       y: source.y + Math.abs(spreadOffset(index, discardedCards.length, 9)) * 0.25,
-    },
-    to: {
+    };
+    const from = pendingMyDiscardAnchors[cardId]
+      ? clonePoint(pendingMyDiscardAnchors[cardId])
+      : clonePoint(centerPoint(myCardEls[cardId]) ?? fallbackFrom);
+    const to = {
       x: target.x + spreadOffset(index, discardedCards.length, 18),
       y: target.y + Math.abs(spreadOffset(index, discardedCards.length, 8)) * 0.2,
-    },
-    startRotate: spreadOffset(index, discardedCards.length, 7),
-    endRotate: spreadOffset(index, discardedCards.length, 6),
-    delay: index * 0.045,
-    duration: 0.58,
-  }));
+    };
+
+    return {
+      id: `discard-${seq}-${cardId}-${index}`,
+      cardId,
+      faceDown: false,
+      from,
+      to,
+      startRotate: spreadOffset(index, discardedCards.length, 7),
+      endRotate: spreadOffset(index, discardedCards.length, 6),
+      arcLift: fallbackArcLift(from, to),
+      delay: index * 0.06,
+      duration: 0.82,
+    };
+  });
 }
 
 function buildDrawFlights(
@@ -116,6 +138,7 @@ function buildDrawFlights(
   deckEl: HTMLDivElement | null,
   discardEl: HTMLDivElement | null,
   myHandEl: HTMLDivElement | null,
+  myCardEls: Record<string, HTMLDivElement | null>,
   opponentHandEls: Record<string, HTMLDivElement | null>,
   drawnSource: DrawSource | null,
   myNewCard: CardId | null,
@@ -123,7 +146,9 @@ function buildDrawFlights(
   if (!drawnSource) return [];
 
   const source = centerPoint(drawnSource === 'deck' ? deckEl : discardEl);
-  const target = centerPoint(targetForDraw(actingUserId, myUserId, myHandEl, opponentHandEls));
+  const target =
+    (actingUserId === myUserId && myNewCard ? centerPoint(myCardEls[myNewCard]) : null) ??
+    centerPoint(targetForDraw(actingUserId, myUserId, myHandEl, opponentHandEls));
   if (!source || !target) return [];
 
   const faceDown = actingUserId !== myUserId || !myNewCard;
@@ -136,8 +161,9 @@ function buildDrawFlights(
     to: target,
     startRotate: drawnSource === 'deck' ? -14 : 10,
     endRotate: actingUserId === myUserId ? 0 : -4,
+    arcLift: fallbackArcLift(source, target),
     delay: 0,
-    duration: 0.54,
+    duration: 0.84,
   }];
 }
 
@@ -146,7 +172,9 @@ export function CardFlightLayer({
   deckEl,
   discardEl,
   myHandEl,
+  myCardEls,
   opponentHandEls,
+  pendingMyDiscardAnchorsRef,
 }: Props) {
   const lastTurnAnimation = useGameStore((s) => s.lastTurnAnimation);
   const [flights, setFlights] = useState<FlightCard[]>([]);
@@ -163,7 +191,9 @@ export function CardFlightLayer({
               myUserId,
               myHandEl,
               discardEl,
+              myCardEls,
               opponentHandEls,
+              pendingMyDiscardAnchorsRef.current,
               lastTurnAnimation.discardedCards,
             )
           : buildDrawFlights(
@@ -173,12 +203,20 @@ export function CardFlightLayer({
               deckEl,
               discardEl,
               myHandEl,
+              myCardEls,
               opponentHandEls,
               lastTurnAnimation.drawnSource,
               lastTurnAnimation.myNewCard,
             );
 
       if (nextFlights.length === 0) return;
+
+      if (
+        lastTurnAnimation.action === 'discard' &&
+        lastTurnAnimation.actingUserId === myUserId
+      ) {
+        pendingMyDiscardAnchorsRef.current = {};
+      }
 
       const ids = new Set(nextFlights.map((flight) => flight.id));
       setFlights((current) => [...current, ...nextFlights]);
@@ -198,50 +236,69 @@ export function CardFlightLayer({
     deckEl,
     lastTurnAnimation,
     myHandEl,
+    myCardEls,
     myUserId,
     opponentHandEls,
+    pendingMyDiscardAnchorsRef,
   ]);
 
   return (
     <div className="pointer-events-none fixed inset-0 z-30">
       <AnimatePresence>
-        {flights.map((flight) => (
-          <motion.div
-            key={flight.id}
-            className="absolute"
-            style={{
-              left: flight.from.x - FLIGHT_CARD_WIDTH / 2,
-              top: flight.from.y - FLIGHT_CARD_HEIGHT / 2,
-            }}
-            initial={{
-              x: 0,
-              y: 0,
-              rotate: flight.startRotate,
-              scale: 0.9,
-              opacity: 0,
-            }}
-            animate={{
-              x: flight.to.x - flight.from.x,
-              y: flight.to.y - flight.from.y,
-              rotate: flight.endRotate,
-              scale: [0.9, 1.04, 1],
-              opacity: [0, 1, 1, 0],
-            }}
-            exit={{ opacity: 0 }}
-            transition={{
-              duration: flight.duration,
-              delay: flight.delay,
-              ease: 'easeInOut',
-              times: [0, 0.14, 0.82, 1],
-            }}
-          >
-            <CardView
-              cardId={flight.cardId}
-              faceDown={flight.faceDown}
-              size="lg"
-            />
-          </motion.div>
-        ))}
+        {flights.map((flight) => {
+          const dx = flight.to.x - flight.from.x;
+          const dy = flight.to.y - flight.from.y;
+
+          return (
+            <motion.div
+              key={flight.id}
+              className="absolute"
+              style={{
+                left: flight.from.x - FLIGHT_CARD_WIDTH / 2,
+                top: flight.from.y - FLIGHT_CARD_HEIGHT / 2,
+                transformStyle: 'preserve-3d',
+                willChange: 'transform, opacity',
+              }}
+              initial={{
+                x: 0,
+                y: 0,
+                rotate: flight.startRotate,
+                rotateY: 0,
+                scale: 0.92,
+                opacity: 0,
+              }}
+              animate={{
+                x: [0, dx * 0.3, dx * 0.82, dx],
+                y: [0, -flight.arcLift, dy * 0.72, dy],
+                rotate: [
+                  flight.startRotate,
+                  (flight.startRotate + flight.endRotate) / 2 + Math.sign(dx || 1) * 6,
+                  flight.endRotate + Math.sign(dx || 1) * 1.5,
+                  flight.endRotate,
+                ],
+                rotateY: flight.faceDown ? [0, 0, 0, 0] : [0, 12, 4, 0],
+                scale: [0.92, 1.03, 1.01, 1],
+                opacity: [0, 1, 1, 0],
+              }}
+              exit={{ opacity: 0 }}
+              transition={{
+                duration: flight.duration,
+                delay: flight.delay,
+                ease: 'easeInOut',
+                times: [0, 0.18, 0.88, 1],
+              }}
+              transformTemplate={({ x, y, rotate, rotateY, scale }) =>
+                `translate3d(${x}, ${y}, 0) rotate(${rotate}) rotateY(${rotateY}) scale(${scale})`
+              }
+            >
+              <CardView
+                cardId={flight.cardId}
+                faceDown={flight.faceDown}
+                size="lg"
+              />
+            </motion.div>
+          );
+        })}
       </AnimatePresence>
     </div>
   );

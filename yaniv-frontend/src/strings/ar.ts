@@ -86,6 +86,7 @@ export const ar = {
     shareInvite: (code: string, url: string) => `تعال العب يانيف معي! كود الغرفة: ${code}\n${url}`,
     turnTimer: (n: number) => `الوقت: ${n}ث`,
     eliminated: 'خرج من اللعبة',
+    spectating: 'مشاهدة',
     disconnected: 'غير متصل',
     reconnecting: 'جارٍ إعادة الاتصال...',
     pausedTitle: 'تم إيقاف اللعبة مؤقتاً',

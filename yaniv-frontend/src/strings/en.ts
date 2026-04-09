@@ -86,6 +86,7 @@ export const en = {
     shareInvite: (code: string, url: string) => `Join my Yaniv room! Room code: ${code}\n${url}`,
     turnTimer: (n: number) => `Time: ${n}s`,
     eliminated: 'Eliminated',
+    spectating: 'Spectating',
     disconnected: 'Disconnected',
     reconnecting: 'Reconnecting...',
     pausedTitle: 'Game paused',

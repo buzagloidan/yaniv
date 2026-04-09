@@ -1,14 +1,16 @@
 import type { Ref } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CardView } from './CardView';
+import type { DrawSource } from '../../shared/types';
 import { useGameStore, selectCanDiscardAndDraw } from '../../store/gameStore';
 
 interface Props {
   deckRef?: Ref<HTMLDivElement>;
   discardRef?: Ref<HTMLDivElement>;
+  onBeforeDiscardAndDraw?: (source: DrawSource) => void;
 }
 
-export function DiscardPile({ deckRef, discardRef }: Props) {
+export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Props) {
   const discardPile = useGameStore((s) => s.discardPile);
   const discardAndDraw = useGameStore((s) => s.discardAndDraw);
   const canDiscardAndDraw = useGameStore(selectCanDiscardAndDraw);
@@ -22,6 +24,11 @@ export function DiscardPile({ deckRef, discardRef }: Props) {
       : 0;
   const discardAnimationSeq =
     lastTurnAnimation?.action === 'discard' ? lastTurnAnimation.seq : 0;
+  const triggerDiscardAndDraw = (source: DrawSource) => {
+    if (!canDiscardAndDraw) return;
+    onBeforeDiscardAndDraw?.(source);
+    discardAndDraw(source);
+  };
 
   return (
     <div
@@ -47,12 +54,12 @@ export function DiscardPile({ deckRef, discardRef }: Props) {
           }
           transition={
             deckPulseSeq
-              ? { duration: 0.42, ease: 'easeOut' }
+              ? { duration: 0.56, ease: 'easeOut' }
               : undefined
           }
           whileHover={canDiscardAndDraw ? { scale: 1.05 } : undefined}
           whileTap={canDiscardAndDraw ? { scale: 0.97 } : undefined}
-          onClick={() => canDiscardAndDraw && discardAndDraw('deck')}
+          onClick={() => triggerDiscardAndDraw('deck')}
         >
           {/* Stack effect — offset shadow cards */}
           {[2, 1].map((offset) => (
@@ -116,14 +123,28 @@ export function DiscardPile({ deckRef, discardRef }: Props) {
                     layout
                     initial={
                       isFreshDiscard
-                        ? { scale: 0.74, opacity: 0, y: 92, rotate: centerOffset * 11 }
+                        ? false
                         : { scale: 0.8, opacity: 0, y: -20, rotate: centerOffset * 5 }
                     }
-                    animate={{ scale: 1, opacity: 1, y: Math.abs(centerOffset) * 3, rotate: centerOffset * 5 }}
+                    animate={
+                      isFreshDiscard
+                        ? {
+                            scale: [0.98, 0.98, 1],
+                            opacity: [0, 0, 1],
+                            y: Math.abs(centerOffset) * 3,
+                            rotate: centerOffset * 5,
+                          }
+                        : {
+                            scale: 1,
+                            opacity: 1,
+                            y: Math.abs(centerOffset) * 3,
+                            rotate: centerOffset * 5,
+                          }
+                    }
                     exit={{ scale: 0.8, opacity: 0 }}
                     transition={
                       isFreshDiscard
-                        ? { type: 'spring', stiffness: 300, damping: 22 }
+                        ? { duration: 0.78, ease: 'easeOut', times: [0, 0.8, 1] }
                         : { duration: 0.2 }
                     }
                     style={{
@@ -134,7 +155,7 @@ export function DiscardPile({ deckRef, discardRef }: Props) {
                     <CardView
                       cardId={cardId}
                       size="xl"
-                      onClick={canPickThis ? () => discardAndDraw(isFirst ? 'discard_first' : 'discard_last') : undefined}
+                      onClick={canPickThis ? () => triggerDiscardAndDraw(isFirst ? 'discard_first' : 'discard_last') : undefined}
                       className={canPickThis ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-transparent' : ''}
                     />
                   </motion.div>

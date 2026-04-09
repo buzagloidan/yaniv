@@ -91,7 +91,9 @@ export function buildSnapshot(state: GameState, forUserId: string): StateSnapsho
     deckCount: state.deck.length,
   };
 
-  const myHand = state.players[forUserId]?.hand ?? [];
+  const myHand = state.players[forUserId]?.isEliminated
+    ? []
+    : (state.players[forUserId]?.hand ?? []);
 
   // hadabakaCard is only revealed to the player whose turn it is
   const currentPlayerId = state.seatOrder[state.currentTurnIndex];

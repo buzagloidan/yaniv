@@ -79,6 +79,7 @@ export function initGameState(
     roomCode,
     hostId,
     isPrivateTable,
+    requiresManualStart: false,
     settings,
     phase: 'waiting_for_players',
     players,
@@ -142,6 +143,7 @@ export function resetTableState(
 
   return {
     ...state,
+    requiresManualStart: state.requiresManualStart,
     phase: 'waiting_for_players',
     players,
     seatOrder,
@@ -243,6 +245,7 @@ function dealRound(state: GameState, startSeatIndex: number): GameState {
   const now = Date.now();
   return {
     ...state,
+    requiresManualStart: false,
     phase: 'player_turn_discard',
     players: updatedPlayers,
     currentTurnIndex: startSeatIndex,
@@ -451,12 +454,14 @@ export function applyRoundResolution(state: GameState): RoundResolutionResult {
   // Apply updated scores and eliminations
   const updatedPlayers = { ...state.players };
   for (const [playerId, newScore] of Object.entries(resolution.newScores)) {
+    const isEliminatedThisRound = resolution.eliminatedPlayerIds.includes(playerId);
     updatedPlayers[playerId] = {
       ...updatedPlayers[playerId],
       score: newScore,
+      hand: isEliminatedThisRound ? [] : updatedPlayers[playerId].hand,
       isEliminated:
         updatedPlayers[playerId].isEliminated ||
-        resolution.eliminatedPlayerIds.includes(playerId),
+        isEliminatedThisRound,
     };
   }
 
