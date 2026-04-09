@@ -63,7 +63,7 @@ export function CardView({
           src="/yaniv-card.png"
           alt=""
           className="w-full h-full object-cover"
-          style={{ transform: 'scale(1.38)', transformOrigin: 'center' }}
+          style={{ transform: 'scale(1.06)', transformOrigin: 'center' }}
           draggable={false}
         />
       </motion.div>
