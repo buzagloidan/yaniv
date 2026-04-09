@@ -59,16 +59,21 @@ export function LobbyPage() {
     }
   };
 
-  const handleCreate = async (settings: Parameters<typeof createTable>[1]) => {
+  const handleCreate = async (settings: { yanivThreshold: number; scoreLimit: number }) => {
     if (!user) return;
-    const data = await createTable(token, settings);
+    const data = await createTable(token, { ...settings, maxPlayers: 4 });
     navigate(`/game/${data.tableId}?code=${data.roomCode}`);
   };
 
   const handleJoin = async (code: string) => {
     if (!user) return;
-    const data = await joinTable(token, code);
-    navigate(`/game/${data.tableId}?code=${data.roomCode}`);
+    try {
+      const data = await joinTable(token, code);
+      navigate(`/game/${data.tableId}?code=${data.roomCode}`);
+    } catch (e) {
+      setError(mapJoinError((e as Error).message));
+      setShowJoin(true);
+    }
   };
 
   useEffect(() => {

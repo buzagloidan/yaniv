@@ -29,7 +29,6 @@ export const en = {
   },
   createTable: {
     title: 'Create Table',
-    maxPlayers: 'Players',
     threshold: 'Yaniv Threshold',
     pointsLimit: 'Points Limit',
     create: 'Play',

@@ -128,12 +128,13 @@ lobby.post('/:code/join', async (ctx) => {
     return ctx.json({ error: 'Table has ended' }, 409);
   }
 
-  // For waiting tables, check seat capacity
-  if (table.status === 'waiting') {
-    const playerCount = await getTablePlayerCount(ctx.env.DB, table.id);
-    if (playerCount >= table.max_players) return ctx.json({ error: 'Table full' }, 409);
+  if (table.status !== 'waiting') {
+    return ctx.json({ error: 'Game already started' }, 409);
   }
-  // in_progress tables: join as waiting player (no seat limit check needed)
+
+  // Check seat capacity
+  const playerCount = await getTablePlayerCount(ctx.env.DB, table.id);
+  if (playerCount >= table.max_players) return ctx.json({ error: 'Table full' }, 409);
 
   const doId = ctx.env.GAME_TABLE.idFromName(table.id);
   const stub = ctx.env.GAME_TABLE.get(doId);

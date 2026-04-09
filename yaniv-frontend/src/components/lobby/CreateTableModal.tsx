@@ -6,7 +6,6 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onCreate: (settings: {
-    maxPlayers: number;
     yanivThreshold: number;
     scoreLimit: number;
   }) => Promise<void>;
@@ -65,7 +64,6 @@ function Spinner<T extends number>({
 
 export function CreateTableModal({ open, onClose, onCreate }: Props) {
   const s = useStrings();
-  const [maxPlayers, setMaxPlayers] = useState<2 | 3 | 4>(4);
   const [threshold, setThreshold] = useState<1 | 3 | 5 | 7>(7);
   const [scoreLimit, setScoreLimit] = useState<50 | 100 | 200>(100);
   const [loading, setLoading] = useState(false);
@@ -73,7 +71,7 @@ export function CreateTableModal({ open, onClose, onCreate }: Props) {
   const handleCreate = async () => {
     setLoading(true);
     try {
-      await onCreate({ maxPlayers, yanivThreshold: threshold, scoreLimit });
+      await onCreate({ yanivThreshold: threshold, scoreLimit });
       onClose();
     } finally {
       setLoading(false);
@@ -142,13 +140,6 @@ export function CreateTableModal({ open, onClose, onCreate }: Props) {
 
                 {/* Spinners */}
                 <div className="space-y-1">
-                  <Spinner
-                    label={s.createTable.maxPlayers}
-                    options={[2, 3, 4] as (2 | 3 | 4)[]}
-                    value={maxPlayers}
-                    onChange={setMaxPlayers}
-                  />
-                  <div className="h-px" style={{ background: 'rgba(232,213,183,0.12)' }} />
                   <Spinner
                     label={s.createTable.threshold}
                     options={[1, 3, 5, 7] as (1 | 3 | 5 | 7)[]}

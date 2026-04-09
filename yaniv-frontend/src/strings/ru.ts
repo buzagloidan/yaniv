@@ -29,7 +29,6 @@ export const ru = {
   },
   createTable: {
     title: 'Создать стол',
-    maxPlayers: 'Игроки',
     threshold: 'Порог Янива',
     pointsLimit: 'Лимит очков',
     create: 'Играть',

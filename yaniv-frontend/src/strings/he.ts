@@ -37,7 +37,6 @@ export const he = {
   // ── Create table modal ────────────────────────────────────
   createTable: {
     title: 'צור שולחן',
-    maxPlayers: 'שחקנים',
     threshold: 'סף יניב',
     pointsLimit: 'מגבלת נקודות',
     create: 'שחק',

@@ -29,7 +29,6 @@ export const ar = {
   },
   createTable: {
     title: 'إنشاء طاولة',
-    maxPlayers: 'اللاعبون',
     threshold: 'حد يانيف',
     pointsLimit: 'حد النقاط',
     create: 'العب',
