@@ -23,6 +23,7 @@ interface FlightCard {
   arcLift: number;
   delay: number;
   duration: number;
+  action: 'discard' | 'draw';
 }
 
 interface Props {
@@ -126,7 +127,8 @@ function buildDiscardFlights(
       endRotate: spreadOffset(index, discardedCards.length, 6),
       arcLift: fallbackArcLift(from, to),
       delay: index * 0.06,
-      duration: 0.82,
+      duration: 0.58,
+      action: 'discard' as const,
     };
   });
 }
@@ -157,13 +159,14 @@ function buildDrawFlights(
     id: `draw-${seq}-${actingUserId}`,
     cardId: myNewCard ?? placeholderCardId(),
     faceDown,
-    from: source,
-    to: target,
-    startRotate: drawnSource === 'deck' ? -14 : 10,
-    endRotate: actingUserId === myUserId ? 0 : -4,
-    arcLift: fallbackArcLift(source, target),
+    from: clonePoint(source),
+    to: clonePoint(target),
+    startRotate: drawnSource === 'deck' ? -8 : 6,
+    endRotate: actingUserId === myUserId ? 0 : -3,
+    arcLift: 0,
     delay: 0,
-    duration: 0.84,
+    duration: 0.42,
+    action: 'draw' as const,
   }];
 }
 
@@ -248,6 +251,7 @@ export function CardFlightLayer({
         {flights.map((flight) => {
           const dx = flight.to.x - flight.from.x;
           const dy = flight.to.y - flight.from.y;
+          const isDraw = flight.action === 'draw';
 
           return (
             <motion.div
@@ -256,40 +260,51 @@ export function CardFlightLayer({
               style={{
                 left: flight.from.x - FLIGHT_CARD_WIDTH / 2,
                 top: flight.from.y - FLIGHT_CARD_HEIGHT / 2,
-                transformStyle: 'preserve-3d',
                 willChange: 'transform, opacity',
               }}
-              initial={{
+              initial={isDraw ? {
                 x: 0,
                 y: 0,
                 rotate: flight.startRotate,
-                rotateY: 0,
-                scale: 0.92,
+                scale: 1.08,
+                opacity: 1,
+              } : {
+                x: 0,
+                y: 0,
+                rotate: flight.startRotate,
+                scale: 0.96,
                 opacity: 0,
               }}
-              animate={{
-                x: [0, dx * 0.3, dx * 0.82, dx],
-                y: [0, -flight.arcLift, dy * 0.72, dy],
+              animate={isDraw ? {
+                x: [0, dx * 0.6, dx],
+                y: [0, dy * 0.6, dy],
+                rotate: [flight.startRotate, (flight.startRotate + flight.endRotate) / 2, flight.endRotate],
+                scale: [1.08, 1.02, 1],
+                opacity: [1, 1, 0],
+              } : {
+                x: [0, dx * 0.28, dx * 0.80, dx],
+                y: [0, -flight.arcLift, dy * 0.70, dy],
                 rotate: [
                   flight.startRotate,
-                  (flight.startRotate + flight.endRotate) / 2 + Math.sign(dx || 1) * 6,
-                  flight.endRotate + Math.sign(dx || 1) * 1.5,
+                  (flight.startRotate + flight.endRotate) / 2 + Math.sign(dx || 1) * 5,
+                  flight.endRotate + Math.sign(dx || 1) * 1,
                   flight.endRotate,
                 ],
-                rotateY: flight.faceDown ? [0, 0, 0, 0] : [0, 12, 4, 0],
-                scale: [0.92, 1.03, 1.01, 1],
+                scale: [0.96, 1.04, 1.01, 1],
                 opacity: [0, 1, 1, 0],
               }}
               exit={{ opacity: 0 }}
-              transition={{
+              transition={isDraw ? {
+                duration: flight.duration,
+                delay: flight.delay,
+                ease: [0.22, 0.68, 0.36, 1.0],
+                times: [0, 0.55, 1],
+              } : {
                 duration: flight.duration,
                 delay: flight.delay,
                 ease: 'easeInOut',
-                times: [0, 0.18, 0.88, 1],
+                times: [0, 0.06, 0.86, 1],
               }}
-              transformTemplate={({ x, y, rotate, rotateY, scale }) =>
-                `translate3d(${x}, ${y}, 0) rotate(${rotate}) rotateY(${rotateY}) scale(${scale})`
-              }
             >
               <CardView
                 cardId={flight.cardId}
