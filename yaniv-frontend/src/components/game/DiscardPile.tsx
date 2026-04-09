@@ -1,14 +1,27 @@
+import type { Ref } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CardView } from './CardView';
 import { useGameStore, selectCanDiscardAndDraw } from '../../store/gameStore';
 
-export function DiscardPile() {
+interface Props {
+  deckRef?: Ref<HTMLDivElement>;
+  discardRef?: Ref<HTMLDivElement>;
+}
+
+export function DiscardPile({ deckRef, discardRef }: Props) {
   const discardPile = useGameStore((s) => s.discardPile);
   const discardAndDraw = useGameStore((s) => s.discardAndDraw);
   const canDiscardAndDraw = useGameStore(selectCanDiscardAndDraw);
+  const lastTurnAnimation = useGameStore((s) => s.lastTurnAnimation);
 
   const { currentSet } = discardPile;
   const canInteractWithPile = canDiscardAndDraw && currentSet.length > 0;
+  const deckPulseSeq =
+    lastTurnAnimation?.action === 'draw' && lastTurnAnimation.drawnSource === 'deck'
+      ? lastTurnAnimation.seq
+      : 0;
+  const discardAnimationSeq =
+    lastTurnAnimation?.action === 'discard' ? lastTurnAnimation.seq : 0;
 
   return (
     <div
@@ -23,7 +36,20 @@ export function DiscardPile() {
       {/* Draw pile */}
       <div className="flex flex-col items-center justify-center">
         <motion.div
+          ref={deckRef}
+          key={`deck-pulse-${deckPulseSeq}`}
           className="relative cursor-pointer"
+          initial={deckPulseSeq ? { scale: 1, rotate: 0 } : false}
+          animate={
+            deckPulseSeq
+              ? { scale: [1, 1.08, 1], rotate: [0, -7, 0] }
+              : undefined
+          }
+          transition={
+            deckPulseSeq
+              ? { duration: 0.42, ease: 'easeOut' }
+              : undefined
+          }
           whileHover={canDiscardAndDraw ? { scale: 1.05 } : undefined}
           whileTap={canDiscardAndDraw ? { scale: 0.97 } : undefined}
           onClick={() => canDiscardAndDraw && discardAndDraw('deck')}
@@ -68,7 +94,7 @@ export function DiscardPile() {
 
       {/* Discard set */}
       <div className="flex flex-col items-center justify-center">
-        <div className="flex items-end min-w-[6rem] min-h-[8.4rem] justify-center">
+        <div ref={discardRef} className="flex items-end min-w-[6rem] min-h-[8.4rem] justify-center">
           <AnimatePresence mode="popLayout">
             {currentSet.length === 0 ? (
               <div className="w-[5rem] h-[7.25rem] rounded-[1.1rem] border-2 border-dashed border-white/15 flex items-center justify-center">
@@ -80,14 +106,26 @@ export function DiscardPile() {
                 const isLast = i === currentSet.length - 1;
                 const canPickThis = canInteractWithPile && (isFirst || isLast);
                 const centerOffset = i - (currentSet.length - 1) / 2;
+                const isFreshDiscard =
+                  lastTurnAnimation?.action === 'discard' &&
+                  lastTurnAnimation.discardedCards?.includes(cardId);
 
                 return (
                   <motion.div
-                    key={cardId}
+                    key={`${cardId}-${isFreshDiscard ? discardAnimationSeq : 'steady'}`}
                     layout
-                    initial={{ scale: 0.8, opacity: 0, y: -20, rotate: centerOffset * 5 }}
+                    initial={
+                      isFreshDiscard
+                        ? { scale: 0.74, opacity: 0, y: 92, rotate: centerOffset * 11 }
+                        : { scale: 0.8, opacity: 0, y: -20, rotate: centerOffset * 5 }
+                    }
                     animate={{ scale: 1, opacity: 1, y: Math.abs(centerOffset) * 3, rotate: centerOffset * 5 }}
                     exit={{ scale: 0.8, opacity: 0 }}
+                    transition={
+                      isFreshDiscard
+                        ? { type: 'spring', stiffness: 300, damping: 22 }
+                        : { duration: 0.2 }
+                    }
                     style={{
                       marginInlineStart: i === 0 ? 0 : -26,
                       zIndex: i + 1,

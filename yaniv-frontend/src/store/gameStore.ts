@@ -35,6 +35,15 @@ interface Toast {
   kind: 'info' | 'error' | 'success';
 }
 
+interface LastTurnAnimation {
+  seq: number;
+  actingUserId: string;
+  action: 'discard' | 'draw';
+  discardedCards: CardId[] | null;
+  drawnSource: DrawSource | null;
+  myNewCard: CardId | null;
+}
+
 interface GameStore {
   // ── Connection ──────────────────────────────────────────
   connectionState: ConnectionState;
@@ -68,6 +77,7 @@ interface GameStore {
   // Set for the drawing player during player_turn_hadabaka phase
   hadabakaCard: CardId | null;
   pauseState: PauseState | null;
+  lastTurnAnimation: LastTurnAnimation | null;
 
   // ── Derived (computed in actions, not stored separately) ──
   // use selectors below
@@ -95,6 +105,7 @@ interface GameStore {
 let wsManager: WSManager | null = null;
 let myUserId = '';
 let toastCounter = 0;
+let turnAnimationCounter = 0;
 
 function canPreselectInPhase(phase: GamePhase | null): boolean {
   return phase === 'player_turn_discard' || phase === 'player_turn_draw';
@@ -141,6 +152,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   waitingPlayerIds: [],
   hadabakaCard: null,
   pauseState: null,
+  lastTurnAnimation: null,
   _pendingDrawSource: null,
 
   connect: (tableId, roomCode, token, userId) => {
@@ -180,6 +192,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       roundResult: null,
       gameOver: null,
       pauseState: null,
+      lastTurnAnimation: null,
     });
   },
 
@@ -287,6 +300,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
         waitingPlayerIds: msg.waitingPlayerIds ?? [],
         hadabakaCard: msg.hadabakaCard ?? null,
         pauseState: msg.pauseState ?? null,
+        lastTurnAnimation: null,
         selectedCards: preservedSelection,
         ...(shouldClearRoundOverlay ? { roundResult: null, yanivCalled: null } : {}),
         ...(msg.phase === 'waiting_for_players' ? { gameOver: null } : {}),
@@ -320,6 +334,14 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
           currentTurnUserId: msg.nextTurnUserId,
           turnDeadlineEpoch: msg.turnDeadlineEpoch,
           pauseState: null,
+          lastTurnAnimation: {
+            seq: ++turnAnimationCounter,
+            actingUserId: msg.actingUserId,
+            action: msg.action,
+            discardedCards: msg.discardedCards,
+            drawnSource: msg.drawnSource,
+            myNewCard: msg.myNewCard,
+          },
           phase: nextPhase,
           selectedCards,
         };
@@ -349,7 +371,13 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
       break;
 
     case 'yaniv_called':
-      set({ yanivCalled: msg, phase: 'yaniv_called', pauseState: null, selectedCards: [] });
+      set({
+        yanivCalled: msg,
+        phase: 'yaniv_called',
+        pauseState: null,
+        lastTurnAnimation: null,
+        selectedCards: [],
+      });
       playYaniv();
       break;
 
@@ -359,6 +387,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
         yanivCalled: null,
         phase: 'between_rounds',
         pauseState: null,
+        lastTurnAnimation: null,
         selectedCards: [],
       });
       // Update scores in players list
@@ -396,6 +425,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
         yanivCalled: null,
         phase: 'game_over',
         pauseState: null,
+        lastTurnAnimation: null,
         selectedCards: [],
       });
       if (msg.winnerId === myUserId) {

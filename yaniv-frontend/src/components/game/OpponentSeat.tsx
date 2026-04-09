@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import { motion } from 'framer-motion';
 import { CardView } from './CardView';
 import { useStrings } from '../../strings';
@@ -6,9 +7,10 @@ import type { PublicPlayerInfo } from '../../shared/types';
 interface Props {
   player: PublicPlayerInfo;
   isCurrentTurn: boolean;
+  cardsRef?: Ref<HTMLDivElement>;
 }
 
-export function OpponentSeat({ player, isCurrentTurn }: Props) {
+export function OpponentSeat({ player, isCurrentTurn, cardsRef }: Props) {
   const s = useStrings();
   return (
     <motion.div
@@ -17,7 +19,7 @@ export function OpponentSeat({ player, isCurrentTurn }: Props) {
       transition={isCurrentTurn ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.2 }}
     >
       {/* Card backs */}
-      <div className="flex items-center justify-center" style={{ minHeight: 72 }}>
+      <div ref={cardsRef} className="flex items-center justify-center" style={{ minHeight: 72 }}>
         {player.isEliminated ? (
           <span className="text-red-400 text-xs font-medium">{s.game.eliminated}</span>
         ) : (

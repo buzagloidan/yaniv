@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
@@ -15,6 +15,7 @@ import { RoundResultOverlay } from './RoundResultOverlay';
 import { GameOverOverlay } from './GameOverOverlay';
 import { TurnCountdown } from './TurnCountdown';
 import { ToastContainer } from '../ui/Toast';
+import { CardFlightLayer } from './CardFlightLayer';
 
 function opponentPositions(count: number): Array<{ top: string; left?: string; right?: string; transform?: string }> {
   if (count === 1) {
@@ -141,6 +142,10 @@ export function GamePage() {
   const isMyTurn = useGameStore(selectIsMyTurn);
   const me = useGameStore(selectMe);
   const isWaitingPlayer = useGameStore(selectIsWaitingPlayer);
+  const myHandRef = useRef<HTMLDivElement | null>(null);
+  const deckRef = useRef<HTMLDivElement | null>(null);
+  const discardRef = useRef<HTMLDivElement | null>(null);
+  const opponentHandRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     if (!tableId || !user) { navigate('/'); return; }
@@ -286,6 +291,13 @@ export function GamePage() {
       {/* Chat */}
       <Chat />
       <ActionBar />
+      <CardFlightLayer
+        myUserId={user?.userId ?? null}
+        deckEl={deckRef.current}
+        discardEl={discardRef.current}
+        myHandEl={myHandRef.current}
+        opponentHandEls={opponentHandRefs.current}
+      />
 
       {/* ── Waiting room overlay (before game starts) ── */}
       <AnimatePresence>
@@ -445,6 +457,9 @@ export function GamePage() {
             <OpponentSeat
               player={opponent}
               isCurrentTurn={currentTurnUserId === opponent.userId}
+              cardsRef={(node) => {
+                opponentHandRefs.current[opponent.userId] = node;
+              }}
             />
           ) : (
             <EmptySeat label={s.game.openSeat} />
@@ -549,7 +564,7 @@ export function GamePage() {
               show={isMyTurn}
             />
             <div className="pointer-events-auto">
-              <DiscardPile />
+              <DiscardPile deckRef={deckRef} discardRef={discardRef} />
             </div>
           </div>
         </div>
@@ -580,7 +595,7 @@ export function GamePage() {
               {me.displayName} · {me.score} נק׳
             </motion.div>
           )}
-          <PlayerHand />
+          <PlayerHand handRef={myHandRef} />
         </div>
       )}
 

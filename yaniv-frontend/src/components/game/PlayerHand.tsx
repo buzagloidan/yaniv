@@ -1,6 +1,7 @@
+import type { Ref } from 'react';
 import { motion } from 'framer-motion';
 import { CardView } from './CardView';
-import { useGameStore, selectIsMyTurn } from '../../store/gameStore';
+import { useGameStore, selectIsMyTurn, selectMe } from '../../store/gameStore';
 import { handTotal, parseCard, isJoker } from '../../utils/cardUtils';
 import { useStrings } from '../../strings';
 import type { CardId } from '../../shared/types';
@@ -19,7 +20,11 @@ function sortHandForRTL(hand: CardId[]): CardId[] {
   });
 }
 
-export function PlayerHand() {
+interface Props {
+  handRef?: Ref<HTMLDivElement>;
+}
+
+export function PlayerHand({ handRef }: Props) {
   const s = useStrings();
   const myHand = useGameStore((s) => s.myHand);
   const selectedCards = useGameStore((s) => s.selectedCards);
@@ -28,12 +33,20 @@ export function PlayerHand() {
   const hadabakaAccept = useGameStore((s) => s.hadabakaAccept);
   const phase = useGameStore((s) => s.phase);
   const isMyTurn = useGameStore(selectIsMyTurn);
+  const me = useGameStore(selectMe);
+  const lastTurnAnimation = useGameStore((s) => s.lastTurnAnimation);
   const total = handTotal(myHand);
   const isWaitingRoom = phase === 'waiting_for_players';
 
   const canSelect = phase === 'player_turn_discard' || phase === 'player_turn_draw';
   const isHadabakaPhase = isMyTurn && phase === 'player_turn_hadabaka';
   const sortedHand = sortHandForRTL(myHand);
+  const myDrawAnimationSeq =
+    lastTurnAnimation?.action === 'draw' &&
+    lastTurnAnimation.actingUserId === me?.userId &&
+    lastTurnAnimation.myNewCard
+      ? lastTurnAnimation.seq
+      : 0;
 
   if (isWaitingRoom) {
     return (
@@ -80,17 +93,21 @@ export function PlayerHand() {
       </div>
 
       {/* Cards — fan layout, highest value left, lowest value right (RTL) */}
-      <div className="flex items-end justify-center px-2" style={{ minHeight: 124 }}>
+      <div ref={handRef} className="flex items-end justify-center px-2" style={{ minHeight: 124 }}>
         {sortedHand.map((cardId, i) => {
           const mid = (sortedHand.length - 1) / 2;
           const offset = i - mid;
           const rotate = offset * 4.5;
           const translateY = Math.abs(offset) * 4;
           const isHadabakaCandidate = isHadabakaPhase && hadabakaCard === cardId;
+          const isFreshDrawnCard =
+            lastTurnAnimation?.action === 'draw' &&
+            lastTurnAnimation.actingUserId === me?.userId &&
+            lastTurnAnimation.myNewCard === cardId;
 
           return (
             <div
-              key={cardId}
+              key={`${cardId}-${isFreshDrawnCard ? myDrawAnimationSeq : 'stable'}`}
               style={{
                 transform: `rotate(${rotate}deg) translateY(${translateY}px)`,
                 marginInlineStart: i === 0 ? 0 : overlap,
@@ -99,8 +116,25 @@ export function PlayerHand() {
               }}
             >
               <motion.div
-                animate={isHadabakaCandidate ? { y: [0, -8, 0], scale: [1, 1.04, 1] } : { y: 0, scale: 1 }}
-                transition={isHadabakaCandidate ? { duration: 0.68, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.18 }}
+                initial={
+                  isFreshDrawnCard
+                    ? { x: 42, y: -30, scale: 0.78, rotate: 10, opacity: 0 }
+                    : false
+                }
+                animate={
+                  isHadabakaCandidate
+                    ? { y: [0, -8, 0], scale: [1, 1.04, 1] }
+                    : isFreshDrawnCard
+                      ? { x: 0, y: 0, scale: [0.78, 1.06, 1], rotate: 0, opacity: 1 }
+                      : { y: 0, scale: 1, x: 0, opacity: 1, rotate: 0 }
+                }
+                transition={
+                  isHadabakaCandidate
+                    ? { duration: 0.68, repeat: Infinity, ease: 'easeInOut' }
+                    : isFreshDrawnCard
+                      ? { type: 'spring', stiffness: 280, damping: 22 }
+                      : { duration: 0.18 }
+                }
                 className={isHadabakaCandidate ? 'animate-hadabaka-glow' : undefined}
               >
                 <CardView
