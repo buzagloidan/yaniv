@@ -44,6 +44,11 @@ interface LastTurnAnimation {
   myNewCard: CardId | null;
 }
 
+interface PendingDrawRequest {
+  actionId: string;
+  source: DrawSource;
+}
+
 interface GameStore {
   // ── Connection ──────────────────────────────────────────
   connectionState: ConnectionState;
@@ -98,7 +103,7 @@ interface GameStore {
   removeToast: (id: number) => void;
 
   // internal — pending draw source after a discard is sent
-  _pendingDrawSource: DrawSource | null;
+  _pendingDrawRequest: PendingDrawRequest | null;
 }
 
 // Keep WS manager outside store to avoid Zustand serialization issues
@@ -106,6 +111,10 @@ let wsManager: WSManager | null = null;
 let myUserId = '';
 let toastCounter = 0;
 let turnAnimationCounter = 0;
+
+function createActionId(): string {
+  return crypto.randomUUID();
+}
 
 function canPreselectInPhase(phase: GamePhase | null): boolean {
   return phase === 'player_turn_discard' || phase === 'player_turn_draw';
@@ -153,7 +162,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   hadabakaCard: null,
   pauseState: null,
   lastTurnAnimation: null,
-  _pendingDrawSource: null,
+  _pendingDrawRequest: null,
 
   connect: (tableId, roomCode, token, userId) => {
     myUserId = userId;
@@ -213,29 +222,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
   discardAndDraw: (source) => {
     const { selectedCards } = get();
     if (!isValidDiscard(selectedCards)) return;
-    set({ _pendingDrawSource: source, selectedCards: [] });
-    wsManager?.send({ type: 'discard', cards: selectedCards });
+    const drawRequest = { actionId: createActionId(), source };
+    set({ _pendingDrawRequest: drawRequest, selectedCards: [] });
+    wsManager?.send({ type: 'discard', actionId: createActionId(), cards: selectedCards });
   },
 
   callYaniv: () => {
-    wsManager?.send({ type: 'call_yaniv' });
+    wsManager?.send({ type: 'call_yaniv', actionId: createActionId() });
   },
 
   hadabakaAccept: () => {
-    wsManager?.send({ type: 'hadabaka_accept' });
+    wsManager?.send({ type: 'hadabaka_accept', actionId: createActionId() });
   },
 
   continuePausedGame: () => {
-    wsManager?.send({ type: 'continue_game' });
+    wsManager?.send({ type: 'continue_game', actionId: createActionId() });
   },
 
   readyUp: () => {
-    wsManager?.send({ type: 'ready' });
+    wsManager?.send({ type: 'ready', actionId: createActionId() });
   },
 
   sendChat: (text) => {
     if (!text.trim()) return;
-    wsManager?.send({ type: 'chat', text: text.trim() });
+    wsManager?.send({ type: 'chat', actionId: createActionId(), text: text.trim() });
   },
 
   dismissRoundResult: () => set({ roundResult: null, yanivCalled: null }),
@@ -308,10 +318,10 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
       // If we had a pending draw queued but missed the turn_delta (e.g. reconnect),
       // fire it now that the server confirms it's still our draw turn.
       if (msg.phase === 'player_turn_draw' && msg.currentTurnUserId === myUserId) {
-        const pending = get()._pendingDrawSource;
+        const pending = get()._pendingDrawRequest;
         if (pending) {
-          set({ _pendingDrawSource: null });
-          wsManager?.send({ type: 'draw', source: pending });
+          set({ _pendingDrawRequest: null });
+          wsManager?.send({ type: 'draw', actionId: pending.actionId, source: pending.source });
         }
       }
       break;
@@ -375,10 +385,10 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
       }
       // If we just discarded and have a queued draw source, send it immediately
       if (msg.action === 'discard' && msg.nextTurnUserId === myUserId) {
-        const pending = get()._pendingDrawSource;
+        const pending = get()._pendingDrawRequest;
         if (pending) {
-          set({ _pendingDrawSource: null });
-          wsManager?.send({ type: 'draw', source: pending });
+          set({ _pendingDrawRequest: null });
+          wsManager?.send({ type: 'draw', actionId: pending.actionId, source: pending.source });
         }
       }
       break;
@@ -451,7 +461,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
       break;
 
     case 'error':
-      set({ _pendingDrawSource: null });
+      set({ _pendingDrawRequest: null });
       get().addToast(getStrings().errors[msg.code] ?? getStrings().errors.unknown, 'error');
       break;
 

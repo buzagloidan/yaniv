@@ -20,6 +20,11 @@ import { DEFAULTS } from '../shared/constants';
 
 export type YanivResolution = ReturnType<typeof resolveYaniv>;
 
+// Maximum number of previously-discarded sets to keep in memory.
+// Older sets are trimmed from the front; they contribute to the reshuffle pool
+// but a normal game exhausts far fewer than this before ending.
+const MAX_PREVIOUS_SETS = 60;
+
 // ============================================================
 // Helpers
 // ============================================================
@@ -295,11 +300,12 @@ export function applyDiscard(state: GameState, playerId: string, cards: CardId[]
   const cardSet = new Set(cards);
   const newHand = player.hand.filter((c) => !cardSet.has(c));
 
-  // Archive the current top set before replacing it
-  const previousSets =
+  // Archive the current top set before replacing it; trim to cap memory growth
+  const previousSets = (
     state.discardPile.currentSet.length > 0
       ? [...state.discardPile.previousSets, state.discardPile.currentSet]
-      : state.discardPile.previousSets;
+      : state.discardPile.previousSets
+  ).slice(-MAX_PREVIOUS_SETS);
 
   return {
     ...state,
@@ -530,10 +536,11 @@ export function applyAutoDiscard(state: GameState, playerId: string): AutoDiscar
   // Remove from hand and update discard pile (same as normal discard)
   const cardSet = new Set([discardedCard]);
   const newHand = player.hand.filter((c) => !cardSet.has(c));
-  const previousSets =
+  const previousSets = (
     state.discardPile.currentSet.length > 0
       ? [...state.discardPile.previousSets, state.discardPile.currentSet]
-      : state.discardPile.previousSets;
+      : state.discardPile.previousSets
+  ).slice(-MAX_PREVIOUS_SETS);
 
   const newTimeoutCount = player.timeoutCount + 1;
   const shouldEliminate = newTimeoutCount >= DEFAULTS.MAX_TIMEOUT_COUNT;
@@ -569,10 +576,11 @@ export function applyHadabakaAccept(state: GameState, playerId: string): GameSta
   const newHand = player.hand.filter((c) => c !== hadabakaCard);
 
   // Archive the previous discard set and make the hadabaka card the new top
-  const previousSets =
+  const previousSets = (
     state.discardPile.currentSet.length > 0
       ? [...state.discardPile.previousSets, state.discardPile.currentSet]
-      : state.discardPile.previousSets;
+      : state.discardPile.previousSets
+  ).slice(-MAX_PREVIOUS_SETS);
 
   const nextSeat = nextActiveSeat(state, state.currentTurnIndex);
   const now = Date.now();
@@ -613,6 +621,7 @@ export function pauseGame(
   state: GameState,
   pausedByUserId: string,
   reason: PauseReason,
+  resumeDeadlineEpoch: number | null = null,
 ): GameState {
   return {
     ...state,
@@ -621,6 +630,7 @@ export function pauseGame(
       reason,
       pausedByUserId,
       pausedAt: Date.now(),
+      resumeDeadlineEpoch,
     },
   };
 }

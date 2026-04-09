@@ -18,6 +18,13 @@ function err(code: string): ValidationError {
   return { valid: false, code };
 }
 
+function getCurrentTurnPlayerId(state: GameState): string | null {
+  const currentPlayerId = state.seatOrder[state.currentTurnIndex];
+  return currentPlayerId && state.players[currentPlayerId]
+    ? currentPlayerId
+    : null;
+}
+
 // ============================================================
 
 export function validateDiscard(
@@ -27,7 +34,8 @@ export function validateDiscard(
 ): Validation {
   if (state.phase !== 'player_turn_discard') return err(ErrorCode.WRONG_PHASE);
 
-  const currentPlayerId = state.seatOrder[state.currentTurnIndex];
+  const currentPlayerId = getCurrentTurnPlayerId(state);
+  if (!currentPlayerId) return err(ErrorCode.INVALID_MESSAGE);
   if (playerId !== currentPlayerId) return err(ErrorCode.NOT_YOUR_TURN);
 
   const player = state.players[playerId];
@@ -56,7 +64,8 @@ export function validateDraw(
 ): Validation {
   if (state.phase !== 'player_turn_draw') return err(ErrorCode.WRONG_PHASE);
 
-  const currentPlayerId = state.seatOrder[state.currentTurnIndex];
+  const currentPlayerId = getCurrentTurnPlayerId(state);
+  if (!currentPlayerId) return err(ErrorCode.INVALID_MESSAGE);
   if (playerId !== currentPlayerId) return err(ErrorCode.NOT_YOUR_TURN);
 
   if (source === 'deck') {
@@ -76,7 +85,8 @@ export function validateDraw(
 export function validateYanivCall(playerId: string, state: GameState): Validation {
   if (state.phase !== 'player_turn_discard') return err(ErrorCode.WRONG_PHASE);
 
-  const currentPlayerId = state.seatOrder[state.currentTurnIndex];
+  const currentPlayerId = getCurrentTurnPlayerId(state);
+  if (!currentPlayerId) return err(ErrorCode.INVALID_MESSAGE);
   if (playerId !== currentPlayerId) return err(ErrorCode.NOT_YOUR_TURN);
 
   const player = state.players[playerId];

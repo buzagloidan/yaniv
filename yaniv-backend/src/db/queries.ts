@@ -141,7 +141,7 @@ export async function updateTableStatus(
   db: D1Database,
   tableId: string,
   status: TableRow['status'],
-  extra: { startedAt?: number; finishedAt?: number; winnerId?: string } = {},
+  extra: { startedAt?: number; finishedAt?: number; winnerId?: string | null } = {},
 ): Promise<void> {
   const sets: string[] = ['status = ?'];
   const values: (string | number | null)[] = [status];
@@ -164,6 +164,136 @@ export async function updateTableStatus(
     .prepare(`UPDATE tables SET ${sets.join(', ')} WHERE id = ?`)
     .bind(...values)
     .run();
+}
+
+export async function finalizeMatchResults(
+  db: D1Database,
+  tableId: string,
+  finishedAt: number,
+  winnerId: string | null,
+  playerResults: Array<{ userId: string; finalScore: number; placement: number }>,
+): Promise<void> {
+  const statements = [
+    db
+      .prepare(
+        'UPDATE tables SET status = ?, finished_at = ?, winner_id = ? WHERE id = ?',
+      )
+      .bind('finished', finishedAt, winnerId, tableId),
+    ...playerResults.map(({ userId, finalScore, placement }) =>
+      db
+        .prepare(
+          'UPDATE table_players SET final_score = ?, placement = ? WHERE table_id = ? AND user_id = ?',
+        )
+        .bind(finalScore, placement, tableId, userId),
+    ),
+  ];
+
+  await db.batch(statements);
+}
+
+export async function archiveCompletedMatch(
+  db: D1Database,
+  match: {
+    matchId: string;
+    tableId: string;
+    roomCode: string;
+    hostId: string;
+    startedAt: number | null;
+    finishedAt: number;
+    winnerId: string | null;
+    winnerName: string;
+    winnerIsBot: boolean;
+    settings: Pick<
+      GameSettings,
+      'maxPlayers' | 'yanivThreshold' | 'turnTimeoutSeconds' | 'scoreLimit' | 'resetScoreAt' | 'isRanked'
+    >;
+    roundCount: number;
+    players: Array<{
+      participantId: string;
+      userId: string | null;
+      displayName: string;
+      accountId: number | null;
+      seatIndex: number;
+      isBot: boolean;
+      finalScore: number;
+      placement: number;
+      wasEliminated: boolean;
+    }>;
+  },
+): Promise<void> {
+  const statements = [
+    db
+      .prepare(
+        `INSERT INTO matches
+           (id, table_id, room_code, host_id, started_at, finished_at, winner_id, winner_name, winner_is_bot,
+            is_ranked, max_players, yaniv_threshold, turn_timeout_seconds, score_limit, reset_score_at, round_count)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(
+        match.matchId,
+        match.tableId,
+        match.roomCode,
+        match.hostId,
+        match.startedAt,
+        match.finishedAt,
+        match.winnerId,
+        match.winnerName,
+        match.winnerIsBot ? 1 : 0,
+        match.settings.isRanked ? 1 : 0,
+        match.settings.maxPlayers,
+        match.settings.yanivThreshold,
+        match.settings.turnTimeoutSeconds,
+        match.settings.scoreLimit,
+        match.settings.resetScoreAt,
+        match.roundCount,
+      ),
+    ...match.players.map((player) =>
+      db
+        .prepare(
+          `INSERT INTO match_players
+             (match_id, participant_id, user_id, display_name, account_id, seat_index, is_bot, final_score, placement, was_eliminated)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          match.matchId,
+          player.participantId,
+          player.userId,
+          player.displayName,
+          player.accountId,
+          player.seatIndex,
+          player.isBot ? 1 : 0,
+          player.finalScore,
+          player.placement,
+          player.wasEliminated ? 1 : 0,
+        ),
+    ),
+  ];
+
+  await db.batch(statements);
+}
+
+export async function resetTableMetadataForNewGame(
+  db: D1Database,
+  tableId: string,
+  players: Array<{ userId: string; seatIndex: number }>,
+): Promise<void> {
+  const statements = [
+    db.prepare('DELETE FROM table_players WHERE table_id = ?').bind(tableId),
+    ...players.map(({ userId, seatIndex }) =>
+      db
+        .prepare(
+          'INSERT INTO table_players (table_id, user_id, seat_index, joined_at) VALUES (?, ?, ?, ?)',
+        )
+        .bind(tableId, userId, seatIndex, Date.now()),
+    ),
+    db
+      .prepare(
+        "UPDATE tables SET status = 'waiting', started_at = NULL, finished_at = NULL, winner_id = NULL WHERE id = ?",
+      )
+      .bind(tableId),
+  ];
+
+  await db.batch(statements);
 }
 
 export async function getTablePlayerCount(db: D1Database, tableId: string): Promise<number> {

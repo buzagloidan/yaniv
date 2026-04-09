@@ -86,3 +86,10 @@ export async function leaveTableById(
 ): Promise<{ ok: boolean }> {
   return request(`/tables/id/${tableId}/leave`, { method: 'POST' }, token);
 }
+
+export async function createWsTicket(
+  token: string,
+  tableId: string,
+): Promise<{ ticket: string }> {
+  return request(`/game/${tableId}/ws-ticket`, { method: 'POST' }, token);
+}

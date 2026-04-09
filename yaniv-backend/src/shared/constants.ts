@@ -20,6 +20,7 @@ export const DEFAULTS = {
   ROOM_CODE_MAX: 9999,
   // Session KV
   SESSION_TTL_SECONDS: 86_400,
+  WS_TICKET_TTL_SECONDS: 30,
   // Bot players
   BOT_THINK_MS: 1_400,           // delay before bot acts (feels natural)
   // Window (ms) for a player to accept a הדבקה (same-rank deck draw) before auto-decline

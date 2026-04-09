@@ -97,8 +97,9 @@ export function buildSnapshot(state: GameState, forUserId: string): StateSnapsho
 
   // hadabakaCard is only revealed to the player whose turn it is
   const currentPlayerId = state.seatOrder[state.currentTurnIndex];
+  const hasValidCurrentTurn = !!currentPlayerId && !!state.players[currentPlayerId];
   const hadabakaCard =
-    state.phase === 'player_turn_hadabaka' && forUserId === currentPlayerId
+    state.phase === 'player_turn_hadabaka' && hasValidCurrentTurn && forUserId === currentPlayerId
       ? (state.hadabakaCard ?? null)
       : null;
 
@@ -111,7 +112,7 @@ export function buildSnapshot(state: GameState, forUserId: string): StateSnapsho
     phase: state.phase,
     roundNumber: state.roundNumber,
     currentTurnUserId: state.phase.startsWith('player_turn')
-      ? (currentPlayerId ?? null)
+      ? (hasValidCurrentTurn ? currentPlayerId : null)
       : null,
     turnDeadlineEpoch: state.turnDeadlineEpoch,
     players,

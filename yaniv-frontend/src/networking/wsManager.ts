@@ -1,3 +1,4 @@
+import { createWsTicket } from './api';
 import type { ClientMessage, ServerMessage } from '../shared/types';
 
 type MessageHandler = (msg: ServerMessage) => void;
@@ -35,13 +36,27 @@ export class WSManager {
   connect(): void {
     if (this.destroyed) return;
     this.clearTimers();
+    void this.openConnection();
+  }
 
+  private async openConnection(): Promise<void> {
     const apiBase = import.meta.env.VITE_API_URL ?? '';
     const wsBase = apiBase
       ? apiBase.replace(/^http/, 'ws')
       : `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}`;
-    const url = `${wsBase}/game/${this.tableId}/ws?token=${encodeURIComponent(this.token)}`;
 
+    let ticket: string;
+    try {
+      const res = await createWsTicket(this.token, this.tableId);
+      ticket = res.ticket;
+    } catch {
+      if (!this.destroyed) this.scheduleReconnect();
+      return;
+    }
+
+    if (this.destroyed) return;
+
+    const url = `${wsBase}/game/${this.tableId}/ws?ticket=${encodeURIComponent(ticket)}`;
     this.ws = new WebSocket(url);
 
     this.ws.onopen = () => {
