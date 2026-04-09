@@ -97,6 +97,8 @@ export const en = {
   round: {
     yanivCalled: (name: string) => `${name} called Yaniv!`,
     assaf: (caller: string, assafer: string) => `Assaf! ${assafer} caught ${caller}`,
+    yanivTag: 'Yaniv',
+    assafTag: 'Assaf',
     penalty: '+30 penalty',
     scoreReset: '🎉 Score reset to zero!',
     eliminated: (name: string) => `${name} eliminated`,

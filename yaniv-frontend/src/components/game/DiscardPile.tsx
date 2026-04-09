@@ -85,7 +85,6 @@ export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Pro
           <div
             className={[
               'relative z-10 w-[5.75rem] h-[8.25rem] rounded-[1.1rem] overflow-hidden transition-all',
-              canDiscardAndDraw ? 'ring-2 ring-yellow-400 shadow-lg shadow-yellow-400/20' : '',
             ].join(' ')}
           >
             <img

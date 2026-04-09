@@ -23,9 +23,11 @@ function sortHandForRTL(hand: CardId[]): CardId[] {
 interface Props {
   handRef?: Ref<HTMLDivElement>;
   cardRef?: (cardId: CardId, node: HTMLDivElement | null) => void;
+  revealedHand?: CardId[] | null;
+  revealedTotal?: number | null;
 }
 
-export function PlayerHand({ handRef, cardRef }: Props) {
+export function PlayerHand({ handRef, cardRef, revealedHand, revealedTotal }: Props) {
   const s = useStrings();
   const myHand = useGameStore((s) => s.myHand);
   const selectedCards = useGameStore((s) => s.selectedCards);
@@ -36,13 +38,14 @@ export function PlayerHand({ handRef, cardRef }: Props) {
   const isMyTurn = useGameStore(selectIsMyTurn);
   const me = useGameStore(selectMe);
   const lastTurnAnimation = useGameStore((s) => s.lastTurnAnimation);
-  const total = handTotal(myHand);
+  const displayHand = revealedHand ?? myHand;
+  const total = revealedTotal ?? handTotal(displayHand);
   const isWaitingRoom = phase === 'waiting_for_players';
-  const isSpectating = !!me?.isEliminated;
+  const isSpectating = !!me?.isEliminated && !revealedHand;
 
   const canSelect = phase === 'player_turn_discard' || phase === 'player_turn_draw';
   const isHadabakaPhase = isMyTurn && phase === 'player_turn_hadabaka';
-  const sortedHand = sortHandForRTL(myHand);
+  const sortedHand = sortHandForRTL(displayHand);
   const myDrawAnimationSeq =
     lastTurnAnimation?.action === 'draw' &&
     lastTurnAnimation.actingUserId === me?.userId &&

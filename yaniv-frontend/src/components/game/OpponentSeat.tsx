@@ -2,16 +2,30 @@ import type { Ref } from 'react';
 import { motion } from 'framer-motion';
 import { CardView } from './CardView';
 import { useStrings } from '../../strings';
-import type { PublicPlayerInfo } from '../../shared/types';
+import type { CardId, PublicPlayerInfo } from '../../shared/types';
 
 interface Props {
   player: PublicPlayerInfo;
   isCurrentTurn: boolean;
   cardsRef?: Ref<HTMLDivElement>;
+  revealedCards?: CardId[];
+  revealedTotal?: number;
+  roundDelta?: number | null;
+  roundTag?: string | null;
 }
 
-export function OpponentSeat({ player, isCurrentTurn, cardsRef }: Props) {
+export function OpponentSeat({
+  player,
+  isCurrentTurn,
+  cardsRef,
+  revealedCards,
+  revealedTotal,
+  roundDelta,
+  roundTag,
+}: Props) {
   const s = useStrings();
+  const isRevealed = !!revealedCards;
+
   return (
     <motion.div
       className="flex flex-col items-center gap-1.5"
@@ -20,7 +34,20 @@ export function OpponentSeat({ player, isCurrentTurn, cardsRef }: Props) {
     >
       {/* Card backs */}
       <div ref={cardsRef} className="flex items-center justify-center" style={{ minHeight: 72 }}>
-        {player.isEliminated ? (
+        {isRevealed ? (
+          revealedCards!.map((cardId, i) => (
+            <div
+              key={`${cardId}-${i}`}
+              style={{
+                marginInlineStart: i === 0 ? 0 : -18,
+                zIndex: i,
+                transform: `rotate(${(i - (revealedCards!.length - 1) / 2) * 5}deg) translateY(${Math.abs(i - (revealedCards!.length - 1) / 2) * 1.5}px)`,
+              }}
+            >
+              <CardView cardId={cardId} small />
+            </div>
+          ))
+        ) : player.isEliminated ? (
           <span className="text-red-400 text-xs font-medium">{s.game.eliminated}</span>
         ) : (
           Array.from({ length: player.cardCount }).map((_, i) => (
@@ -56,11 +83,23 @@ export function OpponentSeat({ player, isCurrentTurn, cardsRef }: Props) {
         }}
       >
         {player.displayName}
+        {roundTag && <span className="ms-1 text-[0.7rem] opacity-90">· {roundTag}</span>}
         {!player.isConnected && !player.isEliminated && ` (${s.game.disconnected})`}
       </div>
 
       {/* Score */}
-      <span className="text-white/55 text-xs font-medium">{player.score} {s.game.score ?? 'נק׳'}</span>
+      {isRevealed ? (
+        <span className="text-white/65 text-[11px] font-medium text-center">
+          {s.game.handTotal(revealedTotal ?? 0)}
+          {roundDelta !== null && roundDelta !== undefined && (
+            <span className={['ms-1', roundDelta > 0 ? 'text-red-300' : 'text-emerald-300'].join(' ')}>
+              • {s.round.pointsAdded(roundDelta)}
+            </span>
+          )}
+        </span>
+      ) : (
+        <span className="text-white/55 text-xs font-medium">{player.score} {s.game.score ?? 'נק׳'}</span>
+      )}
     </motion.div>
   );
 }

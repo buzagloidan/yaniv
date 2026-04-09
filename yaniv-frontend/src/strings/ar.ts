@@ -97,6 +97,8 @@ export const ar = {
   round: {
     yanivCalled: (name: string) => `${name} نادى بيانيف!`,
     assaf: (caller: string, assafer: string) => `أساف! ${assafer} أسقط ${caller}`,
+    yanivTag: 'يانيف',
+    assafTag: 'أساف',
     penalty: '+30 عقوبة',
     scoreReset: '🎉 تم إعادة النقاط إلى الصفر!',
     eliminated: (name: string) => `${name} خرج من اللعبة`,

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CardView } from './CardView';
 import { useGameStore } from '../../store/gameStore';
 import { useStrings } from '../../strings';
 
@@ -52,25 +51,27 @@ export function RoundResultOverlay() {
     <AnimatePresence>
       {open && result && (
         <motion.div
-          className="fixed inset-0 z-40 flex items-center justify-center"
+          className="pointer-events-none fixed inset-x-0 top-20 z-30 flex justify-center px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-
           <motion.div
-            className="relative z-10 bg-gray-900 border border-white/10 rounded-3xl p-6 w-full max-w-md mx-4 shadow-2xl"
-            initial={{ scale: 0.85, y: 30 }}
+            className="relative flex w-full max-w-sm flex-col items-center gap-2 rounded-[1.75rem] px-5 py-4 text-center shadow-2xl"
+            initial={{ scale: 0.92, y: -16 }}
             animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.85, y: 30 }}
+            exit={{ scale: 0.92, y: -16 }}
+            style={{
+              background: 'rgba(15, 23, 42, 0.86)',
+              backdropFilter: 'blur(18px)',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
           >
-            {/* Title */}
-            <div className="text-center mb-5">
+            <div className="text-center">
               {result.callType === 'assaf' ? (
                 <div>
-                  <div className="text-3xl mb-1">💥</div>
-                  <h2 className="text-2xl font-bold text-red-400">
+                  <div className="text-2xl mb-1">💥</div>
+                  <h2 className="text-base font-bold text-red-400">
                     {s.round.assaf(
                       getName(result.callerId),
                       getName(result.assafByIds[0] ?? ''),
@@ -79,77 +80,16 @@ export function RoundResultOverlay() {
                 </div>
               ) : (
                 <div>
-                  <div className="text-3xl mb-1">🎉</div>
-                  <h2 className="text-2xl font-bold text-yellow-400">
+                  <div className="text-2xl mb-1">🎉</div>
+                  <h2 className="text-base font-bold text-yellow-400">
                     {s.round.yanivCalled(getName(result.callerId))}
                   </h2>
                 </div>
               )}
             </div>
 
-            {/* All hands */}
-            <div className="space-y-3 mb-5">
-              {Object.entries(result.handsRevealed).map(([playerId, { cards, total }]) => {
-                const delta = result.scoreDeltas[playerId] ?? 0;
-                const newScore = result.newScores[playerId] ?? 0;
-                const isElim = result.eliminatedThisRound.includes(playerId);
-                const isReset = result.scoreResetApplied.includes(playerId);
-                const isCaller = playerId === result.callerId;
-                const isAssafer = result.assafByIds.includes(playerId);
-
-                return (
-                  <div
-                    key={playerId}
-                    className={[
-                      'flex items-center gap-3 p-3 rounded-xl',
-                      isCaller && result.callType === 'yaniv' ? 'bg-yellow-400/10 border border-yellow-400/20' : '',
-                      isCaller && result.callType === 'assaf' ? 'bg-red-500/10 border border-red-500/20' : '',
-                      isAssafer ? 'bg-emerald-500/10 border border-emerald-500/20' : '',
-                      !isCaller && !isAssafer ? 'bg-white/5' : '',
-                    ].join(' ')}
-                  >
-                    {/* Cards */}
-                    <div className="flex gap-1 flex-shrink-0">
-                      {cards.slice(0, 5).map((c) => (
-                        <CardView key={c} cardId={c} small />
-                      ))}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-white truncate">
-                        {getName(playerId)}
-                        {isCaller && result.callType === 'yaniv' && ' 🎉'}
-                        {isCaller && result.callType === 'assaf' && ' 💥'}
-                      </div>
-                      <div className="text-xs text-white/50">{s.game.handTotal(total)}</div>
-                    </div>
-
-                    {/* Score delta */}
-                    <div className="text-end flex-shrink-0">
-                      <div className={['font-bold', delta > 0 ? 'text-red-400' : 'text-green-400'].join(' ')}>
-                        {delta > 0 ? `+${delta}` : '0'}
-                        {isCaller && result.callType === 'assaf' && (
-                          <span className="text-xs ms-1">{s.round.penalty}</span>
-                        )}
-                      </div>
-                      <div className="text-xs text-white/40">
-                        {isElim ? (
-                          <span className="text-red-400">{s.game.eliminated}</span>
-                        ) : isReset ? (
-                          <span className="text-amber-400">{s.round.scoreReset}</span>
-                        ) : (
-                          <span>{newScore} נק׳</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
             <div
-              className="w-full rounded-2xl px-4 py-3 text-center text-sm font-medium"
+              className="w-full rounded-2xl px-4 py-2 text-center text-sm font-medium"
               style={{
                 background: 'rgba(255,255,255,0.06)',
                 color: 'rgba(255,255,255,0.72)',

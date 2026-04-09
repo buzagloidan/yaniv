@@ -16,7 +16,14 @@ import { GameOverOverlay } from './GameOverOverlay';
 import { TurnCountdown } from './TurnCountdown';
 import { ToastContainer } from '../ui/Toast';
 import { CardFlightLayer } from './CardFlightLayer';
-import type { CardId, DrawSource } from '../../shared/types';
+import type { CardId, DrawSource, RoundResultMessage } from '../../shared/types';
+
+function getRoundTag(result: RoundResultMessage | null, playerId: string, strings: ReturnType<typeof useStrings>): string | null {
+  if (!result) return null;
+  if (playerId === result.callerId) return strings.round.yanivTag;
+  if (result.assafByIds.includes(playerId)) return strings.round.assafTag;
+  return null;
+}
 
 function opponentPositions(count: number): Array<{ top: string; left?: string; right?: string; transform?: string }> {
   if (count === 1) {
@@ -138,6 +145,7 @@ export function GamePage() {
   const currentTurnUserId = useGameStore((s) => s.currentTurnUserId);
   const turnDeadlineEpoch = useGameStore((s) => s.turnDeadlineEpoch);
   const pauseState = useGameStore((s) => s.pauseState);
+  const roundResult = useGameStore((s) => s.roundResult);
   const readyUp = useGameStore((s) => s.readyUp);
   const continuePausedGame = useGameStore((s) => s.continuePausedGame);
   const selectedCards = useGameStore((s) => s.selectedCards);
@@ -219,6 +227,9 @@ export function GamePage() {
   const pauseMessage = pauseState?.reason === 'timeout'
     ? s.game.pauseAfterTimeout
     : s.game.pauseAfterDisconnect;
+  const myRevealedHand = me && roundResult ? roundResult.handsRevealed[me.userId] : undefined;
+  const myRoundTag = me ? getRoundTag(roundResult, me.userId, s) : null;
+  const myRoundDelta = me && roundResult ? (roundResult.scoreDeltas[me.userId] ?? 0) : null;
 
   return (
     <div className="felt relative w-full h-[100svh] overflow-hidden select-none">
@@ -485,6 +496,10 @@ export function GamePage() {
             <OpponentSeat
               player={opponent}
               isCurrentTurn={currentTurnUserId === opponent.userId}
+              revealedCards={roundResult?.handsRevealed[opponent.userId]?.cards}
+              revealedTotal={roundResult?.handsRevealed[opponent.userId]?.total}
+              roundDelta={roundResult ? (roundResult.scoreDeltas[opponent.userId] ?? 0) : null}
+              roundTag={getRoundTag(roundResult, opponent.userId, s)}
               cardsRef={(node) => {
                 opponentHandRefs.current[opponent.userId] = node;
               }}
@@ -606,28 +621,54 @@ export function GamePage() {
       {!isLoading && !isWaitingPlayer && (
         <div className="absolute inset-x-0 flex flex-col items-center gap-1.5 px-3" style={{ zIndex: 5, bottom: '1.75rem' }}>
           {me && (
-            <motion.div
-              animate={isMyTurn ? { scale: 1.04, y: [0, -2, 0] } : { scale: 1, y: 0 }}
-              transition={isMyTurn ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.2 }}
-              className="px-4 py-2 rounded-full text-sm font-semibold"
-              style={{
-                background: isMyTurn
-                  ? 'linear-gradient(135deg, rgba(242,100,25,0.96), rgba(217,86,14,0.94))'
-                  : 'rgba(255,255,255,0.76)',
-                backdropFilter: 'blur(10px)',
-                color: isMyTurn ? '#FFF7ED' : '#2D4F7C',
-                border: isMyTurn
-                  ? '1.5px solid rgba(255,255,255,0.28)'
-                  : '1px solid rgba(226,201,154,0.5)',
-                boxShadow: isMyTurn
-                  ? '0 10px 24px rgba(242,100,25,0.28)'
-                  : '0 8px 20px rgba(12,74,110,0.1)',
-              }}
-            >
-              {me.displayName} · {me.isEliminated ? s.game.spectating : `${me.score} נק׳`}
-            </motion.div>
+            <>
+              <motion.div
+                animate={isMyTurn ? { scale: 1.04, y: [0, -2, 0] } : { scale: 1, y: 0 }}
+                transition={isMyTurn ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.2 }}
+                className="px-4 py-2 rounded-full text-sm font-semibold"
+                style={{
+                  background: isMyTurn
+                    ? 'linear-gradient(135deg, rgba(242,100,25,0.96), rgba(217,86,14,0.94))'
+                    : 'rgba(255,255,255,0.76)',
+                  backdropFilter: 'blur(10px)',
+                  color: isMyTurn ? '#FFF7ED' : '#2D4F7C',
+                  border: isMyTurn
+                    ? '1.5px solid rgba(255,255,255,0.28)'
+                    : '1px solid rgba(226,201,154,0.5)',
+                  boxShadow: isMyTurn
+                    ? '0 10px 24px rgba(242,100,25,0.28)'
+                    : '0 8px 20px rgba(12,74,110,0.1)',
+                }}
+              >
+                {me.displayName}
+                {myRoundTag && <span className="ms-1 text-xs opacity-85">· {myRoundTag}</span>}
+                {' · '}
+                {me.isEliminated && !myRevealedHand ? s.game.spectating : `${me.score} נק׳`}
+              </motion.div>
+              {myRevealedHand && (
+                <div
+                  className="px-3 py-1 rounded-full text-xs font-semibold"
+                  style={{
+                    background: 'rgba(255,251,240,0.72)',
+                    color: '#0C4A6E',
+                    border: '1px solid rgba(12,74,110,0.12)',
+                    boxShadow: '0 8px 20px rgba(12,74,110,0.08)',
+                  }}
+                >
+                  {s.game.handTotal(myRevealedHand.total)}
+                  <span className={['ms-1', (myRoundDelta ?? 0) > 0 ? 'text-red-500' : 'text-emerald-600'].join(' ')}>
+                    • {s.round.pointsAdded(myRoundDelta ?? 0)}
+                  </span>
+                </div>
+              )}
+            </>
           )}
-          <PlayerHand handRef={myHandRef} cardRef={registerMyCardRef} />
+          <PlayerHand
+            handRef={myHandRef}
+            cardRef={registerMyCardRef}
+            revealedHand={myRevealedHand?.cards ?? null}
+            revealedTotal={myRevealedHand?.total ?? null}
+          />
         </div>
       )}
 

@@ -97,6 +97,8 @@ export const ru = {
   round: {
     yanivCalled: (name: string) => `${name} объявил Янив!`,
     assaf: (caller: string, assafer: string) => `Ассаф! ${assafer} поймал ${caller}`,
+    yanivTag: 'Янив',
+    assafTag: 'Ассаф',
     penalty: '+30 штраф',
     scoreReset: '🎉 Очки сброшены до нуля!',
     eliminated: (name: string) => `${name} выбыл`,

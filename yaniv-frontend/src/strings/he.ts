@@ -111,6 +111,8 @@ export const he = {
   round: {
     yanivCalled: (name: string) => `${name} קרא יניב!`,
     assaf: (caller: string, assafer: string) => `אסף! ${assafer} הפיל את ${caller}`,
+    yanivTag: 'יניב',
+    assafTag: 'אסף',
     penalty: '+30 קנס',
     scoreReset: '🎉 ניקוד אופס לאפס!',
     eliminated: (name: string) => `${name} הודח`,
