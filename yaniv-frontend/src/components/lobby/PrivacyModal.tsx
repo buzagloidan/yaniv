@@ -119,7 +119,7 @@ export function PrivacyModal({ open, onClose }: Props) {
 
                   <Block title="7. Contact">
                     <p>
-                      Questions? Reach us at <span style={{ color: '#0891B2' }}>support@yaniv.app</span>.
+                      Questions? Reach us at <span style={{ color: '#0891B2' }}>support@yaniv.games</span>.
                     </p>
                   </Block>
                 </>
@@ -172,7 +172,7 @@ export function PrivacyModal({ open, onClose }: Props) {
 
                   <Block title="7. יצירת קשר">
                     <p>
-                      שאלות? פנה אלינו בכתובת <span style={{ color: '#0891B2' }}>support@yaniv.app</span>.
+                      שאלות? פנה אלינו בכתובת <span style={{ color: '#0891B2' }}>support@yaniv.games</span>.
                     </p>
                   </Block>
                 </>

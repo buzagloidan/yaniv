@@ -192,7 +192,7 @@ export function SettingsModal({ open, onClose, onShowRules, onSignOut }: Props) 
                 <SettingsRow
                   icon="💬"
                   label={L.support}
-                  onClick={() => { window.location.href = 'mailto:support@yaniv.app'; }}
+                  onClick={() => { window.location.href = 'mailto:support@yaniv.games'; }}
                 />
               </div>
 

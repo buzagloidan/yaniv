@@ -1,4 +1,4 @@
-# Yaniv — Project Context for Claude
+# Yaniv — Project Context for Codex
 
 ## What this is
 Multiplayer Hebrew card game (יניב). Server-authoritative, real-time via WebSockets.
