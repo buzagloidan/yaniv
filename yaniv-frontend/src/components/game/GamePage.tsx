@@ -330,9 +330,9 @@ export function GamePage() {
       <ActionBar />
       <CardFlightLayer
         myUserId={user?.userId ?? null}
-        deckEl={deckRef.current}
-        discardEl={discardRef.current}
-        myHandEl={myHandRef.current}
+        deckRef={deckRef}
+        discardRef={discardRef}
+        myHandRef={myHandRef}
         myCardEls={myCardRefs.current}
         opponentHandEls={opponentHandRefs.current}
         pendingMyDiscardAnchorsRef={pendingMyDiscardAnchorsRef}

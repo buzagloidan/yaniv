@@ -1,5 +1,6 @@
 import type { Ref } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect } from 'react';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { CardView } from './CardView';
 import type { DrawSource } from '../../shared/types';
 import { useGameStore, selectCanDiscardAndDraw } from '../../store/gameStore';
@@ -24,6 +25,12 @@ export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Pro
       : 0;
   const discardAnimationSeq =
     lastTurnAnimation?.action === 'discard' ? lastTurnAnimation.seq : 0;
+  const deckControls = useAnimation();
+  useEffect(() => {
+    if (deckPulseSeq) {
+      deckControls.start({ scale: [1, 1.08, 1], rotate: [0, -7, 0], transition: { duration: 0.56, ease: 'easeOut' } });
+    }
+  }, [deckPulseSeq]);
   const triggerDiscardAndDraw = (source: DrawSource) => {
     if (!canDiscardAndDraw) return;
     onBeforeDiscardAndDraw?.(source);
@@ -44,19 +51,8 @@ export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Pro
       <div className="flex flex-col items-center justify-center">
         <motion.div
           ref={deckRef}
-          key={`deck-pulse-${deckPulseSeq}`}
           className="relative cursor-pointer"
-          initial={deckPulseSeq ? { scale: 1, rotate: 0 } : false}
-          animate={
-            deckPulseSeq
-              ? { scale: [1, 1.08, 1], rotate: [0, -7, 0] }
-              : undefined
-          }
-          transition={
-            deckPulseSeq
-              ? { duration: 0.56, ease: 'easeOut' }
-              : undefined
-          }
+          animate={deckControls}
           whileHover={canDiscardAndDraw ? { scale: 1.05 } : undefined}
           whileTap={canDiscardAndDraw ? { scale: 0.97 } : undefined}
           onClick={() => triggerDiscardAndDraw('deck')}

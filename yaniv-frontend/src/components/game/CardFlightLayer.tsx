@@ -28,9 +28,9 @@ interface FlightCard {
 
 interface Props {
   myUserId: string | null;
-  deckEl: HTMLDivElement | null;
-  discardEl: HTMLDivElement | null;
-  myHandEl: HTMLDivElement | null;
+  deckRef: { current: HTMLDivElement | null };
+  discardRef: { current: HTMLDivElement | null };
+  myHandRef: { current: HTMLDivElement | null };
   myCardEls: Record<string, HTMLDivElement | null>;
   opponentHandEls: Record<string, HTMLDivElement | null>;
   pendingMyDiscardAnchorsRef: { current: Record<CardId, Point> };
@@ -172,9 +172,9 @@ function buildDrawFlights(
 
 export function CardFlightLayer({
   myUserId,
-  deckEl,
-  discardEl,
-  myHandEl,
+  deckRef,
+  discardRef,
+  myHandRef,
   myCardEls,
   opponentHandEls,
   pendingMyDiscardAnchorsRef,
@@ -186,6 +186,12 @@ export function CardFlightLayer({
     if (!lastTurnAnimation) return;
 
     const frame = window.requestAnimationFrame(() => {
+      // Read .current inside RAF so we get the post-commit DOM elements,
+      // not stale values that may have been captured during render.
+      const deckEl = deckRef.current;
+      const discardEl = discardRef.current;
+      const myHandEl = myHandRef.current;
+
       const nextFlights =
         lastTurnAnimation.action === 'discard'
           ? buildDiscardFlights(
@@ -235,10 +241,10 @@ export function CardFlightLayer({
 
     return () => window.cancelAnimationFrame(frame);
   }, [
-    discardEl,
-    deckEl,
+    discardRef,
+    deckRef,
     lastTurnAnimation,
-    myHandEl,
+    myHandRef,
     myCardEls,
     myUserId,
     opponentHandEls,
