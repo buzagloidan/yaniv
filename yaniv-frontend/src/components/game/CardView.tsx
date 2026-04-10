@@ -63,7 +63,7 @@ export function CardView({
           src="/yaniv-card.png"
           alt=""
           className="absolute inset-0 w-full h-full"
-          style={{ transform: 'scale(1.3)', transformOrigin: 'center', objectFit: 'fill' }}
+          style={{ transform: 'scale(1.12)', transformOrigin: 'center', objectFit: 'cover' }}
           draggable={false}
         />
       </motion.div>
