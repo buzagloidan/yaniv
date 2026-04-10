@@ -12,6 +12,8 @@ interface Props {
   revealedTotal?: number;
   roundDelta?: number | null;
   roundTag?: string | null;
+  /** 'left'/'right' → cards stack top-to-bottom (each card still portrait) */
+  orientation?: 'top' | 'left' | 'right';
 }
 
 export function OpponentSeat({
@@ -22,9 +24,11 @@ export function OpponentSeat({
   revealedTotal,
   roundDelta,
   roundTag,
+  orientation = 'top',
 }: Props) {
   const s = useStrings();
   const isRevealed = !!revealedCards;
+  const isSide = orientation === 'left' || orientation === 'right';
 
   const cards = isRevealed
     ? revealedCards!
@@ -39,8 +43,12 @@ export function OpponentSeat({
       animate={isCurrentTurn ? { scale: 1.05, y: [0, -2, 0] } : { scale: 1, y: 0 }}
       transition={isCurrentTurn ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.2 }}
     >
-      {/* Card backs */}
-      <div ref={cardsRef} className="flex items-center justify-center" style={{ minHeight: 72 }}>
+      {/* Card fan */}
+      <div
+        ref={cardsRef}
+        className={isSide ? 'flex flex-col items-center' : 'flex items-center justify-center'}
+        style={isSide ? { minWidth: 56 } : { minHeight: 72 }}
+      >
         {player.isEliminated && !isRevealed ? (
           <span className="text-red-400 text-xs font-medium">{s.game.eliminated}</span>
         ) : (
@@ -49,7 +57,13 @@ export function OpponentSeat({
             return (
               <div
                 key={isRevealed ? `${cardId}-${i}` : i}
-                style={{
+                style={isSide ? {
+                  // vertical arrangement: cards overlap top-to-bottom, fan spreads sideways
+                  marginTop: i === 0 ? 0 : -32,
+                  zIndex: i,
+                  transform: `rotate(${centerOffset * 4}deg) translateX(${centerOffset * 3}px)`,
+                } : {
+                  // horizontal arrangement: cards overlap left-to-right, fan spreads up/down
                   marginInlineStart: i === 0 ? 0 : -18,
                   zIndex: i,
                   transform: `rotate(${centerOffset * 5}deg) translateY(${Math.abs(centerOffset) * 1.5}px)`,

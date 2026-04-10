@@ -508,6 +508,7 @@ export function GamePage() {
               revealedTotal={roundResult?.handsRevealed[opponent.userId]?.total}
               roundDelta={roundResult ? (roundResult.scoreDeltas[opponent.userId] ?? 0) : null}
               roundTag={getRoundTag(roundResult, opponent.userId, s)}
+              orientation={positions[i]?.orientation ?? 'top'}
               cardsRef={(node) => {
                 opponentHandRefs.current[opponent.userId] = node;
               }}
