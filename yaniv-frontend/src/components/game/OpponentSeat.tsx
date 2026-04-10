@@ -12,7 +12,6 @@ interface Props {
   revealedTotal?: number;
   roundDelta?: number | null;
   roundTag?: string | null;
-  orientation?: 'top' | 'left' | 'right';
 }
 
 export function OpponentSeat({
@@ -23,7 +22,6 @@ export function OpponentSeat({
   revealedTotal,
   roundDelta,
   roundTag,
-  orientation = 'top',
 }: Props) {
   const s = useStrings();
   const isRevealed = !!revealedCards;
