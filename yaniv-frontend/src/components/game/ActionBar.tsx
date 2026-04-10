@@ -41,6 +41,7 @@ export function ActionBar() {
         initial={{ opacity: 0, scale: 0.88, y: 10 }}
         animate={{
           opacity: 1,
+          y: 0,
           scale: [1, 1.07, 1],
           boxShadow: [
             '0 14px 30px rgba(242,100,25,0.30)',
@@ -49,7 +50,12 @@ export function ActionBar() {
           ],
         }}
         exit={{ opacity: 0, scale: 0.88, y: 10 }}
-        transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{
+          opacity: { duration: 0.3 },
+          y: { duration: 0.3 },
+          scale: { duration: 1.4, repeat: Infinity, ease: 'easeInOut' },
+          boxShadow: { duration: 1.4, repeat: Infinity, ease: 'easeInOut' },
+        }}
       >
         <img
           src="/yaniv-win.png"
