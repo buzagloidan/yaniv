@@ -1,10 +1,11 @@
 import type { Ref } from 'react';
 import { motion } from 'framer-motion';
 import { CardView } from './CardView';
+import { TurnCountdown } from './TurnCountdown';
 import { useGameStore, selectIsMyTurn, selectMe } from '../../store/gameStore';
 import { handTotal, parseCard, isJoker } from '../../utils/cardUtils';
 import { useStrings } from '../../strings';
-import type { CardId } from '../../shared/types';
+import type { CardId, GamePhase } from '../../shared/types';
 
 function sortHandForRTL(hand: CardId[]): CardId[] {
   // In RTL layout first item renders on the RIGHT — sort ascending so highest
@@ -25,9 +26,12 @@ interface Props {
   cardRef?: (cardId: CardId, node: HTMLDivElement | null) => void;
   revealedHand?: CardId[] | null;
   revealedTotal?: number | null;
+  phase?: GamePhase | null;
+  turnDeadlineEpoch?: number | null;
+  showCountdown?: boolean;
 }
 
-export function PlayerHand({ handRef, cardRef, revealedHand, revealedTotal }: Props) {
+export function PlayerHand({ handRef, cardRef, revealedHand, revealedTotal, phase, turnDeadlineEpoch, showCountdown }: Props) {
   const s = useStrings();
   const myHand = useGameStore((s) => s.myHand);
   const selectedCards = useGameStore((s) => s.selectedCards);
@@ -120,17 +124,26 @@ export function PlayerHand({ handRef, cardRef, revealedHand, revealedTotal }: Pr
 
   return (
     <div className="flex flex-col items-center gap-2.5">
-      {/* Hand total */}
-      <div
-        className="px-3 py-1 rounded-full text-xs font-semibold tabular-nums"
-        style={{
-          background: 'rgba(255,251,240,0.72)',
-          color: '#0C4A6E',
-          border: '1px solid rgba(12,74,110,0.12)',
-          boxShadow: '0 8px 20px rgba(12,74,110,0.08)',
-        }}
-      >
-        {s.game.handTotal(total)}
+      {/* Hand total + turn countdown row */}
+      <div className="flex items-center justify-center gap-2">
+        <div
+          className="px-3 py-1 rounded-full text-xs font-semibold tabular-nums"
+          style={{
+            background: 'rgba(255,251,240,0.72)',
+            color: '#0C4A6E',
+            border: '1px solid rgba(12,74,110,0.12)',
+            boxShadow: '0 8px 20px rgba(12,74,110,0.08)',
+          }}
+        >
+          {s.game.handTotal(total)}
+        </div>
+        {showCountdown && (
+          <TurnCountdown
+            phase={phase ?? null}
+            turnDeadlineEpoch={turnDeadlineEpoch ?? null}
+            show={!!showCountdown}
+          />
+        )}
       </div>
 
       {/* Cards — fan layout, highest value left, lowest value right (RTL) */}

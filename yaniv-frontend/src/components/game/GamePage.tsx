@@ -14,7 +14,6 @@ import { ScoreBoard } from './ScoreBoard';
 import { Chat } from './Chat';
 import { RoundResultOverlay } from './RoundResultOverlay';
 import { GameOverOverlay } from './GameOverOverlay';
-import { TurnCountdown } from './TurnCountdown';
 import { ToastContainer } from '../ui/Toast';
 import { CardFlightLayer } from './CardFlightLayer';
 import type { CardId, DrawSource, RoundResultMessage } from '../../shared/types';
@@ -26,28 +25,28 @@ function getRoundTag(result: RoundResultMessage | null, playerId: string, string
   return null;
 }
 
-function opponentPositions(count: number): Array<{ top: string; left?: string; right?: string; transform?: string }> {
+function opponentPositions(count: number): Array<{ top?: string; left?: string; right?: string; transform?: string }> {
   if (count === 1) {
-    return [{ top: '7%', left: '50%', transform: 'translateX(-50%)' }];
+    return [{ top: '8%', left: '50%', transform: 'translateX(-50%)' }];
   }
   if (count === 2) {
     return [
-      { top: '16%', left: '7%' },
-      { top: '16%', right: '7%' },
+      { top: '36%', left: '2%', transform: 'translateY(-50%)' },
+      { top: '36%', right: '2%', transform: 'translateY(-50%)' },
     ];
   }
   if (count === 3) {
     return [
-      { top: '16%', left: '7%' },
-      { top: '5%', left: '50%', transform: 'translateX(-50%)' },
-      { top: '16%', right: '7%' },
+      { top: '42%', left: '2%', transform: 'translateY(-50%)' },
+      { top: '7%', left: '50%', transform: 'translateX(-50%)' },
+      { top: '42%', right: '2%', transform: 'translateY(-50%)' },
     ];
   }
   return [
-    { top: '16%', left: '7%' },
-    { top: '5%', left: '50%', transform: 'translateX(-50%)' },
-    { top: '16%', right: '7%' },
-    { top: '48%', right: '4%', transform: 'translateY(-50%)' },
+    { top: '24%', left: '2%', transform: 'translateY(-50%)' },
+    { top: '7%', left: '50%', transform: 'translateX(-50%)' },
+    { top: '24%', right: '2%', transform: 'translateY(-50%)' },
+    { top: '50%', right: '2%', transform: 'translateY(-50%)' },
   ];
 }
 
@@ -603,19 +602,12 @@ export function GamePage() {
       {/* ── Center: discard + draw pile ── */}
       {!isLoading && !isWaiting && !isWaitingPlayer && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 4 }}>
-          <div className="pointer-events-none flex flex-col items-center gap-2 translate-y-4 sm:translate-y-2">
-            <TurnCountdown
-              phase={phase}
-              turnDeadlineEpoch={turnDeadlineEpoch}
-              show={isMyTurn}
+          <div className="pointer-events-auto">
+            <DiscardPile
+              deckRef={deckRef}
+              discardRef={discardRef}
+              onBeforeDiscardAndDraw={capturePendingLocalFlight}
             />
-            <div className="pointer-events-auto">
-              <DiscardPile
-                deckRef={deckRef}
-                discardRef={discardRef}
-                onBeforeDiscardAndDraw={capturePendingLocalFlight}
-              />
-            </div>
           </div>
         </div>
       )}
@@ -671,6 +663,9 @@ export function GamePage() {
             cardRef={registerMyCardRef}
             revealedHand={myRevealedHand?.cards ?? null}
             revealedTotal={myRevealedHand?.total ?? null}
+            phase={phase}
+            turnDeadlineEpoch={turnDeadlineEpoch}
+            showCountdown={isMyTurn}
           />
         </div>
       )}

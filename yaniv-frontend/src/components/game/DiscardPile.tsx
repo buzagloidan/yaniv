@@ -39,7 +39,7 @@ export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Pro
 
   return (
     <div
-      className="flex items-center justify-center gap-4 sm:gap-5 rounded-[2rem] px-4 py-3 sm:px-5 sm:py-4"
+      className="flex flex-col items-center justify-center gap-3 rounded-[2rem] px-5 py-4"
       style={{
         background: 'rgba(255,251,240,0.18)',
         backdropFilter: 'blur(10px)',
@@ -47,27 +47,7 @@ export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Pro
         boxShadow: '0 18px 48px rgba(12,74,110,0.08)',
       }}
     >
-      {/* Draw pile */}
-      <div className="flex flex-col items-center justify-center">
-        <motion.div
-          ref={deckRef}
-          className="relative cursor-pointer w-[5.75rem] h-[8.25rem] rounded-[1.1rem] overflow-hidden"
-          animate={deckControls}
-          whileHover={canDiscardAndDraw ? { scale: 1.05 } : undefined}
-          whileTap={canDiscardAndDraw ? { scale: 0.97 } : undefined}
-          onClick={() => triggerDiscardAndDraw('deck')}
-        >
-          <img
-            src="/yaniv-deck.png"
-            alt=""
-            className="absolute inset-0 w-full h-full"
-            style={{ transform: 'scale(1.12)', transformOrigin: 'center', objectFit: 'cover' }}
-            draggable={false}
-          />
-        </motion.div>
-      </div>
-
-      {/* Discard set */}
+      {/* Discard set — top */}
       <div className="flex flex-col items-center justify-center">
         <div ref={discardRef} className="flex items-end min-w-[6rem] min-h-[8.4rem] justify-center">
           <AnimatePresence mode="popLayout">
@@ -133,6 +113,24 @@ export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Pro
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Draw pile — bottom */}
+      <motion.div
+        ref={deckRef}
+        className="relative cursor-pointer w-[5.75rem] h-[8.25rem] rounded-[1.1rem] overflow-hidden"
+        animate={deckControls}
+        whileHover={canDiscardAndDraw ? { scale: 1.05 } : undefined}
+        whileTap={canDiscardAndDraw ? { scale: 0.97 } : undefined}
+        onClick={() => triggerDiscardAndDraw('deck')}
+      >
+        <img
+          src="/yaniv-deck.png"
+          alt=""
+          className="absolute inset-0 w-full h-full"
+          style={{ transform: 'scale(1.12)', transformOrigin: 'center', objectFit: 'cover' }}
+          draggable={false}
+        />
+      </motion.div>
     </div>
   );
 }
