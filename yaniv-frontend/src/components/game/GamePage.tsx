@@ -318,15 +318,10 @@ export function GamePage() {
               initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.94 }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold shadow-md transition-transform hover:scale-105 active:scale-95"
-              style={{
-                background: 'rgba(242,100,25,0.15)',
-                backdropFilter: 'blur(8px)',
-                color: '#D9560E',
-                border: '1.5px solid rgba(242,100,25,0.4)',
-              }}
+              className="flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
+              style={{ background: 'none', border: 'none', padding: 0 }}
             >
-              <img src="/exit-button.png" alt="" aria-hidden="true" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+              <img src="/exit-button.png" alt="" aria-hidden="true" style={{ width: 44, height: 44, objectFit: 'contain' }} />
             </motion.button>
           )}
         </AnimatePresence>

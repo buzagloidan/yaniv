@@ -24,11 +24,12 @@ export function ScoreBoard() {
     <div className="absolute top-3 start-3 z-20">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-10 h-10 bg-black/40 hover:bg-black/60 border border-white/10 rounded-xl text-white/80 text-lg flex items-center justify-center transition-colors"
+        className="flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
+        style={{ background: 'none', border: 'none', padding: 0 }}
         aria-label={s.game.score}
         title={s.game.score}
       >
-        <img src="/stats-button.png" alt="" aria-hidden="true" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+        <img src="/paper_asset_ratio.png" alt="" aria-hidden="true" style={{ width: 44, height: 44, objectFit: 'contain' }} />
       </button>
 
       <AnimatePresence>
