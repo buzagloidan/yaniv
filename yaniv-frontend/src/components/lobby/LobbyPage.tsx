@@ -184,13 +184,13 @@ export function LobbyPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, type: 'spring', stiffness: 260, damping: 20 }}
-          className="w-full max-w-xs mb-6"
+          className="w-full max-w-xs mb-2"
         >
           <button
             onClick={handleQuickStart}
             disabled={quickStarting}
             className="w-full transition-all active:scale-95 disabled:opacity-60"
-            style={{ position: 'relative', height: 120, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
+            style={{ position: 'relative', height: 96, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
           >
             <img src="/main-button.png" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
             <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: '28%', color: '#FFFBF0', fontFamily: 'Syne, sans-serif', fontSize: '1.25rem', fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
@@ -210,7 +210,7 @@ export function LobbyPage() {
           <button
             onClick={() => setShowJoin(true)}
             className="w-full transition-all active:scale-95"
-            style={{ position: 'relative', height: 90, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
+            style={{ position: 'relative', height: 76, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
           >
             <img src="/sub-button.png" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
             <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: '28%', color: '#3D2000', fontFamily: 'Noto Sans Hebrew, sans-serif', fontSize: '1rem', fontWeight: 600 }}>
@@ -222,7 +222,7 @@ export function LobbyPage() {
           <button
             onClick={() => setShowCreate(true)}
             className="w-full transition-all active:scale-95"
-            style={{ position: 'relative', height: 90, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
+            style={{ position: 'relative', height: 76, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
           >
             <img src="/sub-button.png" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
             <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: '28%', color: '#3D2000', fontFamily: 'Noto Sans Hebrew, sans-serif', fontSize: '1rem', fontWeight: 600 }}>
@@ -234,7 +234,7 @@ export function LobbyPage() {
           <button
             onClick={() => setShowSettings(true)}
             className="w-full transition-all active:scale-95"
-            style={{ position: 'relative', height: 90, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
+            style={{ position: 'relative', height: 76, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
           >
             <img src="/sub-button.png" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
             <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: '28%', color: '#3D2000', fontFamily: 'Noto Sans Hebrew, sans-serif', fontSize: '1rem', fontWeight: 600 }}>
