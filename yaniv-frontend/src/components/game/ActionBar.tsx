@@ -29,32 +29,25 @@ export function ActionBar() {
         onClick={callYaniv}
         aria-label={s.game.callYaniv}
         title={s.game.callYaniv}
-        className="flex items-center justify-center rounded-2xl border active:scale-95"
+        className="flex items-center justify-center active:scale-95"
         style={{
           width: 64,
           height: 64,
-          background: 'linear-gradient(135deg, rgba(242,100,25,0.96), rgba(217,86,14,0.94))',
-          borderColor: 'rgba(255,255,255,0.25)',
-          boxShadow: '0 14px 30px rgba(242,100,25,0.35)',
-          padding: 6,
+          background: 'none',
+          border: 'none',
+          padding: 0,
         }}
         initial={{ opacity: 0, scale: 0.88, y: 10 }}
         animate={{
           opacity: 1,
           y: 0,
           scale: [1, 1.07, 1],
-          boxShadow: [
-            '0 14px 30px rgba(242,100,25,0.30)',
-            '0 20px 40px rgba(242,100,25,0.52)',
-            '0 14px 30px rgba(242,100,25,0.30)',
-          ],
         }}
         exit={{ opacity: 0, scale: 0.88, y: 10 }}
         transition={{
           opacity: { duration: 0.3 },
           y: { duration: 0.3 },
           scale: { duration: 1.4, repeat: Infinity, ease: 'easeInOut' },
-          boxShadow: { duration: 1.4, repeat: Infinity, ease: 'easeInOut' },
         }}
       >
         <img
