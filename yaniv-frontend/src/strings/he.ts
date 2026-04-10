@@ -88,7 +88,7 @@ export const he = {
     hostLabel: 'המארח',
     loadingRoom: 'מכינים את השולחן... 🌴',
     leaveConfirm: 'בטוח שברצונך לעזוב את השולחן?',
-    leaveYes: 'כן, עזוב',
+    leaveYes: 'עזוב שולחן',
     leaveCancel: 'ביטול',
     leaving: 'עוזב...',
     roomCode: (code: string) => `קוד: ${code}`,
