@@ -246,8 +246,8 @@ export function GamePage() {
       <CornerPalm side="right" />
       <OceanStrip />
 
-      {/* Top-start controls: sound toggle */}
-      <div className="absolute top-3 start-3 z-20">
+      {/* Top-start controls: sound toggle — offset to not overlap ScoreBoard stats button */}
+      <div className="absolute top-3 z-20" style={{ insetInlineStart: '60px' }}>
         <button
           onClick={toggleSound}
           aria-label={soundOn ? 'Mute sounds' : 'Unmute sounds'}
