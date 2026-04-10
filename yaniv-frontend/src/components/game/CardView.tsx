@@ -55,15 +55,14 @@ export function CardView({
     return (
       <motion.div
         layout
-        className={cn('card rounded-lg overflow-hidden bg-white', w, h, className)}
+        className={cn('card rounded-lg overflow-hidden', w, h, className)}
         whileHover={onClick ? { scale: 1.05 } : undefined}
         onClick={onClick}
       >
         <img
           src="/yaniv-card.png"
           alt=""
-          className="w-full h-full object-cover"
-          style={{ transform: 'scale(1.06)', transformOrigin: 'center' }}
+          className="w-full h-full object-fill"
           draggable={false}
         />
       </motion.div>

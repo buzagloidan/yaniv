@@ -51,46 +51,18 @@ export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Pro
       <div className="flex flex-col items-center justify-center">
         <motion.div
           ref={deckRef}
-          className="relative cursor-pointer"
+          className="relative cursor-pointer w-[5.75rem] h-[8.25rem] rounded-[1.1rem] overflow-hidden"
           animate={deckControls}
           whileHover={canDiscardAndDraw ? { scale: 1.05 } : undefined}
           whileTap={canDiscardAndDraw ? { scale: 0.97 } : undefined}
           onClick={() => triggerDiscardAndDraw('deck')}
         >
-          {/* Stack effect — offset shadow cards */}
-          {[2, 1].map((offset) => (
-            <div
-              key={offset}
-              className="absolute rounded-lg overflow-hidden opacity-50"
-              style={{
-                width: 92, height: 132,
-                top: -offset * 3,
-                left: -offset * 3,
-                zIndex: 3 - offset,
-              }}
-            >
-              <img
-                src="/yaniv-deck.png"
-                alt=""
-                className="w-full h-full object-cover"
-                style={{ transform: 'scale(1.23)', transformOrigin: 'center' }}
-                draggable={false}
-              />
-            </div>
-          ))}
-          <div
-            className={[
-              'relative z-10 w-[5.75rem] h-[8.25rem] rounded-[1.1rem] overflow-hidden transition-all',
-            ].join(' ')}
-          >
-            <img
-              src="/yaniv-deck.png"
-              alt=""
-              className="w-full h-full object-cover"
-              style={{ transform: 'scale(1.23)', transformOrigin: 'center' }}
-              draggable={false}
-            />
-          </div>
+          <img
+            src="/yaniv-deck.png"
+            alt=""
+            className="w-full h-full object-fill"
+            draggable={false}
+          />
         </motion.div>
       </div>
 
