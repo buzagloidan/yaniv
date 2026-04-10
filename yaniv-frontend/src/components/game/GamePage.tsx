@@ -326,7 +326,7 @@ export function GamePage() {
                 border: '1.5px solid rgba(242,100,25,0.4)',
               }}
             >
-              🚪
+              <img src="/exit-button.png" alt="" aria-hidden="true" style={{ width: 28, height: 28, objectFit: 'contain' }} />
             </motion.button>
           )}
         </AnimatePresence>

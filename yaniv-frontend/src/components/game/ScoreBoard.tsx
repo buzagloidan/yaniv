@@ -28,7 +28,7 @@ export function ScoreBoard() {
         aria-label={s.game.score}
         title={s.game.score}
       >
-        <span>📊</span>
+        <img src="/stats-button.png" alt="" aria-hidden="true" style={{ width: 28, height: 28, objectFit: 'contain' }} />
       </button>
 
       <AnimatePresence>

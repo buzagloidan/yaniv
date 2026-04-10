@@ -61,7 +61,7 @@ export function TurnCountdown({ phase, turnDeadlineEpoch, show }: Props) {
       }}
     >
       <div className="flex items-center justify-center gap-1.5">
-        <span aria-hidden="true" className="text-base leading-none">{isUrgent ? '⏰' : '🕒'}</span>
+        <img src="/clock-button.png" alt="" aria-hidden="true" style={{ width: 20, height: 20, objectFit: 'contain' }} />
         <span className="tabular-nums text-lg leading-none">{secondsLeft}</span>
       </div>
     </motion.div>
