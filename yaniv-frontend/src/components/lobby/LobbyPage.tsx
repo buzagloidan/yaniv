@@ -189,20 +189,13 @@ export function LobbyPage() {
           <button
             onClick={handleQuickStart}
             disabled={quickStarting}
-            className="w-full transition-all active:scale-95 disabled:opacity-60 flex items-center justify-center text-xl font-bold"
-            style={{
-              height: 72,
-              backgroundImage: 'url(/main-button.png)',
-              backgroundSize: '100% 100%',
-              backgroundRepeat: 'no-repeat',
-              border: 'none',
-              padding: 0,
-              color: '#FFFBF0',
-              fontFamily: 'Syne, sans-serif',
-              textShadow: '0 1px 4px rgba(0,0,0,0.4)',
-            }}
+            className="w-full transition-all active:scale-95 disabled:opacity-60"
+            style={{ position: 'relative', height: 120, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
           >
-            {quickStarting ? s.lobby.loading : s.game.startGame}
+            <img src="/main-button.png" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
+            <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: '28%', color: '#FFFBF0', fontFamily: 'Syne, sans-serif', fontSize: '1.25rem', fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+              {quickStarting ? s.lobby.loading : s.game.startGame}
+            </span>
           </button>
         </motion.div>
 
@@ -216,55 +209,37 @@ export function LobbyPage() {
           {/* Join with code */}
           <button
             onClick={() => setShowJoin(true)}
-            className="w-full transition-all active:scale-95 flex items-center justify-center text-base font-semibold"
-            style={{
-              height: 56,
-              backgroundImage: 'url(/sub-button.png)',
-              backgroundSize: '100% 100%',
-              backgroundRepeat: 'no-repeat',
-              border: 'none',
-              padding: 0,
-              color: '#0C4A6E',
-              fontFamily: 'Noto Sans Hebrew, sans-serif',
-            }}
+            className="w-full transition-all active:scale-95"
+            style={{ position: 'relative', height: 90, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
           >
-            {s.lobby.joinWithCode}
+            <img src="/sub-button.png" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
+            <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: '28%', color: '#3D2000', fontFamily: 'Noto Sans Hebrew, sans-serif', fontSize: '1rem', fontWeight: 600 }}>
+              {s.lobby.joinWithCode}
+            </span>
           </button>
 
           {/* Create table */}
           <button
             onClick={() => setShowCreate(true)}
-            className="w-full transition-all active:scale-95 flex items-center justify-center text-base font-semibold"
-            style={{
-              height: 56,
-              backgroundImage: 'url(/sub-button.png)',
-              backgroundSize: '100% 100%',
-              backgroundRepeat: 'no-repeat',
-              border: 'none',
-              padding: 0,
-              color: '#0C4A6E',
-              fontFamily: 'Noto Sans Hebrew, sans-serif',
-            }}
+            className="w-full transition-all active:scale-95"
+            style={{ position: 'relative', height: 90, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
           >
-            {s.lobby.createTable}
+            <img src="/sub-button.png" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
+            <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: '28%', color: '#3D2000', fontFamily: 'Noto Sans Hebrew, sans-serif', fontSize: '1rem', fontWeight: 600 }}>
+              {s.lobby.createTable}
+            </span>
           </button>
 
           {/* Settings */}
           <button
             onClick={() => setShowSettings(true)}
-            className="w-full transition-all active:scale-95 flex items-center justify-center text-base font-semibold"
-            style={{
-              height: 56,
-              backgroundImage: 'url(/sub-button.png)',
-              backgroundSize: '100% 100%',
-              backgroundRepeat: 'no-repeat',
-              border: 'none',
-              padding: 0,
-              color: '#0C4A6E',
-              fontFamily: 'Noto Sans Hebrew, sans-serif',
-            }}
+            className="w-full transition-all active:scale-95"
+            style={{ position: 'relative', height: 90, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
           >
-            {s.lobby.settings}
+            <img src="/sub-button.png" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
+            <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: '28%', color: '#3D2000', fontFamily: 'Noto Sans Hebrew, sans-serif', fontSize: '1rem', fontWeight: 600 }}>
+              {s.lobby.settings}
+            </span>
           </button>
         </motion.div>
       </div>
