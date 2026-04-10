@@ -125,27 +125,14 @@ export function PlayerHand({ handRef, cardRef, revealedHand, revealedTotal, phas
 
   return (
     <div className="flex flex-col items-center gap-2.5">
-      {/* Hand total + turn countdown row */}
-      <div className="flex items-center justify-center gap-2">
-        <div
-          className="px-3 py-1 rounded-full text-xs font-semibold tabular-nums"
-          style={{
-            background: 'rgba(255,251,240,0.72)',
-            color: '#0C4A6E',
-            border: '1px solid rgba(12,74,110,0.12)',
-            boxShadow: '0 8px 20px rgba(12,74,110,0.08)',
-          }}
-        >
-          {s.game.handTotal(total)}
-        </div>
-        {showCountdown && (
-          <TurnCountdown
-            phase={resolvedPhase}
-            turnDeadlineEpoch={turnDeadlineEpoch ?? null}
-            show={!!showCountdown}
-          />
-        )}
-      </div>
+      {/* Turn countdown — above the cards */}
+      {showCountdown && (
+        <TurnCountdown
+          phase={resolvedPhase}
+          turnDeadlineEpoch={turnDeadlineEpoch ?? null}
+          show={!!showCountdown}
+        />
+      )}
 
       {/* Cards — fan layout, highest value left, lowest value right (RTL) */}
       <div ref={handRef} className="flex items-end justify-center px-2" style={{ minHeight: 124 }}>
@@ -207,6 +194,19 @@ export function PlayerHand({ handRef, cardRef, revealedHand, revealedTotal, phas
             </div>
           );
         })}
+      </div>
+
+      {/* Hand total — below the cards */}
+      <div
+        className="px-3 py-1 rounded-full text-xs font-semibold tabular-nums"
+        style={{
+          background: 'rgba(255,251,240,0.72)',
+          color: '#0C4A6E',
+          border: '1px solid rgba(12,74,110,0.12)',
+          boxShadow: '0 8px 20px rgba(12,74,110,0.08)',
+        }}
+      >
+        {s.game.handTotal(total)}
       </div>
     </div>
   );
