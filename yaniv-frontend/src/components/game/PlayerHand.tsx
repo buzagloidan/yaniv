@@ -1,7 +1,6 @@
 import type { Ref } from 'react';
 import { motion } from 'framer-motion';
 import { CardView } from './CardView';
-import { TurnCountdown } from './TurnCountdown';
 import { useGameStore, selectIsMyTurn, selectMe } from '../../store/gameStore';
 import { handTotal, parseCard, isJoker } from '../../utils/cardUtils';
 import { useStrings } from '../../strings';
@@ -27,11 +26,9 @@ interface Props {
   revealedHand?: CardId[] | null;
   revealedTotal?: number | null;
   phase?: GamePhase | null;
-  turnDeadlineEpoch?: number | null;
-  showCountdown?: boolean;
 }
 
-export function PlayerHand({ handRef, cardRef, revealedHand, revealedTotal, phase, turnDeadlineEpoch, showCountdown }: Props) {
+export function PlayerHand({ handRef, cardRef, revealedHand, revealedTotal, phase }: Props) {
   const s = useStrings();
   const myHand = useGameStore((s) => s.myHand);
   const selectedCards = useGameStore((s) => s.selectedCards);
@@ -40,6 +37,7 @@ export function PlayerHand({ handRef, cardRef, revealedHand, revealedTotal, phas
   const hadabakaAccept = useGameStore((s) => s.hadabakaAccept);
   const storePhase = useGameStore((s) => s.phase);
   const resolvedPhase = phase ?? storePhase;
+  // resolvedPhase used below for canSelect/isHadabakaPhase/isWaitingRoom
   const isMyTurn = useGameStore(selectIsMyTurn);
   const me = useGameStore(selectMe);
   const lastTurnAnimation = useGameStore((s) => s.lastTurnAnimation);
@@ -125,15 +123,6 @@ export function PlayerHand({ handRef, cardRef, revealedHand, revealedTotal, phas
 
   return (
     <div className="flex flex-col items-center gap-2.5">
-      {/* Turn countdown — above the cards */}
-      {showCountdown && (
-        <TurnCountdown
-          phase={resolvedPhase}
-          turnDeadlineEpoch={turnDeadlineEpoch ?? null}
-          show={!!showCountdown}
-        />
-      )}
-
       {/* Cards — fan layout, highest value left, lowest value right (RTL) */}
       <div ref={handRef} className="flex items-end justify-center px-2" style={{ minHeight: 124 }}>
         {sortedHand.map((cardId, i) => {

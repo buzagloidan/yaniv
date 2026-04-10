@@ -7,6 +7,7 @@ import { useStrings } from '../../strings';
 import { leaveTable, leaveTableById } from '../../networking/api';
 import { isSoundEnabled, setSoundEnabled } from '../../utils/soundManager';
 import { PlayerHand } from './PlayerHand';
+import { TurnCountdown } from './TurnCountdown';
 import { DiscardPile } from './DiscardPile';
 import { OpponentSeat } from './OpponentSeat';
 import { ActionBar } from './ActionBar';
@@ -619,6 +620,17 @@ export function GamePage() {
         </div>
       )}
 
+      {/* ── Turn countdown — between deck and player hand ── */}
+      {!isLoading && !isWaiting && !isWaitingPlayer && isMyTurn && (
+        <div className="absolute inset-x-0 flex justify-center" style={{ zIndex: 6, bottom: '33%' }}>
+          <TurnCountdown
+            phase={phase}
+            turnDeadlineEpoch={turnDeadlineEpoch ?? null}
+            show={isMyTurn}
+          />
+        </div>
+      )}
+
       {/* ── My hand + action bar ── */}
       {!isLoading && !isWaitingPlayer && (
         <div className="absolute inset-x-0 flex flex-col items-center gap-1.5 px-3" style={{ zIndex: 5, bottom: '1.75rem' }}>
@@ -645,8 +657,6 @@ export function GamePage() {
             revealedHand={myRevealedHand?.cards ?? null}
             revealedTotal={myRevealedHand?.total ?? null}
             phase={phase}
-            turnDeadlineEpoch={turnDeadlineEpoch}
-            showCountdown={isMyTurn}
           />
         </div>
       )}
