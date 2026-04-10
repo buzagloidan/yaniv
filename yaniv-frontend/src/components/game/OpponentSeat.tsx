@@ -12,6 +12,7 @@ interface Props {
   revealedTotal?: number;
   roundDelta?: number | null;
   roundTag?: string | null;
+  orientation?: 'top' | 'left' | 'right';
 }
 
 export function OpponentSeat({
@@ -22,9 +23,60 @@ export function OpponentSeat({
   revealedTotal,
   roundDelta,
   roundTag,
+  orientation = 'top',
 }: Props) {
   const s = useStrings();
   const isRevealed = !!revealedCards;
+  const isVertical = orientation === 'left' || orientation === 'right';
+
+  const renderCards = () => {
+    if (player.isEliminated && !isRevealed) {
+      return <span className="text-red-400 text-xs font-medium">{s.game.eliminated}</span>;
+    }
+
+    const cards = isRevealed ? revealedCards! : Array.from({ length: player.cardCount }, (_, i) => `XX-${i}` as CardId);
+    const count = cards.length;
+
+    if (isVertical) {
+      // Vertical fan for side players
+      return cards.map((cardId, i) => {
+        const centerOffset = i - (count - 1) / 2;
+        return (
+          <div
+            key={isRevealed ? `${cardId}-${i}` : i}
+            style={{
+              marginTop: i === 0 ? 0 : -32,
+              zIndex: i,
+              transform: `rotate(${centerOffset * 4}deg) translateX(${centerOffset * 2}px)`,
+            }}
+          >
+            {isRevealed
+              ? <CardView cardId={cardId} small />
+              : <CardView cardId="XX" faceDown size="sm" />}
+          </div>
+        );
+      });
+    }
+
+    // Horizontal fan (top player)
+    return cards.map((cardId, i) => {
+      const centerOffset = i - (count - 1) / 2;
+      return (
+        <div
+          key={isRevealed ? `${cardId}-${i}` : i}
+          style={{
+            marginInlineStart: i === 0 ? 0 : -18,
+            zIndex: i,
+            transform: `rotate(${centerOffset * 5}deg) translateY(${Math.abs(centerOffset) * 1.5}px)`,
+          }}
+        >
+          {isRevealed
+            ? <CardView cardId={cardId} small />
+            : <CardView cardId="XX" faceDown size="sm" />}
+        </div>
+      );
+    });
+  };
 
   return (
     <motion.div
@@ -33,36 +85,12 @@ export function OpponentSeat({
       transition={isCurrentTurn ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.2 }}
     >
       {/* Card backs */}
-      <div ref={cardsRef} className="flex items-center justify-center" style={{ minHeight: 72 }}>
-        {isRevealed ? (
-          revealedCards!.map((cardId, i) => (
-            <div
-              key={`${cardId}-${i}`}
-              style={{
-                marginInlineStart: i === 0 ? 0 : -18,
-                zIndex: i,
-                transform: `rotate(${(i - (revealedCards!.length - 1) / 2) * 5}deg) translateY(${Math.abs(i - (revealedCards!.length - 1) / 2) * 1.5}px)`,
-              }}
-            >
-              <CardView cardId={cardId} small />
-            </div>
-          ))
-        ) : player.isEliminated ? (
-          <span className="text-red-400 text-xs font-medium">{s.game.eliminated}</span>
-        ) : (
-          Array.from({ length: player.cardCount }).map((_, i) => (
-            <div
-              key={i}
-              style={{
-                marginInlineStart: i === 0 ? 0 : -18,
-                zIndex: i,
-                transform: `rotate(${(i - (player.cardCount - 1) / 2) * 5}deg) translateY(${Math.abs(i - (player.cardCount - 1) / 2) * 1.5}px)`,
-              }}
-            >
-              <CardView cardId="XX" faceDown size="sm" />
-            </div>
-          ))
-        )}
+      <div
+        ref={cardsRef}
+        className={isVertical ? 'flex flex-col items-center' : 'flex items-center justify-center'}
+        style={isVertical ? { minWidth: 56 } : { minHeight: 72 }}
+      >
+        {renderCards()}
       </div>
 
       {/* Name badge */}

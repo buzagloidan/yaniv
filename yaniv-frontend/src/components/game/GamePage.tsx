@@ -25,28 +25,34 @@ function getRoundTag(result: RoundResultMessage | null, playerId: string, string
   return null;
 }
 
-function opponentPositions(count: number): Array<{ top?: string; left?: string; right?: string; transform?: string }> {
+type OpponentOrientation = 'top' | 'left' | 'right';
+interface OpponentPosition {
+  top?: string; left?: string; right?: string; transform?: string;
+  orientation: OpponentOrientation;
+}
+
+function opponentPositions(count: number): OpponentPosition[] {
   if (count === 1) {
-    return [{ top: '8%', left: '50%', transform: 'translateX(-50%)' }];
+    return [{ top: '7%', left: '50%', transform: 'translateX(-50%)', orientation: 'top' }];
   }
   if (count === 2) {
     return [
-      { top: '36%', left: '2%', transform: 'translateY(-50%)' },
-      { top: '36%', right: '2%', transform: 'translateY(-50%)' },
+      { top: '38%', left: '0', transform: 'translateY(-50%)', orientation: 'left' },
+      { top: '38%', right: '0', transform: 'translateY(-50%)', orientation: 'right' },
     ];
   }
   if (count === 3) {
     return [
-      { top: '42%', left: '2%', transform: 'translateY(-50%)' },
-      { top: '7%', left: '50%', transform: 'translateX(-50%)' },
-      { top: '42%', right: '2%', transform: 'translateY(-50%)' },
+      { top: '44%', left: '0', transform: 'translateY(-50%)', orientation: 'left' },
+      { top: '5%', left: '50%', transform: 'translateX(-50%)', orientation: 'top' },
+      { top: '44%', right: '0', transform: 'translateY(-50%)', orientation: 'right' },
     ];
   }
   return [
-    { top: '24%', left: '2%', transform: 'translateY(-50%)' },
-    { top: '7%', left: '50%', transform: 'translateX(-50%)' },
-    { top: '24%', right: '2%', transform: 'translateY(-50%)' },
-    { top: '50%', right: '2%', transform: 'translateY(-50%)' },
+    { top: '28%', left: '0', transform: 'translateY(-50%)', orientation: 'left' },
+    { top: '5%', left: '50%', transform: 'translateX(-50%)', orientation: 'top' },
+    { top: '28%', right: '0', transform: 'translateY(-50%)', orientation: 'right' },
+    { top: '52%', right: '0', transform: 'translateY(-50%)', orientation: 'right' },
   ];
 }
 
@@ -502,6 +508,7 @@ export function GamePage() {
               revealedTotal={roundResult?.handsRevealed[opponent.userId]?.total}
               roundDelta={roundResult ? (roundResult.scoreDeltas[opponent.userId] ?? 0) : null}
               roundTag={getRoundTag(roundResult, opponent.userId, s)}
+              orientation={positions[i]?.orientation ?? 'top'}
               cardsRef={(node) => {
                 opponentHandRefs.current[opponent.userId] = node;
               }}

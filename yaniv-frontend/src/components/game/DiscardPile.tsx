@@ -38,15 +38,7 @@ export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Pro
   };
 
   return (
-    <div
-      className="flex flex-col items-center justify-center gap-3 rounded-[2rem] px-5 py-4"
-      style={{
-        background: 'rgba(255,251,240,0.18)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255,255,255,0.18)',
-        boxShadow: '0 18px 48px rgba(12,74,110,0.08)',
-      }}
-    >
+    <div className="flex flex-col items-center justify-center gap-4">
       {/* Discard set — top */}
       <div className="flex flex-col items-center justify-center">
         <div ref={discardRef} className="flex items-end min-w-[6rem] min-h-[8.4rem] justify-center">
