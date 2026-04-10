@@ -251,15 +251,10 @@ export function GamePage() {
         <button
           onClick={toggleSound}
           aria-label={soundOn ? 'Mute sounds' : 'Unmute sounds'}
-          className="flex items-center justify-center w-9 h-9 rounded-xl text-lg shadow-md transition-transform active:scale-95"
-          style={{
-            background: 'rgba(255,255,255,0.18)',
-            backdropFilter: 'blur(8px)',
-            border: '1.5px solid rgba(255,255,255,0.3)',
-            color: '#FFFBF0',
-          }}
+          className="flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
+          style={{ background: 'none', border: 'none', padding: 0, opacity: soundOn ? 1 : 0.45 }}
         >
-          {soundOn ? '🔊' : '🔇'}
+          <img src="/sound-button.png" alt="" aria-hidden="true" style={{ width: 44, height: 44, objectFit: 'contain' }} />
         </button>
       </div>
 
