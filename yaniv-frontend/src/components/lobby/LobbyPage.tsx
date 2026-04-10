@@ -189,34 +189,26 @@ export function LobbyPage() {
           <button
             onClick={handleQuickStart}
             disabled={quickStarting}
-            className="w-full py-5 rounded-3xl text-xl font-bold transition-all active:scale-95 disabled:opacity-60 relative overflow-hidden"
-            style={{
-              background: quickStarting
-                ? 'linear-gradient(135deg, #C49A28, #8B6914)'
-                : 'linear-gradient(135deg, #F26419 0%, #E05210 50%, #C94A0C 100%)',
-              color: '#FFFBF0',
-              fontFamily: 'Syne, sans-serif',
-              boxShadow: quickStarting
-                ? 'none'
-                : '0 6px 24px rgba(242,100,25,0.45), 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)',
-              border: '2px solid rgba(255,255,255,0.15)',
-            }}
+            className="w-full transition-all active:scale-95 disabled:opacity-60 relative"
+            style={{ background: 'none', border: 'none', padding: 0 }}
           >
-            {/* Shimmer */}
-            {!quickStarting && (
-              <div
-                className="absolute inset-0 opacity-20"
-                style={{
-                  background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.6) 50%, transparent 70%)',
-                  animation: 'shimmer 2.5s infinite',
-                }}
-              />
-            )}
-            <span className="relative">
-              {quickStarting ? `🌴 ${s.lobby.loading}` : `🏄 ${s.game.startGame}`}
+            <img
+              src="/main-button.png"
+              alt={s.game.startGame}
+              className="w-full h-auto object-contain"
+              style={{ display: 'block' }}
+            />
+            <span
+              className="absolute inset-0 flex items-center justify-center text-xl font-bold"
+              style={{
+                color: '#FFFBF0',
+                fontFamily: 'Syne, sans-serif',
+                textShadow: '0 1px 4px rgba(0,0,0,0.4)',
+              }}
+            >
+              {quickStarting ? s.lobby.loading : s.game.startGame}
             </span>
           </button>
-
         </motion.div>
 
         {/* Secondary buttons */}
@@ -229,49 +221,46 @@ export function LobbyPage() {
           {/* Join with code */}
           <button
             onClick={() => setShowJoin(true)}
-            className="w-full py-4 rounded-2xl text-base font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
-            style={{
-              background: 'rgba(255,255,255,0.85)',
-              color: '#0C4A6E',
-              fontFamily: 'Noto Sans Hebrew, sans-serif',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)',
-              border: '1px solid rgba(8,145,178,0.2)',
-            }}
+            className="w-full transition-all active:scale-95 relative"
+            style={{ background: 'none', border: 'none', padding: 0 }}
           >
-            <span className="text-lg">🔑</span>
-            {s.lobby.joinWithCode}
+            <img src="/sub-button.png" alt={s.lobby.joinWithCode} className="w-full h-auto object-contain" style={{ display: 'block' }} />
+            <span
+              className="absolute inset-0 flex items-center justify-center text-base font-semibold"
+              style={{ color: '#0C4A6E', fontFamily: 'Noto Sans Hebrew, sans-serif', textShadow: '0 1px 2px rgba(255,255,255,0.5)' }}
+            >
+              {s.lobby.joinWithCode}
+            </span>
           </button>
 
           {/* Create table */}
           <button
             onClick={() => setShowCreate(true)}
-            className="w-full py-4 rounded-2xl text-base font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
-            style={{
-              background: 'rgba(255,255,255,0.85)',
-              color: '#0C4A6E',
-              fontFamily: 'Noto Sans Hebrew, sans-serif',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)',
-              border: '1px solid rgba(8,145,178,0.2)',
-            }}
+            className="w-full transition-all active:scale-95 relative"
+            style={{ background: 'none', border: 'none', padding: 0 }}
           >
-            <span className="text-lg">🃏</span>
-            {s.lobby.createTable}
+            <img src="/sub-button.png" alt={s.lobby.createTable} className="w-full h-auto object-contain" style={{ display: 'block' }} />
+            <span
+              className="absolute inset-0 flex items-center justify-center text-base font-semibold"
+              style={{ color: '#0C4A6E', fontFamily: 'Noto Sans Hebrew, sans-serif', textShadow: '0 1px 2px rgba(255,255,255,0.5)' }}
+            >
+              {s.lobby.createTable}
+            </span>
           </button>
 
           {/* Settings */}
           <button
             onClick={() => setShowSettings(true)}
-            className="w-full py-4 rounded-2xl text-base font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
-            style={{
-              background: 'rgba(255,255,255,0.85)',
-              color: '#0C4A6E',
-              fontFamily: 'Noto Sans Hebrew, sans-serif',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)',
-              border: '1px solid rgba(8,145,178,0.2)',
-            }}
+            className="w-full transition-all active:scale-95 relative"
+            style={{ background: 'none', border: 'none', padding: 0 }}
           >
-            <span className="text-lg">⚙️</span>
-            {s.lobby.settings}
+            <img src="/sub-button.png" alt={s.lobby.settings} className="w-full h-auto object-contain" style={{ display: 'block' }} />
+            <span
+              className="absolute inset-0 flex items-center justify-center text-base font-semibold"
+              style={{ color: '#0C4A6E', fontFamily: 'Noto Sans Hebrew, sans-serif', textShadow: '0 1px 2px rgba(255,255,255,0.5)' }}
+            >
+              {s.lobby.settings}
+            </span>
           </button>
         </motion.div>
       </div>
@@ -282,15 +271,7 @@ export function LobbyPage() {
         <div className="text-6xl" style={{ transformOrigin: 'bottom', marginBottom: -8 }}>🌴</div>
       </div>
 
-      {/* Shimmer keyframe */}
-      <style>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(200%); }
-        }
-      `}</style>
-
-      <CreateTableModal
+<CreateTableModal
         open={showCreate}
         onClose={() => setShowCreate(false)}
         onCreate={handleCreate}
