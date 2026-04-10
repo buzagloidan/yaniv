@@ -47,23 +47,23 @@ export function OpponentSeat({
       <div
         ref={cardsRef}
         className={isSide ? 'flex flex-col items-center' : 'flex items-center justify-center'}
-        style={isSide ? { minWidth: 56 } : { minHeight: 72 }}
+        style={isSide ? { minWidth: 72, overflow: 'visible' } : { minHeight: 72 }}
       >
         {player.isEliminated && !isRevealed ? (
           <span className="text-red-400 text-xs font-medium">{s.game.eliminated}</span>
         ) : (
           cards.map((cardId, i) => {
             const centerOffset = i - (count - 1) / 2;
+            // Side players: each card rotated 90° so it lies landscape, stacked top-to-bottom
+            const baseAngle = orientation === 'left' ? 90 : -90;
             return (
               <div
                 key={isRevealed ? `${cardId}-${i}` : i}
                 style={isSide ? {
-                  // vertical arrangement: cards overlap top-to-bottom, fan spreads sideways
-                  marginTop: i === 0 ? 0 : -32,
+                  marginTop: i === 0 ? 0 : -50,
                   zIndex: i,
-                  transform: `rotate(${centerOffset * 4}deg) translateX(${centerOffset * 3}px)`,
+                  transform: `rotate(${baseAngle + centerOffset * 5}deg)`,
                 } : {
-                  // horizontal arrangement: cards overlap left-to-right, fan spreads up/down
                   marginInlineStart: i === 0 ? 0 : -18,
                   zIndex: i,
                   transform: `rotate(${centerOffset * 5}deg) translateY(${Math.abs(centerOffset) * 1.5}px)`,
