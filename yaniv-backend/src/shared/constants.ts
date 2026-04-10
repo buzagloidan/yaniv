@@ -25,7 +25,14 @@ export const DEFAULTS = {
   BOT_THINK_MS: 1_400,           // delay before bot acts (feels natural)
   // Window (ms) for a player to accept a הדבקה (same-rank deck draw) before auto-decline
   HADABAKA_WINDOW_MS: 2_000,
-  BOT_NAMES: ['דני 🤖', 'מיכל 🤖', 'יוסי 🤖', 'רותי 🤖'] as readonly string[],
+  BOT_NAMES: [
+    'נועם 🤖', 'יעל 🤖', 'עידו 🤖', 'תמר 🤖', 'איתן 🤖', 'שירה 🤖', 'דניאל 🤖', 'מאיה 🤖',
+    'עומר 🤖', 'ליאור 🤖', 'רון 🤖', 'נועה 🤖', 'יונתן 🤖', 'מיכל 🤖', 'אלון 🤖', 'רותם 🤖',
+    'אריאל 🤖', 'גל 🤖', 'שקד 🤖', 'תום 🤖', 'אביגיל 🤖', 'דביר 🤖', 'עדן 🤖', 'רועי 🤖',
+    'סיון 🤖', 'עומרי 🤖', 'ליה 🤖', 'עדי 🤖', 'אופיר 🤖', 'לירון 🤖', 'נטע 🤖', 'עמית 🤖',
+    'יובל 🤖', 'טל 🤖', 'הדר 🤖', 'אלמוג 🤖', 'בר 🤖', 'גיא 🤖', 'נעמה 🤖', 'דפנה 🤖',
+    'אלעד 🤖', 'שי 🤖', 'קורל 🤖', 'יפתח 🤖', 'זיו 🤖', 'אייל 🤖', 'רז 🤖', 'תהל 🤖', 'מור 🤖',
+  ] as readonly string[],
   // How long after game_over before the table auto-resets for a new game
   TABLE_RESET_DELAY_MS: 15_000,
 } as const;

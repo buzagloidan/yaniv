@@ -622,7 +622,7 @@ export function GamePage() {
 
       {/* ── Turn countdown — between deck and player hand ── */}
       {!isLoading && !isWaiting && !isWaitingPlayer && isMyTurn && (
-        <div className="absolute inset-x-0 flex justify-center" style={{ zIndex: 6, bottom: '26.5%' }}>
+        <div className="absolute inset-x-0 flex justify-center" style={{ zIndex: 6, bottom: '26%' }}>
           <TurnCountdown
             phase={phase}
             turnDeadlineEpoch={turnDeadlineEpoch ?? null}

@@ -965,7 +965,10 @@ export class GameTable implements DurableObject {
       // Pick a unique bot ID and name
       const existingBotCount = Object.values(current.players).filter(p => p.isBot).length;
       const botId = `bot_${current.tableId}_${existingBotCount}`;
-      const botName = DEFAULTS.BOT_NAMES[existingBotCount % DEFAULTS.BOT_NAMES.length];
+      const usedNames = new Set(Object.values(current.players).filter(p => p.isBot).map(p => p.displayName));
+      const availableNames = DEFAULTS.BOT_NAMES.filter(n => !usedNames.has(n));
+      const namePool = availableNames.length > 0 ? availableNames : DEFAULTS.BOT_NAMES;
+      const botName = namePool[Math.floor(Math.random() * namePool.length)];
 
       current = addPlayer(current, {
         userId: botId,
