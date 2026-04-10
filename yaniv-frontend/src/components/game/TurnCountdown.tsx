@@ -46,7 +46,7 @@ export function TurnCountdown({ phase, turnDeadlineEpoch, show }: Props) {
         scale: isUrgent ? [1, 1.03, 1] : 1,
       }}
       transition={isUrgent ? { duration: 0.9, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.18 }}
-      className="min-w-[4.25rem] px-3 py-2 rounded-full font-bold shadow-lg"
+      className="min-w-[3rem] px-2 py-1 rounded-full font-bold shadow-md mt-1"
       style={{
         background: isUrgent ? 'rgba(220, 38, 38, 0.88)' : 'rgba(255,255,255,0.78)',
         backdropFilter: 'blur(10px)',
@@ -55,14 +55,14 @@ export function TurnCountdown({ phase, turnDeadlineEpoch, show }: Props) {
           ? '1.5px solid rgba(255,255,255,0.36)'
           : '1.5px solid rgba(8,145,178,0.28)',
         boxShadow: isUrgent
-          ? '0 10px 28px rgba(220,38,38,0.32)'
-          : '0 10px 28px rgba(12,74,110,0.14)',
+          ? '0 6px 18px rgba(220,38,38,0.28)'
+          : '0 6px 18px rgba(12,74,110,0.12)',
         fontFamily: 'Syne, sans-serif',
       }}
     >
-      <div className="flex items-center justify-center gap-1.5">
-        <img src="/clock-button.png" alt="" aria-hidden="true" style={{ width: 20, height: 20, objectFit: 'contain' }} />
-        <span className="tabular-nums text-lg leading-none">{secondsLeft}</span>
+      <div className="flex items-center justify-center gap-1">
+        <img src="/clock-button.png" alt="" aria-hidden="true" style={{ width: 14, height: 14, objectFit: 'contain' }} />
+        <span className="tabular-nums text-sm leading-none">{secondsLeft}</span>
       </div>
     </motion.div>
   );
