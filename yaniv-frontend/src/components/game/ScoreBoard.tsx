@@ -29,7 +29,7 @@ export function ScoreBoard() {
         aria-label={s.game.score}
         title={s.game.score}
       >
-        <img src="/paper_asset_ratio.png" alt="" aria-hidden="true" style={{ width: 44, height: 44, objectFit: 'contain' }} />
+        <img src="/paper_asset_ratio_fixed.png" alt="" aria-hidden="true" style={{ width: 44, height: 44, objectFit: 'contain' }} />
       </button>
 
       <AnimatePresence>
