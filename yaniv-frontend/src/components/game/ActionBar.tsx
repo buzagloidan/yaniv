@@ -2,14 +2,12 @@ import { motion } from 'framer-motion';
 import { useStrings } from '../../strings';
 import { useGameStore, selectCanCallYaniv, selectIsMyTurn } from '../../store/gameStore';
 
-const DEFAULT_THRESHOLD = 7;
-
 export function ActionBar() {
   const s = useStrings();
   const phase = useGameStore((s) => s.phase);
   const callYaniv = useGameStore((s) => s.callYaniv);
   const isMyTurn = useGameStore(selectIsMyTurn);
-  const canYaniv = useGameStore((s) => selectCanCallYaniv(s, DEFAULT_THRESHOLD));
+  const canYaniv = useGameStore((s) => selectCanCallYaniv(s, s.yanivThreshold));
 
   if (phase === 'waiting_for_players') {
     return null;

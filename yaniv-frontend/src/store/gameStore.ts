@@ -59,6 +59,7 @@ interface GameStore {
   hostId: string | null;
   isPrivateTable: boolean;
   maxPlayers: number;
+  yanivThreshold: number;
   phase: GamePhase | null;
   roundNumber: number;
   currentTurnUserId: string | null;
@@ -145,6 +146,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   hostId: null,
   isPrivateTable: false,
   maxPlayers: 0,
+  yanivThreshold: 7,
   phase: null,
   roundNumber: 0,
   currentTurnUserId: null,
@@ -300,6 +302,7 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
         hostId: msg.hostId,
         isPrivateTable: msg.isPrivateTable,
         maxPlayers: msg.maxPlayers,
+        yanivThreshold: msg.yanivThreshold,
         phase: msg.phase,
         roundNumber: msg.roundNumber,
         currentTurnUserId: msg.currentTurnUserId,

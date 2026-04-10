@@ -121,5 +121,6 @@ export function buildSnapshot(state: GameState, forUserId: string): StateSnapsho
     waitingPlayerIds: state.waitingPlayers.map((p) => p.userId),
     pauseState: state.pauseState,
     hadabakaCard,
+    yanivThreshold: state.settings.yanivThreshold,
   };
 }

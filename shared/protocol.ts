@@ -164,6 +164,7 @@ export interface StateSnapshotMessage {
   waitingPlayerIds: string[];
   pauseState: PauseState | null;
   hadabakaCard: CardId | null;
+  yanivThreshold: number;
 }
 
 export interface TurnDeltaMessage {
