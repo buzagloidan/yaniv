@@ -38,17 +38,18 @@ export function PlayerHand({ handRef, cardRef, revealedHand, revealedTotal, phas
   const toggleCard = useGameStore((s) => s.toggleCard);
   const hadabakaCard = useGameStore((s) => s.hadabakaCard);
   const hadabakaAccept = useGameStore((s) => s.hadabakaAccept);
-  const phase = useGameStore((s) => s.phase);
+  const storePhase = useGameStore((s) => s.phase);
+  const resolvedPhase = phase ?? storePhase;
   const isMyTurn = useGameStore(selectIsMyTurn);
   const me = useGameStore(selectMe);
   const lastTurnAnimation = useGameStore((s) => s.lastTurnAnimation);
   const displayHand = revealedHand ?? myHand;
   const total = revealedTotal ?? handTotal(displayHand);
-  const isWaitingRoom = phase === 'waiting_for_players';
+  const isWaitingRoom = resolvedPhase === 'waiting_for_players';
   const isSpectating = !!me?.isEliminated && !revealedHand;
 
-  const canSelect = phase === 'player_turn_discard' || phase === 'player_turn_draw';
-  const isHadabakaPhase = isMyTurn && phase === 'player_turn_hadabaka';
+  const canSelect = resolvedPhase === 'player_turn_discard' || resolvedPhase === 'player_turn_draw';
+  const isHadabakaPhase = isMyTurn && resolvedPhase === 'player_turn_hadabaka';
   const sortedHand = sortHandForRTL(displayHand);
   const myDrawAnimationSeq =
     lastTurnAnimation?.action === 'draw' &&
@@ -139,7 +140,7 @@ export function PlayerHand({ handRef, cardRef, revealedHand, revealedTotal, phas
         </div>
         {showCountdown && (
           <TurnCountdown
-            phase={phase ?? null}
+            phase={resolvedPhase}
             turnDeadlineEpoch={turnDeadlineEpoch ?? null}
             show={!!showCountdown}
           />
