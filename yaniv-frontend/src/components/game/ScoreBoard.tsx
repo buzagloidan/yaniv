@@ -21,7 +21,7 @@ export function ScoreBoard() {
   };
 
   return (
-    <div className="absolute top-3 start-3 z-20">
+    <div className="absolute bottom-3 end-3 z-20">
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
@@ -35,10 +35,10 @@ export function ScoreBoard() {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.95 }}
-            className="absolute top-12 start-0 bg-gray-900/95 border border-white/10 rounded-2xl p-4 min-w-[200px] shadow-2xl"
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            className="absolute bottom-12 end-0 bg-gray-900/95 border border-white/10 rounded-2xl p-4 min-w-[200px] shadow-2xl"
           >
             {roundNumber > 0 && (
               <div className="text-white/45 text-xs text-center mb-3">

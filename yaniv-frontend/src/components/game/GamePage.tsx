@@ -167,7 +167,7 @@ export function GamePage() {
   }, [tableId]);
 
   const [leaving, setLeaving] = useState(false);
-  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [soundOn, setSoundOn] = useState(isSoundEnabled);
 
   function toggleSound() {
@@ -246,78 +246,66 @@ export function GamePage() {
       <CornerPalm side="right" />
       <OceanStrip />
 
-      {/* Top-start controls: sound toggle — offset to not overlap ScoreBoard stats button */}
-      <div className="absolute top-3 z-20" style={{ insetInlineStart: '60px' }}>
-        <button
-          onClick={toggleSound}
-          aria-label={soundOn ? 'Mute sounds' : 'Unmute sounds'}
-          className="flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
-          style={{ background: 'none', border: 'none', padding: 0, opacity: soundOn ? 1 : 0.45 }}
-        >
-          <img src="/sound-button.png" alt="" aria-hidden="true" style={{ width: 44, height: 44, objectFit: 'contain' }} />
-        </button>
-      </div>
-
-      {/* Top-end controls: exit */}
+      {/* Top-end controls: settings */}
       <div className="absolute top-3 end-3 z-20">
-        <AnimatePresence mode="wait">
-          {showLeaveConfirm ? (
+        <button
+          onClick={() => setShowSettings((v) => !v)}
+          aria-label="הגדרות"
+          className="flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
+          style={{ background: 'none', border: 'none', padding: 0 }}
+        >
+          <img src="/settings-button.png" alt="" aria-hidden="true" style={{ width: 44, height: 44, objectFit: 'contain' }} />
+        </button>
+
+        <AnimatePresence>
+          {showSettings && (
             <motion.div
-              key="leave-confirm"
+              key="settings-panel"
               initial={{ opacity: 0, y: -8, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.96 }}
-              className="rounded-2xl px-3 py-3 min-w-[180px]"
+              className="absolute top-12 end-0 rounded-2xl px-4 py-4 min-w-[180px]"
               style={{
-                background: 'rgba(255,255,255,0.86)',
-                backdropFilter: 'blur(14px)',
+                background: 'rgba(255,255,255,0.90)',
+                backdropFilter: 'blur(16px)',
                 boxShadow: '0 12px 32px rgba(12,74,110,0.18)',
-                border: '1px solid rgba(242,100,25,0.22)',
+                border: '1px solid rgba(255,255,255,0.95)',
               }}
             >
-              <p className="text-xs font-medium text-center mb-3" style={{ color: '#7C5533' }}>
-                {s.game.leaveConfirm}
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleLeaveTable}
-                  disabled={leaving}
-                  className="flex-1 py-2 rounded-xl text-sm font-semibold transition-opacity"
-                  style={{
-                    background: 'linear-gradient(135deg, #F26419, #D9560E)',
-                    color: '#FFFBF0',
-                    opacity: leaving ? 0.6 : 1,
-                  }}
+              {/* Sound toggle row */}
+              <button
+                onClick={toggleSound}
+                className="w-full flex items-center justify-between gap-3 py-2 rounded-xl px-2 transition-colors hover:bg-black/5"
+                style={{ color: '#1A3352' }}
+              >
+                <span className="text-sm font-medium">{soundOn ? 'השתק' : 'הפעל צלילים'}</span>
+                <div
+                  className="w-10 h-6 rounded-full relative transition-colors"
+                  style={{ background: soundOn ? '#0891B2' : '#D1D5DB' }}
                 >
-                  {leaving ? s.game.leaving : s.game.leaveYes}
-                </button>
-                <button
-                  onClick={() => setShowLeaveConfirm(false)}
-                  disabled={leaving}
-                  className="flex-1 py-2 rounded-xl text-sm font-semibold"
-                  style={{
-                    background: 'rgba(12,74,110,0.08)',
-                    color: '#0C4A6E',
-                    border: '1px solid rgba(12,74,110,0.12)',
-                  }}
-                >
-                  {s.game.leaveCancel}
-                </button>
-              </div>
+                  <div
+                    className="absolute top-1 w-4 h-4 rounded-full bg-white transition-all"
+                    style={{ [soundOn ? 'right' : 'left']: 4 }}
+                  />
+                </div>
+              </button>
+
+              <div className="my-2" style={{ height: 1, background: 'rgba(0,0,0,0.07)' }} />
+
+              {/* Leave button */}
+              <button
+                onClick={handleLeaveTable}
+                disabled={leaving}
+                className="w-full py-2 rounded-xl text-sm font-semibold transition-opacity"
+                style={{
+                  background: 'linear-gradient(135deg, #F26419, #D9560E)',
+                  color: '#FFFBF0',
+                  opacity: leaving ? 0.6 : 1,
+                }}
+              >
+                {leaving ? s.game.leaving : s.game.leaveYes}
+              </button>
             </motion.div>
-          ) : (
-            <motion.button
-              key="leave-button"
-              onClick={() => setShowLeaveConfirm(true)}
-              disabled={leaving}
-              initial={{ opacity: 0, scale: 0.94 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.94 }}
-              className="flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
-              style={{ background: 'none', border: 'none', padding: 0 }}
-            >
-              <img src="/exit-button.png" alt="" aria-hidden="true" style={{ width: 44, height: 44, objectFit: 'contain' }} />
-            </motion.button>
           )}
         </AnimatePresence>
       </div>
