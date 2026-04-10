@@ -151,16 +151,11 @@ export function LobbyPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, type: 'spring', stiffness: 220, damping: 20 }}
-            className="mb-4"
+            className="w-full max-w-xs mb-4"
           >
-            <div
-              className="inline-flex items-center px-5 py-2.5 rounded-full"
-              style={{ background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(10px)' }}
-            >
-              <span
-                className="text-sm sm:text-base font-medium text-white drop-shadow"
-                style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
-              >
+            <div style={{ position: 'relative', height: 70, overflow: 'hidden' }}>
+              <img src="/name-button.png" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
+              <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: '22%', paddingRight: '22%', color: '#0C4A6E', fontFamily: 'Noto Sans Hebrew, sans-serif', fontSize: '1rem', fontWeight: 700, textShadow: '0 1px 2px rgba(255,255,255,0.4)' }}>
                 {s.lobby.greeting(user.displayName)}
               </span>
             </div>
