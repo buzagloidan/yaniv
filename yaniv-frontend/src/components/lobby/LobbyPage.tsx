@@ -131,12 +131,12 @@ export function LobbyPage() {
       </div>
 
       {/* Main content — sits on the sand */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pt-4 pb-10 sm:pt-6 sm:pb-16">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pt-2 pb-4 sm:pt-4 sm:pb-10">
         <motion.div
           initial={{ opacity: 0, y: 18, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ delay: 0.05, type: 'spring', stiffness: 220, damping: 20 }}
-          className="mb-4"
+          className="mb-2"
         >
           <img
             src="/yaniv-logo.png"
@@ -151,7 +151,7 @@ export function LobbyPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, type: 'spring', stiffness: 220, damping: 20 }}
-            className="mb-8"
+            className="mb-4"
           >
             <div
               className="inline-flex items-center px-5 py-2.5 rounded-full"
