@@ -120,10 +120,10 @@ export function LobbyPage() {
       </div>
 
       {/* Header spacer */}
-      <header className="relative z-10 px-5 pt-safe pt-4 pb-2" />
+      <header className="relative z-10 px-5 pt-safe pt-1 pb-0" />
 
       {/* Water wave separator */}
-      <div className="relative" style={{ marginTop: 'clamp(0.75rem, 4vh, 10vh)' }}>
+      <div className="relative" style={{ marginTop: 'clamp(0.25rem, 1vh, 1rem)' }}>
         <svg viewBox="0 0 1440 40" preserveAspectRatio="none" className="w-full" style={{ height: 40, display: 'block' }}>
           <path d="M0,20 C240,40 480,0 720,20 C960,40 1200,5 1440,20 L1440,40 L0,40Z" fill="rgba(8,145,178,0.35)" />
           <path d="M0,30 C300,10 600,40 900,25 C1100,15 1300,35 1440,22 L1440,40 L0,40Z" fill="rgba(8,145,178,0.25)" />
