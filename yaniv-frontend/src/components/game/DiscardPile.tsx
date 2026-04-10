@@ -60,7 +60,8 @@ export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Pro
           <img
             src="/yaniv-deck.png"
             alt=""
-            className="w-full h-full object-fill"
+            className="absolute inset-0 w-full h-full"
+            style={{ transform: 'scale(1.3)', transformOrigin: 'center', objectFit: 'fill' }}
             draggable={false}
           />
         </motion.div>
