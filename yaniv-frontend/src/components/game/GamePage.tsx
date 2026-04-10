@@ -622,48 +622,22 @@ export function GamePage() {
       {/* ── My hand + action bar ── */}
       {!isLoading && !isWaitingPlayer && (
         <div className="absolute inset-x-0 flex flex-col items-center gap-1.5 px-3" style={{ zIndex: 5, bottom: '1.75rem' }}>
-          {me && (
-            <>
-              <motion.div
-                animate={isMyTurn ? { scale: 1.04, y: [0, -2, 0] } : { scale: 1, y: 0 }}
-                transition={isMyTurn ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.2 }}
-                className="px-4 py-2 rounded-full text-sm font-semibold"
-                style={{
-                  background: isMyTurn
-                    ? 'linear-gradient(135deg, rgba(242,100,25,0.96), rgba(217,86,14,0.94))'
-                    : 'rgba(255,255,255,0.76)',
-                  backdropFilter: 'blur(10px)',
-                  color: isMyTurn ? '#FFF7ED' : '#2D4F7C',
-                  border: isMyTurn
-                    ? '1.5px solid rgba(255,255,255,0.28)'
-                    : '1px solid rgba(226,201,154,0.5)',
-                  boxShadow: isMyTurn
-                    ? '0 10px 24px rgba(242,100,25,0.28)'
-                    : '0 8px 20px rgba(12,74,110,0.1)',
-                }}
-              >
-                {me.displayName}
-                {myRoundTag && <span className="ms-1 text-xs opacity-85">· {myRoundTag}</span>}
-                {' · '}
-                {me.isEliminated && !myRevealedHand ? s.game.spectating : `${me.score} נק׳`}
-              </motion.div>
-              {myRevealedHand && (
-                <div
-                  className="px-3 py-1 rounded-full text-xs font-semibold"
-                  style={{
-                    background: 'rgba(255,251,240,0.72)',
-                    color: '#0C4A6E',
-                    border: '1px solid rgba(12,74,110,0.12)',
-                    boxShadow: '0 8px 20px rgba(12,74,110,0.08)',
-                  }}
-                >
-                  {s.game.handTotal(myRevealedHand.total)}
-                  <span className={['ms-1', (myRoundDelta ?? 0) > 0 ? 'text-red-500' : 'text-emerald-600'].join(' ')}>
-                    • {s.round.pointsAdded(myRoundDelta ?? 0)}
-                  </span>
-                </div>
-              )}
-            </>
+          {me && myRevealedHand && (
+            <div
+              className="px-3 py-1 rounded-full text-xs font-semibold"
+              style={{
+                background: 'rgba(255,251,240,0.72)',
+                color: '#0C4A6E',
+                border: '1px solid rgba(12,74,110,0.12)',
+                boxShadow: '0 8px 20px rgba(12,74,110,0.08)',
+              }}
+            >
+              {myRoundTag && <span className="me-1 opacity-85">{myRoundTag} ·</span>}
+              {s.game.handTotal(myRevealedHand.total)}
+              <span className={['ms-1', (myRoundDelta ?? 0) > 0 ? 'text-red-500' : 'text-emerald-600'].join(' ')}>
+                • {s.round.pointsAdded(myRoundDelta ?? 0)}
+              </span>
+            </div>
           )}
           <PlayerHand
             handRef={myHandRef}

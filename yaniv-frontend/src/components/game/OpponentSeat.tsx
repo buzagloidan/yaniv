@@ -27,56 +27,13 @@ export function OpponentSeat({
 }: Props) {
   const s = useStrings();
   const isRevealed = !!revealedCards;
-  const isVertical = orientation === 'left' || orientation === 'right';
 
-  const renderCards = () => {
-    if (player.isEliminated && !isRevealed) {
-      return <span className="text-red-400 text-xs font-medium">{s.game.eliminated}</span>;
-    }
-
-    const cards = isRevealed ? revealedCards! : Array.from({ length: player.cardCount }, (_, i) => `XX-${i}` as CardId);
-    const count = cards.length;
-
-    if (isVertical) {
-      // Vertical fan for side players
-      return cards.map((cardId, i) => {
-        const centerOffset = i - (count - 1) / 2;
-        return (
-          <div
-            key={isRevealed ? `${cardId}-${i}` : i}
-            style={{
-              marginTop: i === 0 ? 0 : -32,
-              zIndex: i,
-              transform: `rotate(${centerOffset * 4}deg) translateX(${centerOffset * 2}px)`,
-            }}
-          >
-            {isRevealed
-              ? <CardView cardId={cardId} small />
-              : <CardView cardId="XX" faceDown size="sm" />}
-          </div>
-        );
-      });
-    }
-
-    // Horizontal fan (top player)
-    return cards.map((cardId, i) => {
-      const centerOffset = i - (count - 1) / 2;
-      return (
-        <div
-          key={isRevealed ? `${cardId}-${i}` : i}
-          style={{
-            marginInlineStart: i === 0 ? 0 : -18,
-            zIndex: i,
-            transform: `rotate(${centerOffset * 5}deg) translateY(${Math.abs(centerOffset) * 1.5}px)`,
-          }}
-        >
-          {isRevealed
-            ? <CardView cardId={cardId} small />
-            : <CardView cardId="XX" faceDown size="sm" />}
-        </div>
-      );
-    });
-  };
+  const cards = isRevealed
+    ? revealedCards!
+    : player.isEliminated
+      ? []
+      : Array.from({ length: player.cardCount }, (_, i) => `XX-${i}` as CardId);
+  const count = cards.length;
 
   return (
     <motion.div
@@ -85,12 +42,28 @@ export function OpponentSeat({
       transition={isCurrentTurn ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.2 }}
     >
       {/* Card backs */}
-      <div
-        ref={cardsRef}
-        className={isVertical ? 'flex flex-col items-center' : 'flex items-center justify-center'}
-        style={isVertical ? { minWidth: 56 } : { minHeight: 72 }}
-      >
-        {renderCards()}
+      <div ref={cardsRef} className="flex items-center justify-center" style={{ minHeight: 72 }}>
+        {player.isEliminated && !isRevealed ? (
+          <span className="text-red-400 text-xs font-medium">{s.game.eliminated}</span>
+        ) : (
+          cards.map((cardId, i) => {
+            const centerOffset = i - (count - 1) / 2;
+            return (
+              <div
+                key={isRevealed ? `${cardId}-${i}` : i}
+                style={{
+                  marginInlineStart: i === 0 ? 0 : -18,
+                  zIndex: i,
+                  transform: `rotate(${centerOffset * 5}deg) translateY(${Math.abs(centerOffset) * 1.5}px)`,
+                }}
+              >
+                {isRevealed
+                  ? <CardView cardId={cardId} small />
+                  : <CardView cardId="XX" faceDown size="sm" />}
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* Name badge */}
@@ -115,8 +88,8 @@ export function OpponentSeat({
         {!player.isConnected && !player.isEliminated && ` (${s.game.disconnected})`}
       </div>
 
-      {/* Score */}
-      {isRevealed ? (
+      {/* Round-result hand total (shown only at end of round) */}
+      {isRevealed && (
         <span className="text-white/65 text-[11px] font-medium text-center">
           {s.game.handTotal(revealedTotal ?? 0)}
           {roundDelta !== null && roundDelta !== undefined && (
@@ -125,8 +98,6 @@ export function OpponentSeat({
             </span>
           )}
         </span>
-      ) : (
-        <span className="text-white/55 text-xs font-medium">{player.score} {s.game.score ?? 'נק׳'}</span>
       )}
     </motion.div>
   );
