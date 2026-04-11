@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../ui/Button';
+import { usePostHog } from '@posthog/react';
 
 /* ── SVG Decorations ── */
 
@@ -77,14 +78,21 @@ export function SignInPage() {
   const { devSignIn, loading, error, user } = useAuthStore();
   const navigate = useNavigate();
   const [name, setName] = useState('');
+  const posthog = usePostHog();
 
   useEffect(() => {
     if (user) navigate('/', { replace: true });
   }, [user, navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim()) devSignIn(name.trim());
+    if (!name.trim()) return;
+    await devSignIn(name.trim());
+    const signedInUser = useAuthStore.getState().user;
+    if (signedInUser) {
+      posthog?.identify(signedInUser.userId, { display_name: signedInUser.displayName });
+      posthog?.capture('user_signed_in', { method: 'dev' });
+    }
   };
 
   return (

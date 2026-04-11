@@ -130,6 +130,7 @@ function createMockEnv(options: { failStatusUpdate?: boolean } = {}): Env {
     GAME_TABLE: {} as DurableObjectNamespace,
     DB: db,
     SESSIONS: {} as KVNamespace,
+    ANALYTICS: { writeDataPoint: () => {} } as unknown as AnalyticsEngineDataset,
     APPLE_APP_BUNDLE_ID: 'test.bundle',
     ENVIRONMENT: 'test',
   };

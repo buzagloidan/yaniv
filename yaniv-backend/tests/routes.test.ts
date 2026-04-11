@@ -56,6 +56,7 @@ function createRouteTestEnv() {
       }),
     } as unknown as D1Database,
     SESSIONS: kv as unknown as KVNamespace,
+    ANALYTICS: { writeDataPoint: () => {} } as unknown as AnalyticsEngineDataset,
     APPLE_APP_BUNDLE_ID: 'test.bundle',
     ENVIRONMENT: 'test',
   };

@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useGameStore, selectIsMyTurn, selectMe, selectIsWaitingPlayer } from '../../store/gameStore';
 import { useStrings } from '../../strings';
 import { leaveTable, leaveTableById } from '../../networking/api';
+import { usePostHog } from '@posthog/react';
 import { isSoundEnabled, setSoundEnabled } from '../../utils/soundManager';
 import { PlayerHand } from './PlayerHand';
 import { TurnCountdown } from './TurnCountdown';
@@ -139,6 +140,7 @@ export function GamePage() {
   const [searchParams] = useSearchParams();
   const roomCode = searchParams.get('code') ?? '';
   const navigate = useNavigate();
+  const posthog = usePostHog();
 
   const user = useAuthStore((s) => s.user);
   const connect = useGameStore((s) => s.connect);
@@ -197,6 +199,7 @@ export function GamePage() {
   async function handleLeaveTable() {
     if (!user || !tableId || leaving) return;
     setLeaving(true);
+    posthog?.capture('game_left', { table_id: tableId, phase });
     try {
       if (roomCode) {
         await leaveTable(user.sessionToken, roomCode);
@@ -608,7 +611,7 @@ export function GamePage() {
 
             {canShowStartButton && (
               <button
-                onClick={readyUp}
+                onClick={() => { posthog?.capture('game_started', { table_id: tableId, player_count: players.length }); readyUp(); }}
                 disabled={!canStartGame}
                 className="w-full py-3 rounded-2xl text-base font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
                 style={{

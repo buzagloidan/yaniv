@@ -4,6 +4,7 @@ import { useAuthStore } from './store/authStore';
 import { LobbyPage } from './components/lobby/LobbyPage';
 import { GamePage } from './components/game/GamePage';
 import { installAudioUnlock } from './utils/soundManager';
+import { identifyUser, resetAnalyticsUser } from './analytics';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user);
@@ -11,9 +12,19 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const user = useAuthStore((s) => s.user);
+
   useEffect(() => {
     installAudioUnlock();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      identifyUser(user.userId, user.displayName);
+    } else {
+      resetAnalyticsUser();
+    }
+  }, [user]);
 
   return (
     <BrowserRouter>

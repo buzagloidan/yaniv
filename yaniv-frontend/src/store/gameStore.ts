@@ -26,6 +26,7 @@ import type {
   PauseState,
   ServerMessage,
 } from '../shared/types';
+import { trackEvent } from '../analytics';
 
 type ConnectionState = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'disconnected';
 
@@ -429,6 +430,12 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
             msg.eliminatedThisRound.includes(p.userId),
         })),
       }));
+      trackEvent('round_ended', {
+        call_type: msg.callType,
+        i_called: msg.callerId === myUserId,
+        i_was_assafed: msg.callType === 'assaf' && msg.callerId !== myUserId && msg.assafByIds?.includes(myUserId),
+        i_was_eliminated: msg.eliminatedThisRound.includes(myUserId),
+      });
       // Play sound based on round outcome
       if (msg.callType === 'assaf') {
         // Small delay so yaniv.wav finishes first
@@ -459,6 +466,12 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
         selectedCards: [],
         myHand: msg.winnerId === myUserId ? s.myHand : [],
       }));
+      trackEvent('game_ended', {
+        i_won: msg.winnerId === myUserId,
+        my_final_score: msg.finalScores[myUserId] ?? null,
+        winner_id: msg.winnerId,
+        player_count: Object.keys(msg.finalScores).length,
+      });
       if (msg.winnerId === myUserId) {
         playGameWin();
       } else {

@@ -41,6 +41,7 @@ import {
   resetTableMetadataForNewGame,
   updateTableStatus,
 } from '../db/queries';
+import { trackEvent } from '../analytics';
 
 // ============================================================
 // GameTable Durable Object
@@ -193,6 +194,14 @@ export class GameTable implements DurableObject {
     if (!userId) return;
     this.broadcast.remove(userId);
     await this.markDisconnected(userId);
+    const state = this.cached;
+    if (state && state.phase !== 'waiting_for_players' && state.phase !== 'game_over') {
+      trackEvent(this.env, 'player_disconnected', {
+        table_id: state.tableId,
+        user_id: userId,
+        phase: state.phase,
+      });
+    }
   }
 
   async webSocketError(ws: WebSocket, _error: unknown): Promise<void> {
@@ -370,6 +379,19 @@ export class GameTable implements DurableObject {
       this.broadcast.broadcastSnapshot(state);
       return false;
     }
+
+    const allPlayers = Object.values(newState.players);
+    const humanCount = allPlayers.filter((p) => !p.isBot).length;
+    const botCount = allPlayers.filter((p) => p.isBot).length;
+    trackEvent(this.env, 'game_started', {
+      table_id: state.tableId,
+      table_type: state.isPrivateTable ? 'private' : 'public',
+      player_count: humanCount + botCount,
+      human_count: humanCount,
+      bot_count: botCount,
+      yaniv_threshold: newState.settings.yanivThreshold,
+      score_limit: newState.settings.scoreLimit,
+    });
 
     await this.setAlarm(newState);
     this.broadcast.broadcastSnapshot(newState);
@@ -598,6 +620,14 @@ export class GameTable implements DurableObject {
     };
     this.broadcast.broadcastAll(roundResult);
 
+    trackEvent(this.env, 'round_ended', {
+      table_id: state.tableId,
+      round_number: newState.roundNumber,
+      call_type: resolution.isAssaf ? 'assaf' : 'yaniv',
+      caller_id: userId,
+      eliminated_count: resolution.eliminatedPlayerIds.length,
+    });
+
     if (persistedState.pauseState) {
       this.broadcast.broadcastSnapshot(persistedState);
     }
@@ -772,6 +802,18 @@ export class GameTable implements DurableObject {
 
   private async concludeMatch(state: GameState, winnerId: string | null): Promise<void> {
     const finishedAt = Date.now();
+    const allPlayers = Object.values(state.players);
+    const humanCount = allPlayers.filter((p) => !p.isBot).length;
+    const startedAt = state.startedAt ?? finishedAt;
+    trackEvent(this.env, 'game_ended', {
+      table_id: state.tableId,
+      winner_id: winnerId ?? '',
+      total_rounds: state.roundNumber,
+      human_count: humanCount,
+      bot_count: allPlayers.length - humanCount,
+      duration_seconds: Math.round((finishedAt - startedAt) / 1000),
+      table_type: state.isPrivateTable ? 'private' : 'public',
+    });
     try {
       await archiveCompletedMatch(
         this.env.DB,
@@ -979,6 +1021,14 @@ export class GameTable implements DurableObject {
     }
 
     await this.saveState(current);
+
+    const botCount = Object.values(current.players).filter((p) => p.isBot).length;
+    trackEvent(this.env, 'bot_added', {
+      table_id: current.tableId,
+      added_count: count,
+      total_bots: botCount,
+      total_players: current.seatOrder.length,
+    });
 
     // Notify connected players
     this.broadcast.broadcastSnapshot(current);

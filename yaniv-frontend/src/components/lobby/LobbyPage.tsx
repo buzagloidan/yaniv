@@ -9,6 +9,7 @@ import { RulesModal } from '../ui/RulesModal';
 import { CreateTableModal } from './CreateTableModal';
 import { JoinTableModal } from './JoinTableModal';
 import { SettingsModal } from './SettingsModal';
+import { usePostHog } from '@posthog/react';
 
 export function LobbyPage() {
   const { user, signOut } = useAuthStore();
@@ -21,6 +22,7 @@ export function LobbyPage() {
   const [quickStarting, setQuickStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const attemptedSharedJoinRef = useRef<string | null>(null);
+  const posthog = usePostHog();
 
   const s = useStrings();
   const token = user?.sessionToken ?? '';
@@ -54,6 +56,7 @@ export function LobbyPage() {
         isPrivateTable: true,
       });
       await addBot(token, data.roomCode, 3);
+      posthog?.capture('game_quick_started', { table_id: data.tableId });
       navigate(`/game/${data.tableId}`);
     } catch (e) {
       setError((e as Error).message ?? s.errors.unknown);
@@ -64,6 +67,11 @@ export function LobbyPage() {
   const handleCreate = async (settings: { yanivThreshold: number; scoreLimit: number }) => {
     if (!user) return;
     const data = await createTable(token, { ...settings, maxPlayers: 4 });
+    posthog?.capture('game_table_created', {
+      table_id: data.tableId,
+      yaniv_threshold: settings.yanivThreshold,
+      score_limit: settings.scoreLimit,
+    });
     navigate(`/game/${data.tableId}?code=${data.roomCode}`);
   };
 
@@ -71,6 +79,7 @@ export function LobbyPage() {
     if (!user) return;
     try {
       const data = await joinTable(token, code);
+      posthog?.capture('game_table_joined', { table_id: data.tableId, room_code: code });
       navigate(`/game/${data.tableId}?code=${data.roomCode}`);
     } catch (e) {
       setError(mapJoinError((e as Error).message));

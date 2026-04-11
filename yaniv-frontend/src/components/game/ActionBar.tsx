@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useStrings } from '../../strings';
 import { useGameStore, selectCanCallYaniv, selectIsMyTurn } from '../../store/gameStore';
+import { usePostHog } from '@posthog/react';
 
 export function ActionBar() {
   const s = useStrings();
@@ -8,6 +9,13 @@ export function ActionBar() {
   const callYaniv = useGameStore((s) => s.callYaniv);
   const isMyTurn = useGameStore(selectIsMyTurn);
   const canYaniv = useGameStore((s) => selectCanCallYaniv(s, s.yanivThreshold));
+  const yanivThreshold = useGameStore((s) => s.yanivThreshold);
+  const posthog = usePostHog();
+
+  const handleCallYaniv = () => {
+    posthog?.capture('yaniv_called', { yaniv_threshold: yanivThreshold });
+    callYaniv();
+  };
 
   if (phase === 'waiting_for_players') {
     return null;
@@ -24,7 +32,7 @@ export function ActionBar() {
   return (
     <div className="absolute bottom-36 start-3 z-20">
       <motion.button
-        onClick={callYaniv}
+        onClick={handleCallYaniv}
         aria-label={s.game.callYaniv}
         title={s.game.callYaniv}
         className="flex items-center justify-center active:scale-95"

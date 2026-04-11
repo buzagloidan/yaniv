@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useStrings } from '../../strings';
 import { Button } from '../ui/Button';
 import { useNavigate } from 'react-router-dom';
+import { usePostHog } from '@posthog/react';
 
 export function GameOverOverlay() {
   const s = useStrings();
@@ -12,10 +13,19 @@ export function GameOverOverlay() {
   const disconnect = useGameStore((s) => s.disconnect);
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
+  const posthog = usePostHog();
 
   const iWon = gameOver?.winnerId === user?.userId;
 
   const handleLobby = () => {
+    if (gameOver) {
+      posthog?.capture('game_completed', {
+        winner_id: gameOver.winnerId,
+        winner_name: gameOver.winnerName,
+        i_won: iWon,
+        player_count: players.length,
+      });
+    }
     disconnect();
     navigate('/');
   };

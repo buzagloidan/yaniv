@@ -37,6 +37,7 @@ export interface Env {
   GAME_TABLE: DurableObjectNamespace;
   DB: D1Database;
   SESSIONS: KVNamespace;
+  ANALYTICS: AnalyticsEngineDataset;
   APPLE_APP_BUNDLE_ID: string;
   ENVIRONMENT: string;
 }
