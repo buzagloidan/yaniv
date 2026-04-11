@@ -260,7 +260,7 @@ export function GamePage() {
           className="flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
           style={{ background: 'none', border: 'none', padding: 0 }}
         >
-          <img src="/settings-button.png" alt="" aria-hidden="true" style={{ width: 54, height: 54, objectFit: 'contain' }} />
+          <img src="/settings-button.png" alt="" aria-hidden="true" style={{ width: 108, height: 108, objectFit: 'contain' }} />
         </button>
 
         <AnimatePresence>
