@@ -159,6 +159,7 @@ export function GamePage() {
   const isMyTurn = useGameStore(selectIsMyTurn);
   const me = useGameStore(selectMe);
   const isWaitingPlayer = useGameStore(selectIsWaitingPlayer);
+  const settingsRef = useRef<HTMLDivElement | null>(null);
   const myHandRef = useRef<HTMLDivElement | null>(null);
   const deckRef = useRef<HTMLDivElement | null>(null);
   const discardRef = useRef<HTMLDivElement | null>(null);
@@ -174,6 +175,17 @@ export function GamePage() {
 
   const [leaving, setLeaving] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+
+  useEffect(() => {
+    if (!showSettings) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setShowSettings(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showSettings]);
   const [soundOn, setSoundOn] = useState(isSoundEnabled);
 
   function toggleSound() {
@@ -253,14 +265,14 @@ export function GamePage() {
       <OceanStrip />
 
       {/* Top-end controls: settings */}
-      <div className="absolute top-0 end-0 z-20">
+      <div ref={settingsRef} className="absolute top-0 end-0 z-20">
         <button
           onClick={() => setShowSettings((v) => !v)}
           aria-label="הגדרות"
           className="flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
           style={{ background: 'none', border: 'none', padding: 0 }}
         >
-          <img src="/settings-button.png" alt="" aria-hidden="true" style={{ width: 108, height: 108, objectFit: 'contain' }} />
+          <img src="/settings-button.png" alt="" aria-hidden="true" style={{ width: 72, height: 72, objectFit: 'contain' }} />
         </button>
 
         <AnimatePresence>
@@ -270,7 +282,7 @@ export function GamePage() {
               initial={{ opacity: 0, y: -8, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.96 }}
-              className="absolute top-12 end-0 rounded-2xl px-4 py-4 min-w-[180px]"
+              className="absolute top-[4.5rem] end-0 rounded-2xl px-4 py-4 min-w-[180px]"
               style={{
                 background: 'rgba(255,255,255,0.90)',
                 backdropFilter: 'blur(16px)',
@@ -432,15 +444,16 @@ export function GamePage() {
                 תצטרף לסיבוב הבא ברגע שהמשחק הנוכחי יסתיים 🌊
               </p>
               <button
-                onClick={() => { disconnect(); navigate('/'); }}
-                className="w-full py-2 rounded-2xl text-sm font-medium"
+                onClick={handleLeaveTable}
+                disabled={leaving}
+                className="w-full py-2 rounded-2xl text-sm font-medium transition-opacity disabled:opacity-50"
                 style={{
                   background: 'rgba(242,100,25,0.1)',
                   color: '#D9560E',
                   border: '1px solid rgba(242,100,25,0.25)',
                 }}
               >
-                עזוב שולחן
+                {leaving ? s.game.leaving : s.game.leaveYes}
               </button>
             </motion.div>
           </motion.div>
