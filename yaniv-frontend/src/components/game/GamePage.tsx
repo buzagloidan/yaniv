@@ -253,7 +253,7 @@ export function GamePage() {
       <OceanStrip />
 
       {/* Top-end controls: settings */}
-      <div className="absolute top-3 end-3 z-20">
+      <div className="absolute top-1 end-1 z-20">
         <button
           onClick={() => setShowSettings((v) => !v)}
           aria-label="הגדרות"
