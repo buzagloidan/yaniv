@@ -29,8 +29,8 @@ export function ActionBar() {
         title={s.game.callYaniv}
         className="flex items-center justify-center active:scale-95"
         style={{
-          width: 64,
-          height: 64,
+          width: 88,
+          height: 88,
           background: 'none',
           border: 'none',
           padding: 0,
@@ -51,7 +51,7 @@ export function ActionBar() {
         <img
           src="/yaniv-win.png"
           alt={s.game.callYaniv}
-          style={{ width: 52, height: 52, objectFit: 'contain', pointerEvents: 'none' }}
+          style={{ width: 76, height: 76, objectFit: 'contain', pointerEvents: 'none' }}
         />
       </motion.button>
     </div>
