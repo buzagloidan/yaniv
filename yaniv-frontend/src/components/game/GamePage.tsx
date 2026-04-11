@@ -487,7 +487,9 @@ export function GamePage() {
                 border: '1px solid rgba(255,255,255,0.95)',
               }}
             >
-              <div className="text-4xl mb-3">⏸️</div>
+              <div className="flex justify-center mb-3">
+                <img src="/pause-button.png" alt="pause" className="w-12 h-12 object-contain" />
+              </div>
               <p
                 className="text-xl font-semibold mb-2"
                 style={{ color: '#1A3352', fontFamily: 'Syne, sans-serif' }}
