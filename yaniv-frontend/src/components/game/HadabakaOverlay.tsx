@@ -6,7 +6,7 @@ import { useStrings } from '../../strings';
 import { CardView } from './CardView';
 import { cardLabel } from '../../utils/cardUtils';
 
-const HADABAKA_WINDOW_MS = 5_000;
+const HADABAKA_WINDOW_MS = 2_000;
 
 export function HadabakaOverlay() {
   const s = useStrings();

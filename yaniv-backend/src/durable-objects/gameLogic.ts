@@ -238,7 +238,7 @@ export function resolveYaniv(
     ) {
       score = 0;
       resetPlayerIds.push(playerId);
-    } else if (score > settings.scoreLimit) {
+    } else if (score >= settings.scoreLimit) {
       eliminatedPlayerIds.push(playerId);
     }
 

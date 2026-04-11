@@ -318,15 +318,19 @@ export function GamePage() {
 
       {/* Connection banner */}
       <AnimatePresence>
-        {connectionState === 'reconnecting' && (
+        {(connectionState === 'reconnecting' || connectionState === 'disconnected') && (
           <motion.div
             initial={{ y: -40 }}
             animate={{ y: 0 }}
             exit={{ y: -40 }}
             className="absolute top-0 inset-x-0 z-30 text-white text-center text-sm py-2 font-medium"
-            style={{ background: 'linear-gradient(90deg, #F26419, #D9560E)' }}
+            style={{
+              background: connectionState === 'disconnected'
+                ? 'linear-gradient(90deg, #DC2626, #B91C1C)'
+                : 'linear-gradient(90deg, #F26419, #D9560E)',
+            }}
           >
-            {s.game.reconnecting}
+            {connectionState === 'disconnected' ? s.errors.connection : s.game.reconnecting}
           </motion.div>
         )}
       </AnimatePresence>

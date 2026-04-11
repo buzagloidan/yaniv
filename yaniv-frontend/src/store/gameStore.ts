@@ -179,6 +179,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         set({ connectionState: state });
         if (state === 'reconnecting') {
           get().addToast('מתחבר מחדש...', 'info');
+        } else if (state === 'disconnected') {
+          get().addToast(getStrings().errors.connection, 'error');
         }
       },
     );
@@ -224,9 +226,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
   discardAndDraw: (source) => {
     const { selectedCards } = get();
     if (!isValidDiscard(selectedCards)) return;
+    const discardActionId = createActionId();
     const drawRequest = { actionId: createActionId(), source };
     set({ _pendingDrawRequest: drawRequest, selectedCards: [] });
-    wsManager?.send({ type: 'discard', actionId: createActionId(), cards: selectedCards });
+    wsManager?.send({ type: 'discard', actionId: discardActionId, cards: selectedCards });
   },
 
   callYaniv: () => {
