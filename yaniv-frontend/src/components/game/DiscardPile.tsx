@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { CardView } from './CardView';
 import type { CardId, DrawSource } from '../../shared/types';
-import { useGameStore, selectCanDiscardAndDraw, selectMe } from '../../store/gameStore';
+import { useGameStore, selectCanDiscardAndDraw } from '../../store/gameStore';
 
 interface Props {
   deckRef?: Ref<HTMLDivElement>;
@@ -11,41 +11,11 @@ interface Props {
   onBeforeDiscardAndDraw?: (source: DrawSource) => void;
 }
 
-interface DrawLabel {
-  id: number;
-  name: string;
-  source: DrawSource;
-}
-
-let drawLabelCounter = 0;
-
 export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Props) {
   const discardPile = useGameStore((s) => s.discardPile);
   const discardAndDraw = useGameStore((s) => s.discardAndDraw);
   const canDiscardAndDraw = useGameStore(selectCanDiscardAndDraw);
   const lastTurnAnimation = useGameStore((s) => s.lastTurnAnimation);
-  const players = useGameStore((s) => s.players);
-  const me = useGameStore(selectMe);
-  const [drawLabel, setDrawLabel] = useState<DrawLabel | null>(null);
-
-  useEffect(() => {
-    if (
-      lastTurnAnimation?.action === 'draw' &&
-      lastTurnAnimation.drawnSource &&
-      lastTurnAnimation.actingUserId !== me?.userId
-    ) {
-      const player = players.find((p) => p.userId === lastTurnAnimation.actingUserId);
-      if (!player) return;
-      const label: DrawLabel = {
-        id: ++drawLabelCounter,
-        name: player.displayName,
-        source: lastTurnAnimation.drawnSource,
-      };
-      setDrawLabel(label);
-      const t = setTimeout(() => setDrawLabel((cur) => cur?.id === label.id ? null : cur), 2500);
-      return () => clearTimeout(t);
-    }
-  }, [lastTurnAnimation?.seq]);
 
   const { currentSet } = discardPile;
   const canInteractWithPile = canDiscardAndDraw && currentSet.length > 0;
@@ -179,31 +149,6 @@ export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Pro
         </div>
         </div>
 
-      {/* Draw source label */}
-      <div className="relative h-0 flex items-center justify-center" style={{ zIndex: 10 }}>
-        <AnimatePresence>
-          {drawLabel && (
-            <motion.div
-              key={drawLabel.id}
-              initial={{ opacity: 0, y: -6, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 4, scale: 0.9 }}
-              transition={{ duration: 0.22 }}
-              className="absolute px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap pointer-events-none"
-              style={{
-                background: drawLabel.source === 'deck'
-                  ? 'rgba(8,145,178,0.88)'
-                  : 'rgba(234,179,8,0.88)',
-                color: '#FFFBF0',
-                boxShadow: '0 4px 14px rgba(0,0,0,0.22)',
-                top: '-1rem',
-              }}
-            >
-              {drawLabel.name} ← {drawLabel.source === 'deck' ? '🃏 חבילה' : '🗂 מחסנית'}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
 
       {/* Draw pile — bottom */}
       <motion.div
