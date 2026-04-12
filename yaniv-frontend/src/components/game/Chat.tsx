@@ -11,12 +11,17 @@ export function Chat() {
   const me = useGameStore(selectMe);
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
+  const [readCount, setReadCount] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasAnotherHuman = players.some((player) => !player.isBot && player.userId !== me?.userId);
+  const unread = messages.length - readCount;
 
   useEffect(() => {
     if (open && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+    if (open) {
+      setReadCount(messages.length);
     }
   }, [messages, open]);
 
@@ -41,11 +46,16 @@ export function Chat() {
       {/* Toggle button with unread badge */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-10 h-10 bg-black/40 hover:bg-black/60 border border-white/10 rounded-xl text-white/80 text-lg flex items-center justify-center transition-colors"
+        className="relative w-10 h-10 bg-black/40 hover:bg-black/60 border border-white/10 rounded-xl text-white/80 text-lg flex items-center justify-center transition-colors"
         aria-label={s.game.chat}
         title={s.game.chat}
       >
         <span>💬</span>
+        {unread > 0 && !open && (
+          <span className="absolute -top-1 -end-1 min-w-[18px] h-[18px] bg-red-500 rounded-full text-white text-[10px] font-bold flex items-center justify-center px-1 leading-none">
+            {unread > 9 ? '9+' : unread}
+          </span>
+        )}
       </button>
 
       <AnimatePresence>

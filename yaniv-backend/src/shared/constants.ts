@@ -2,9 +2,9 @@ export const DEFAULTS = {
   YANIV_THRESHOLD: 7,
   MAX_PLAYERS: 4,
   MIN_PLAYERS: 2,
-  // Players are eliminated if they exceed this score; multiples of RESET_SCORE_AT reset to 0
+  // Players are eliminated if they exceed this score; multiples of RESET_SCORE_AT drop by one step
   SCORE_LIMIT: 200,
-  // Every multiple of this value triggers a score reset to 0 (e.g. 50, 100, 150, 200 → 0)
+  // Every multiple of this value triggers a score drop of one step (e.g. 200→150, 150→100, 100→50, 50→0)
   RESET_SCORE_AT: 50,
   PENALTY_ASSAF: 30,
   TURN_TIMEOUT_SECONDS: 15,

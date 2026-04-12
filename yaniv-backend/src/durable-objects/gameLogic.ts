@@ -229,14 +229,15 @@ export function resolveYaniv(
   for (const [playerId, delta] of Object.entries(scoreDeltas)) {
     let score = (currentScores[playerId] ?? 0) + delta;
 
-    // הגעה לסף בדיוק: hitting an exact multiple of resetScoreAt (e.g. 50, 100, 150, 200) resets to 0
+    // הגעה לסף בדיוק: hitting an exact multiple of resetScoreAt (e.g. 50, 100, 150, 200) drops by one step
+    // e.g. 200→150, 150→100, 100→50, 50→0
     if (
       settings.resetScoreAt > 0 &&
       score > 0 &&
       score % settings.resetScoreAt === 0 &&
       score <= settings.scoreLimit
     ) {
-      score = 0;
+      score = score - settings.resetScoreAt;
       resetPlayerIds.push(playerId);
     } else if (score >= settings.scoreLimit) {
       eliminatedPlayerIds.push(playerId);
@@ -313,6 +314,17 @@ export function selectBotDiscard(hand: CardId[]): CardId[] {
 
 export function checkHadabaka(drawnCard: CardId, discardedSet: CardId[]): boolean {
   if (discardedSet.length === 0) return false;
+
+  // Hadabaka is only valid when the discarded set is a same-rank set (singles or pairs/trips/quads).
+  // If the non-joker cards in the set have more than one distinct rank, it was a run — no hadabaka.
+  const nonJokers = discardedSet.filter((c) => !isJoker(c));
+  if (nonJokers.length > 1) {
+    const firstRank = parseCard(nonJokers[0]).rank;
+    if (!nonJokers.every((c) => parseCard(c).rank === firstRank)) {
+      return false; // run discarded — hadabaka not allowed
+    }
+  }
+
   const drawnRank = parseCard(drawnCard).rank;
   return discardedSet.some((c) => parseCard(c).rank === drawnRank);
 }
