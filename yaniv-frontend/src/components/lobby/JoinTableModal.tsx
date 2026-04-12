@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
+import { ErrorBanner } from '../ui/ErrorBanner';
 import { useStrings } from '../../strings';
 
 interface Props {
@@ -67,7 +68,7 @@ export function JoinTableModal({ open, onClose, onJoin, initialCode = '' }: Prop
           className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-2xl tracking-widest text-center placeholder-white/20 outline-none focus:border-emerald-500"
           autoFocus
         />
-        {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+        <ErrorBanner message={error || null} onDismiss={() => setError('')} />
         <div className="flex gap-3">
           <Button variant="ghost" onClick={onClose} className="flex-1">
             {s.joinTable.cancel}

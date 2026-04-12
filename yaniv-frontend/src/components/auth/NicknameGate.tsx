@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../ui/Button';
+import { ErrorBanner } from '../ui/ErrorBanner';
 import { useStrings } from '../../strings';
 
 interface Props {
@@ -89,11 +90,7 @@ export function NicknameGate({ open }: Props) {
                 onBlur={(e) => { e.target.style.borderColor = 'transparent'; }}
               />
 
-              {error && (
-                <p className="text-sm text-center" style={{ color: '#B91C1C' }}>
-                  {error}
-                </p>
-              )}
+              <ErrorBanner message={error} onDismiss={clearError} />
 
               <Button
                 type="submit"

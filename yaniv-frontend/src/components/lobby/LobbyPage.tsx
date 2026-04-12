@@ -6,6 +6,7 @@ import { createTable, addBot, joinTable } from '../../networking/api';
 import { useStrings } from '../../strings';
 import { NicknameGate } from '../auth/NicknameGate';
 import { RulesModal } from '../ui/RulesModal';
+import { ErrorBanner } from '../ui/ErrorBanner';
 import { CreateTableModal } from './CreateTableModal';
 import { JoinTableModal } from './JoinTableModal';
 import { SettingsModal } from './SettingsModal';
@@ -172,16 +173,9 @@ export function LobbyPage() {
         )}
 
         {/* Error banner */}
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-xs mb-4 px-4 py-2.5 rounded-xl text-sm text-center"
-            style={{ background: '#FEE2E2', color: '#B91C1C', border: '1px solid #FECACA' }}
-          >
-            {error}
-          </motion.div>
-        )}
+        <div className="w-full max-w-xs mb-1">
+          <ErrorBanner message={error} onDismiss={() => setError(null)} />
+        </div>
 
         {/* Quick start button — main CTA */}
         <motion.div

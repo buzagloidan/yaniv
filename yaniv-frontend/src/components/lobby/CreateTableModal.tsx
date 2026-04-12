@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStrings } from '../../strings';
+import { ErrorBanner } from '../ui/ErrorBanner';
 
 interface Props {
   open: boolean;
@@ -67,12 +68,16 @@ export function CreateTableModal({ open, onClose, onCreate }: Props) {
   const [threshold, setThreshold] = useState<1 | 3 | 5 | 7>(7);
   const [scoreLimit, setScoreLimit] = useState<50 | 100 | 200>(100);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleCreate = async () => {
     setLoading(true);
+    setError(null);
     try {
       await onCreate({ yanivThreshold: threshold, scoreLimit });
       onClose();
+    } catch (e) {
+      setError((e as Error).message ?? s.errors.unknown);
     } finally {
       setLoading(false);
     }
@@ -156,7 +161,14 @@ export function CreateTableModal({ open, onClose, onCreate }: Props) {
                 </div>
 
                 {/* Divider */}
-                <div className="h-px mt-4 mb-5" style={{ background: 'rgba(232,213,183,0.2)' }} />
+                <div className="h-px mt-4 mb-4" style={{ background: 'rgba(232,213,183,0.2)' }} />
+
+                {/* Error */}
+                {error && (
+                  <div className="mb-3">
+                    <ErrorBanner message={error} onDismiss={() => setError(null)} />
+                  </div>
+                )}
 
                 {/* Create button */}
                 <button

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../ui/Button';
+import { ErrorBanner } from '../ui/ErrorBanner';
 import { usePostHog } from '@posthog/react';
 
 /* ── SVG Decorations ── */
@@ -75,7 +76,7 @@ function SunRays() {
 }
 
 export function SignInPage() {
-  const { devSignIn, loading, error, user } = useAuthStore();
+  const { devSignIn, loading, error, clearError, user } = useAuthStore();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const posthog = usePostHog();
@@ -201,9 +202,7 @@ export function SignInPage() {
                 onFocus={e => (e.target.style.borderColor = '#F26419')}
                 onBlur={e => (e.target.style.borderColor = 'transparent')}
               />
-              {error && (
-                <p className="text-red-500 text-sm text-center">{error}</p>
-              )}
+              <ErrorBanner message={error} onDismiss={clearError} />
               <Button
                 type="submit"
                 size="lg"

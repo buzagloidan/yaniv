@@ -2,6 +2,15 @@ import type { GameSettings } from '../shared/types';
 
 const BASE = import.meta.env.VITE_API_URL ?? '';
 
+/** Called when any request returns 401 — clears the stale session so NicknameGate re-appears. */
+function handleUnauthorized() {
+  localStorage.removeItem('yaniv_session');
+  // Dynamically import to avoid a circular dependency at module load time
+  import('../store/authStore').then(({ useAuthStore }) => {
+    useAuthStore.setState({ user: null });
+  });
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {},
@@ -19,6 +28,9 @@ async function request<T>(
     json = await res.json();
   } catch {
     throw new Error(`HTTP ${res.status}`);
+  }
+  if (res.status === 401) {
+    handleUnauthorized();
   }
   if (!res.ok) throw new Error((json as { error?: string }).error ?? `HTTP ${res.status}`);
   return json as T;
