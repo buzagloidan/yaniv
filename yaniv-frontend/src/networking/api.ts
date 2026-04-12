@@ -38,16 +38,6 @@ async function request<T>(
 
 // ── Auth ─────────────────────────────────────────────────────
 
-export async function signInWithApple(
-  identityToken: string,
-  displayName?: string,
-): Promise<{ sessionToken: string; userId: string; displayName: string; accountId: number }> {
-  return request('/auth/apple', {
-    method: 'POST',
-    body: JSON.stringify({ identityToken, displayName }),
-  });
-}
-
 export async function devSignIn(
   displayName: string,
 ): Promise<{ sessionToken: string; userId: string; displayName: string; accountId: number }> {

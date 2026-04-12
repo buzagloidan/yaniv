@@ -38,7 +38,6 @@ export interface Env {
   DB: D1Database;
   SESSIONS: KVNamespace;
   ANALYTICS: AnalyticsEngineDataset;
-  APPLE_APP_BUNDLE_ID: string;
   ENVIRONMENT: string;
 }
 

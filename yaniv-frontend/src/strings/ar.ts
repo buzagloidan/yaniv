@@ -3,7 +3,6 @@ export const ar = {
     title: 'يانيف',
     subtitle: 'لعبة ورق متعددة اللاعبين',
     nicknamePrompt: 'اختر لقباً للمتابعة إلى الردهة',
-    signInWithApple: 'تسجيل الدخول بـ Apple',
     signingIn: 'جارٍ تسجيل الدخول...',
     devMode: 'دخول سريع (تطوير)',
     devName: 'اسم العرض',

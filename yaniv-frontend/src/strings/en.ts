@@ -3,7 +3,6 @@ export const en = {
     title: 'Yaniv',
     subtitle: 'Multiplayer Card Game',
     nicknamePrompt: 'Choose a nickname to continue to the lobby',
-    signInWithApple: 'Sign in with Apple',
     signingIn: 'Signing in...',
     devMode: 'Quick Sign In (Dev)',
     devName: 'Display Name',

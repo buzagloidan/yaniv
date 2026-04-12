@@ -3,7 +3,6 @@ export const ru = {
     title: 'Янив',
     subtitle: 'Многопользовательская карточная игра',
     nicknamePrompt: 'Выберите ник, чтобы продолжить в лобби',
-    signInWithApple: 'Войти через Apple',
     signingIn: 'Вход...',
     devMode: 'Быстрый вход (разработка)',
     devName: 'Отображаемое имя',

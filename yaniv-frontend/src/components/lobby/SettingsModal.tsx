@@ -7,7 +7,7 @@ import { PrivacyModal } from './PrivacyModal';
 import { unlockAudio } from '../../utils/soundManager';
 
 const LABELS: Record<Lang, Record<string, string>> = {
-  he: { settings: 'הגדרות', sounds: 'צלילים', language: 'שפה', rules: 'חוקי המשחק', about: 'אודות', privacy: 'מדיניות פרטיות', support: 'תמיכה', signOut: 'התנתק' },
+  he: { settings: 'הגדרות', sounds: 'צלילים', language: 'שפה', rules: 'חוקי המשחק', about: 'אודות', privacy: 'מדיניות פרטיות', support: 'תמיכה', signOut: 'התנתקות' },
   en: { settings: 'Settings', sounds: 'Sounds', language: 'Language', rules: 'Game Rules', about: 'About', privacy: 'Privacy Policy', support: 'Support', signOut: 'Sign Out' },
   ar: { settings: 'الإعدادات', sounds: 'الأصوات', language: 'اللغة', rules: 'قواعد اللعبة', about: 'حول', privacy: 'سياسة الخصوصية', support: 'الدعم', signOut: 'تسجيل الخروج' },
   ru: { settings: 'Настройки', sounds: 'Звуки', language: 'Язык', rules: 'Правила', about: 'О приложении', privacy: 'Конфиденциальность', support: 'Поддержка', signOut: 'Выйти' },

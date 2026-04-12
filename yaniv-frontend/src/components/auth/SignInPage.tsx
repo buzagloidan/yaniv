@@ -182,7 +182,7 @@ export function SignInPage() {
           {/* Form body */}
           <div className="px-7 py-7">
             <p className="text-center text-sm font-medium mb-5" style={{ color: '#2D4F7C' }}>
-              ברוכים הבאים! הזינו שם כדי להתחיל 🌴
+              הזינו שם כדי להתחיל לשחק 🌴
             </p>
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <input
@@ -209,7 +209,7 @@ export function SignInPage() {
                 disabled={!name.trim() || loading}
                 className="w-full mt-1"
               >
-                {loading ? 'נכנס...' : 'כניסה למשחק 🌊'}
+                {loading ? 'נכנסים...' : 'כניסה למשחק 🌊'}
               </Button>
             </form>
           </div>
@@ -217,7 +217,7 @@ export function SignInPage() {
 
         {/* Tagline below card */}
         <p className="text-center mt-4 text-xs" style={{ color: '#2D4F7C', opacity: 0.5 }}>
-          שחק, תרגיש חופשה 🏝
+          שחקו, תרגישו חופשה 🏝
         </p>
       </motion.div>
     </div>

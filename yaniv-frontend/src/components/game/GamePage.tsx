@@ -299,7 +299,7 @@ export function GamePage() {
                 className="w-full flex items-center justify-between gap-3 py-2 rounded-xl px-2 transition-colors hover:bg-black/5"
                 style={{ color: '#1A3352' }}
               >
-                <span className="text-sm font-medium">{soundOn ? 'השתק' : 'הפעל צלילים'}</span>
+                <span className="text-sm font-medium">{soundOn ? 'השתקה' : 'הפעלת צלילים'}</span>
                 <div
                   className="w-10 h-6 rounded-full relative transition-colors"
                   style={{ background: soundOn ? '#0891B2' : '#D1D5DB' }}

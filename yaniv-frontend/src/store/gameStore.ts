@@ -179,7 +179,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       (state) => {
         set({ connectionState: state });
         if (state === 'reconnecting') {
-          get().addToast('מתחבר מחדש...', 'info');
+          get().addToast('מתחברים מחדש...', 'info');
         } else if (state === 'disconnected') {
           get().addToast(getStrings().errors.connection, 'error');
         }
