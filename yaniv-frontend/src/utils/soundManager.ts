@@ -101,15 +101,18 @@ export async function unlockAudio(): Promise<boolean> {
   unlockPromise = (async () => {
     try {
       const ac = getCtx();
+      // resume() must be initiated as early as possible; on desktop this
+      // works fine from async context, on mobile the gesture-handler path
+      // in installAudioUnlock handles the synchronous requirement.
       if (ac.state !== 'running') {
         await ac.resume();
       }
-      primeAudioContext(ac);
 
       if (ac.state !== 'running') {
         return false;
       }
 
+      primeAudioContext(ac);
       void preloadRecordedSounds();
       return true;
     } catch {
@@ -128,12 +131,37 @@ export function installAudioUnlock() {
   unlockListenersInstalled = true;
   const events: Array<keyof WindowEventMap> = ['pointerdown', 'touchstart', 'mousedown', 'keydown'];
 
+  const removeListeners = () => {
+    events.forEach((eventName) => window.removeEventListener(eventName, onGesture, true));
+  };
+
   const onGesture = () => {
-    void unlockAudio().then((unlocked) => {
-      if (!unlocked) return;
-      events.forEach((eventName) => {
-        window.removeEventListener(eventName, onGesture, true);
-      });
+    if (!isSoundEnabled()) return;
+
+    // Create context and call resume synchronously within the gesture handler.
+    // Mobile Safari requires AudioContext.resume() to be called in the same
+    // synchronous call stack as the user gesture — async wrappers break this.
+    let ac: AudioContext;
+    try {
+      ac = getCtx();
+    } catch {
+      return;
+    }
+
+    if (ac.state === 'running') {
+      primeAudioContext(ac);
+      void preloadRecordedSounds();
+      removeListeners();
+      return;
+    }
+
+    // resume() is called synchronously here (returns a Promise we then chain)
+    void ac.resume().then(() => {
+      if (ac.state === 'running') {
+        primeAudioContext(ac);
+        void preloadRecordedSounds();
+        removeListeners();
+      }
     });
   };
 
