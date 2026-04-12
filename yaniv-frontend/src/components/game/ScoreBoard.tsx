@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
 import { useStrings } from '../../strings';
@@ -11,6 +11,18 @@ export function ScoreBoard() {
   const isPrivateTable = useGameStore((s) => s.isPrivateTable);
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
 
   const copyCode = () => {
     if (roomCode) {
@@ -21,7 +33,7 @@ export function ScoreBoard() {
   };
 
   return (
-    <div className="absolute bottom-3 end-3 z-20">
+    <div ref={containerRef} className={`absolute bottom-3 end-3 ${open ? 'z-30' : 'z-20'}`}>
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
