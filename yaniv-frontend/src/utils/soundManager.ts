@@ -101,9 +101,10 @@ export async function unlockAudio(): Promise<boolean> {
   unlockPromise = (async () => {
     try {
       const ac = getCtx();
-      // resume() must be initiated as early as possible; on desktop this
-      // works fine from async context, on mobile the gesture-handler path
-      // in installAudioUnlock handles the synchronous requirement.
+      // On mobile, resume() only works inside a synchronous user-gesture
+      // handler (handled by installAudioUnlock). From an async context it
+      // will silently stay 'suspended', so we return false and let the next
+      // user gesture (via installAudioUnlock) actually unlock the context.
       if (ac.state !== 'running') {
         await ac.resume();
       }
@@ -131,16 +132,13 @@ export function installAudioUnlock() {
   unlockListenersInstalled = true;
   const events: Array<keyof WindowEventMap> = ['pointerdown', 'touchstart', 'mousedown', 'keydown'];
 
-  const removeListeners = () => {
-    events.forEach((eventName) => window.removeEventListener(eventName, onGesture, true));
-  };
-
   const onGesture = () => {
     if (!isSoundEnabled()) return;
 
-    // Create context and call resume synchronously within the gesture handler.
-    // Mobile Safari requires AudioContext.resume() to be called in the same
-    // synchronous call stack as the user gesture — async wrappers break this.
+    // Re-check on every gesture — iOS Safari can re-suspend the context
+    // after backgrounding, so we must be ready to re-unlock at any time.
+    if (ctx?.state === 'running') return;
+
     let ac: AudioContext;
     try {
       ac = getCtx();
@@ -148,23 +146,21 @@ export function installAudioUnlock() {
       return;
     }
 
-    if (ac.state === 'running') {
-      primeAudioContext(ac);
-      void preloadRecordedSounds();
-      removeListeners();
-      return;
-    }
+    if (ac.state === 'running') return;
 
-    // resume() is called synchronously here (returns a Promise we then chain)
+    // iOS Safari requires BOTH a silent audio node scheduled AND resume()
+    // called synchronously within the same user-gesture call stack.
+    // Doing either one alone (or either one async) is unreliable on iOS.
+    primeAudioContext(ac);
     void ac.resume().then(() => {
       if (ac.state === 'running') {
-        primeAudioContext(ac);
         void preloadRecordedSounds();
-        removeListeners();
       }
     });
   };
 
+  // Keep listeners for the lifetime of the page — we never remove them.
+  // This handles iOS re-suspension (background/foreground) at negligible cost.
   events.forEach((eventName) => {
     window.addEventListener(eventName, onGesture, true);
   });
