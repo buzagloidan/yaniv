@@ -15,6 +15,7 @@ import {
   reshuffleDiscardIntoDeck,
   selectAutoDiscardCard,
   checkHadabaka,
+  sortDiscardSet,
 } from './gameLogic';
 import { DEFAULTS } from '../shared/constants';
 
@@ -296,8 +297,12 @@ export function startNextRound(state: GameState): GameState {
 // ============================================================
 
 export function applyDiscard(state: GameState, playerId: string, cards: CardId[]): GameState {
+  // Sort into canonical order so jokers that fill internal gaps in a run are
+  // never at the drawable first/last positions.
+  const sortedCards = sortDiscardSet(cards);
+
   const player = state.players[playerId];
-  const cardSet = new Set(cards);
+  const cardSet = new Set(sortedCards);
   const newHand = player.hand.filter((c) => !cardSet.has(c));
 
   // Archive the current top set before replacing it; trim to cap memory growth
@@ -314,7 +319,7 @@ export function applyDiscard(state: GameState, playerId: string, cards: CardId[]
       ...state.players,
       [playerId]: { ...player, hand: newHand },
     },
-    discardPile: { currentSet: cards, previousSets },
+    discardPile: { currentSet: sortedCards, previousSets },
     turnDeadlineEpoch: Date.now() + state.settings.turnTimeoutSeconds * 1000,
   };
 }

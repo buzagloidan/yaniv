@@ -143,6 +143,68 @@ export function isValidDiscard(cards: CardId[]): boolean {
   return false;
 }
 
+/**
+ * Sort a valid discard set into canonical order for storage and display.
+ *
+ * - Single card: unchanged.
+ * - Same-rank set: non-jokers first (by suit), jokers appended at the end.
+ * - Run: non-jokers sorted ascending by rank; jokers placed into internal
+ *   rank gaps first (left-to-right), then any remaining extension jokers
+ *   appended at the right edge.
+ *
+ * This guarantees that jokers which fill a gap in a run are never at
+ * index 0 or the last index, so players cannot draw them from the pile.
+ */
+export function sortDiscardSet(cards: CardId[]): CardId[] {
+  if (cards.length <= 1) return cards;
+
+  const jokers = cards.filter((c) => isJoker(c));
+  const nonJokers = cards.filter((c) => !isJoker(c));
+
+  if (nonJokers.length === 0) return cards;
+
+  // Detect same-rank set
+  const firstRank = parseCard(nonJokers[0]).rank;
+  const isSameRank = nonJokers.every((c) => parseCard(c).rank === firstRank);
+
+  if (isSameRank) {
+    // Consistent suit order; jokers at the end (all positions equivalent)
+    const suitOrder: Record<string, number> = { S: 0, H: 1, D: 2, C: 3 };
+    return [
+      ...nonJokers.sort(
+        (a, b) =>
+          (suitOrder[parseCard(a).suit] ?? 4) - (suitOrder[parseCard(b).suit] ?? 4),
+      ),
+      ...jokers,
+    ];
+  }
+
+  // Run: sort non-jokers ascending, then weave jokers into internal gaps
+  const sortedNonJokers = [...nonJokers].sort(
+    (a, b) => rankOrder(parseCard(a).rank) - rankOrder(parseCard(b).rank),
+  );
+
+  const result: CardId[] = [];
+  const jokerPool = [...jokers];
+
+  for (let i = 0; i < sortedNonJokers.length; i++) {
+    if (i > 0) {
+      const prevRank = rankOrder(parseCard(sortedNonJokers[i - 1]).rank);
+      const currRank = rankOrder(parseCard(sortedNonJokers[i]).rank);
+      // Fill every missing rank in the gap with a joker
+      for (let gap = prevRank + 1; gap < currRank; gap++) {
+        if (jokerPool.length > 0) result.push(jokerPool.shift()!);
+      }
+    }
+    result.push(sortedNonJokers[i]);
+  }
+
+  // Remaining jokers extend the run at the right edge
+  result.push(...jokerPool);
+
+  return result;
+}
+
 // ============================================================
 // Dealing
 // ============================================================

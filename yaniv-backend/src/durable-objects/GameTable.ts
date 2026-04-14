@@ -474,25 +474,29 @@ export class GameTable implements DurableObject {
       if (pid !== userId) opponentCardCounts[pid] = p.hand.length;
     }
 
-    const delta: TurnDeltaMessage = {
-      type: 'turn_delta',
-      actingUserId: userId,
-      action: 'discard',
-      discardedCards: cards,
-      drawnSource: null,
-      newDiscardPile: {
-        currentSet: newState.discardPile.currentSet,
-        deckCount: newState.deck.length,
-      },
-      // Still this player's turn (draw phase)
-      nextTurnUserId: userId,
-      turnDeadlineEpoch: newState.turnDeadlineEpoch!,
-      opponentCardCounts,
-      myNewCard: null,
-      myHand: null,
-    };
-
-    this.broadcast.broadcastAll(delta);
+    // Send personalised deltas: discarding player receives their authoritative
+    // post-discard hand so the client never has to guess it from removals.
+    for (const recipientId of this.broadcast.connectedUserIds()) {
+      const isDiscarder = recipientId === userId;
+      const delta: TurnDeltaMessage = {
+        type: 'turn_delta',
+        actingUserId: userId,
+        action: 'discard',
+        discardedCards: newState.discardPile.currentSet,
+        drawnSource: null,
+        newDiscardPile: {
+          currentSet: newState.discardPile.currentSet,
+          deckCount: newState.deck.length,
+        },
+        // Still this player's turn (draw phase)
+        nextTurnUserId: userId,
+        turnDeadlineEpoch: newState.turnDeadlineEpoch!,
+        opponentCardCounts,
+        myNewCard: null,
+        myHand: isDiscarder ? newState.players[userId].hand : null,
+      };
+      this.broadcast.sendTo(recipientId, delta);
+    }
     return true;
   }
 
