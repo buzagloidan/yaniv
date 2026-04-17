@@ -27,6 +27,10 @@ export class BroadcastManager {
     return this.sockets.has(userId);
   }
 
+  isCurrentSocket(userId: string, ws: WebSocket): boolean {
+    return this.sockets.get(userId) === ws;
+  }
+
   connectedUserIds(): string[] {
     return [...this.sockets.keys()];
   }

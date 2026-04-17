@@ -78,6 +78,29 @@ export class GameTable implements DurableObject {
     this.broadcast.sendTo(userId, buildSnapshot(state, userId));
   }
 
+  private findReplacementSocket(userId: string, excludeWs: WebSocket): WebSocket | null {
+    for (const ws of this.ctx.getWebSockets()) {
+      if (ws === excludeWs) continue;
+      if (this.ctx.getTags(ws)[0] !== userId) continue;
+      if (ws.readyState < 2) {
+        return ws;
+      }
+    }
+    return null;
+  }
+
+  private closeDuplicateSockets(userId: string, keepWs: WebSocket): void {
+    for (const ws of this.ctx.getWebSockets()) {
+      if (ws === keepWs) continue;
+      if (this.ctx.getTags(ws)[0] !== userId) continue;
+      try {
+        ws.close(1000, 'replaced');
+      } catch {
+        // Ignore stale sockets that are already closing
+      }
+    }
+  }
+
   // ============================================================
   // fetch() — entry point for all HTTP and WebSocket requests
   // ============================================================
@@ -195,7 +218,17 @@ export class GameTable implements DurableObject {
   ): Promise<void> {
     const userId = this.ctx.getTags(ws)[0];
     if (!userId) return;
+    if (!this.broadcast.isCurrentSocket(userId, ws)) {
+      return;
+    }
+
     this.broadcast.remove(userId);
+    const replacementWs = this.findReplacementSocket(userId, ws);
+    if (replacementWs) {
+      this.broadcast.add(userId, replacementWs);
+      return;
+    }
+
     await this.markDisconnected(userId);
     const state = this.cached;
     if (state && state.phase !== 'waiting_for_players' && state.phase !== 'game_over') {
@@ -210,7 +243,17 @@ export class GameTable implements DurableObject {
   async webSocketError(ws: WebSocket, _error: unknown): Promise<void> {
     const userId = this.ctx.getTags(ws)[0];
     if (!userId) return;
+    if (!this.broadcast.isCurrentSocket(userId, ws)) {
+      return;
+    }
+
     this.broadcast.remove(userId);
+    const replacementWs = this.findReplacementSocket(userId, ws);
+    if (replacementWs) {
+      this.broadcast.add(userId, replacementWs);
+      return;
+    }
+
     await this.markDisconnected(userId);
   }
 
@@ -316,6 +359,7 @@ export class GameTable implements DurableObject {
   // ============================================================
 
   private async handleJoin(userId: string, ws: WebSocket, state: GameState): Promise<void> {
+    this.closeDuplicateSockets(userId, ws);
     this.broadcast.add(userId, ws);
 
     // If this player is in the waiting queue (joined mid-game), just show them the state

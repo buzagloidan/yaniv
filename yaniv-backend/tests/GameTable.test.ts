@@ -72,6 +72,7 @@ function createMockWebSocket(): WebSocket & { sent: string[] } {
   const sent: string[] = [];
   return {
     sent,
+    readyState: 1,
     send(data: string) {
       sent.push(data);
     },
@@ -191,6 +192,35 @@ describe('GameTable pause and reconnect flow', () => {
     const lastMessage = JSON.parse(ws.sent.at(-1) ?? '{}') as { type?: string; pauseState?: unknown };
     expect(lastMessage.type).toBe('state_snapshot');
     expect(lastMessage.pauseState).toBeNull();
+  });
+
+  it('keeps the newer socket mapped when an older socket closes after reconnect', async () => {
+    const state = makeState();
+    const mock = createMockCtx(state);
+    const table = new GameTable(mock.ctx, createMockEnv());
+    const oldWs = createMockWebSocket();
+    const newWs = createMockWebSocket();
+
+    mock.ctx.getWebSockets = vi.fn(() => [oldWs, newWs]);
+    mock.ctx.getTags = vi.fn((ws: WebSocket) => {
+      if (ws === oldWs || ws === newWs) {
+        return ['p1'];
+      }
+      return [];
+    });
+
+    await (table as any).handleJoin('p1', oldWs, state);
+    await (table as any).handleJoin('p1', newWs, state);
+    await table.webSocketClose(oldWs, 1000, 'closed', true);
+
+    expect(mock.getStoredState()?.players.p1.isConnected).toBe(true);
+
+    (table as any).sendSnapshotTo('p1', mock.getStoredState());
+
+    expect(newWs.sent.length).toBeGreaterThan(0);
+    expect(oldWs.sent.length).toBeGreaterThan(0);
+    const latestOnNewWs = JSON.parse(newWs.sent.at(-1) ?? '{}') as { type?: string };
+    expect(latestOnNewWs.type).toBe('state_snapshot');
   });
 
   it('ends a paused bot table when reconnect grace expires', async () => {
