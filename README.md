@@ -8,8 +8,7 @@ This repository is shared for entertainment and transparency. It is provided as-
 
 ## Live project
 
-- Frontend: [yaniv.games](https://yaniv.games)
-- Backend: [yaniv-backend.buzagloidan.workers.dev](https://yaniv-backend.buzagloidan.workers.dev)
+- Play in the browser: [yaniv.games](https://yaniv.games)
 
 ## Stack
 

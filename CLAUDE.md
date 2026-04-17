@@ -4,10 +4,10 @@
 Multiplayer Hebrew card game (יניב). Server-authoritative, real-time via WebSockets.
 All game logic runs in Cloudflare Durable Objects. Clients only send intents.
 
-## Live URLs
-- **Frontend**: https://yaniv.games (Cloudflare Pages, auto-deploys on push to `main`)
-- **Backend**: https://yaniv-backend.buzagloidan.workers.dev (Cloudflare Workers, deploys via `.github/workflows/deploy-backend.yml`)
-- **GitHub**: https://github.com/buzagloidan/yaniv (private, account: buzagloidan)
+## Public presence
+- **Demo site**: Live URL intentionally omitted from this file
+- **Backend**: Cloudflare Workers deployment
+- **GitHub**: Repository URL intentionally omitted from this file
 
 ## Stack
 | Layer | Tech |
@@ -58,10 +58,9 @@ yaniv/
         └── shared/types.ts         # keep in sync with backend types.ts
 ```
 
-## Cloudflare resource IDs
-- **Account ID**: `3487b23a58ecd2246e06c35dcc5dbf24`
-- **D1 database**: `yaniv-db` / `3c8f904b-84a0-4367-91c4-8c1c82703493`
-- **KV namespace (SESSIONS)**: `02863a2f56f2474ea33f951c06375736`
+## Cloudflare resources
+- Resource identifiers are intentionally omitted from this file.
+- Use local config or repository secrets/variables outside the public docs when wiring deployments.
 
 ## Key architecture decisions
 
@@ -106,10 +105,10 @@ State is mutated only in `stateMachine.ts` pure functions. `GameTable.ts` calls 
 ## Deployment workflow
 ```
 git push origin main
-  → yaniv-frontend/** changes  → Cloudflare Pages auto-rebuilds yaniv.games
+  → yaniv-frontend/** changes  → frontend hosting rebuilds
   → yaniv-backend/** changes   → GitHub Action runs wrangler deploy
 ```
-GitHub secrets required: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `VITE_API_URL`
+Deployment credentials and resource identifiers are intentionally omitted from this file.
 
 ## Common mistakes to avoid
 - **Never** add the system user as a player in D1 (`addTablePlayer`) for public tables
