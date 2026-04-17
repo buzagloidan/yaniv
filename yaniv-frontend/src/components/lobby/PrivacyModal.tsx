@@ -101,7 +101,8 @@ export function PrivacyModal({ open, onClose }: Props) {
                     <p>
                       The game is hosted on Cloudflare infrastructure. Cloudflare may process traffic metadata (IP addresses, request logs) in accordance with{' '}
                       <span style={{ color: '#0891B2' }}>Cloudflare's Privacy Policy</span>.
-                      We do not integrate analytics, advertising, or tracking SDKs.
+                      We use PostHog for product analytics to understand gameplay flows and improve the experience.
+                      We do not use advertising SDKs or sell your data.
                     </p>
                   </Block>
 
@@ -154,7 +155,7 @@ export function PrivacyModal({ open, onClose }: Props) {
 
                   <Block title="4. שירותי צד שלישי">
                     <p>
-                      המשחק מתארח על תשתית Cloudflare. Cloudflare עשויה לעבד מטא-דאטה של תנועה בהתאם למדיניות הפרטיות שלה. איננו משלבים SDK של אנליטיקה, פרסום או מעקב.
+                      המשחק מתארח על תשתית Cloudflare. Cloudflare עשויה לעבד מטא-דאטה של תנועה בהתאם למדיניות הפרטיות שלה. אנו משתמשים ב-PostHog לצורכי אנליטיקת מוצר כדי להבין את זרימות המשחק ולשפר את החוויה. איננו משתמשים ב-SDK לפרסום ואיננו מוכרים את הנתונים שלך.
                     </p>
                   </Block>
 

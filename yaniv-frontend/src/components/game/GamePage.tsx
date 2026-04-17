@@ -5,8 +5,8 @@ import { useAuthStore } from '../../store/authStore';
 import { useGameStore, selectIsMyTurn, selectMe, selectIsWaitingPlayer } from '../../store/gameStore';
 import { useStrings } from '../../strings';
 import { leaveTable, leaveTableById } from '../../networking/api';
-import { usePostHog } from '@posthog/react';
 import { isSoundEnabled, setSoundEnabled } from '../../utils/soundManager';
+import { trackEvent } from '../../analytics';
 import { PlayerHand } from './PlayerHand';
 import { TurnCountdown } from './TurnCountdown';
 import { DiscardPile } from './DiscardPile';
@@ -140,7 +140,6 @@ export function GamePage() {
   const [searchParams] = useSearchParams();
   const roomCode = searchParams.get('code') ?? '';
   const navigate = useNavigate();
-  const posthog = usePostHog();
 
   const user = useAuthStore((s) => s.user);
   const connect = useGameStore((s) => s.connect);
@@ -168,12 +167,27 @@ export function GamePage() {
   const opponentHandRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const myCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const pendingMyDiscardAnchorsRef = useRef<Record<CardId, { x: number; y: number }>>({});
+  const viewedTableKeyRef = useRef<string | null>(null);
+  const startedTableKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!tableId || !user) { navigate('/'); return; }
     connect(tableId, roomCode, user.sessionToken, user.userId);
     return () => { disconnect(); };
   }, [tableId]);
+
+  useEffect(() => {
+    if (!tableId || !user) return;
+
+    const viewKey = `${tableId}:${user.userId}`;
+    if (viewedTableKeyRef.current === viewKey) return;
+
+    trackEvent('game_viewed', {
+      table_id: tableId,
+      room_code_present: Boolean(roomCode),
+    });
+    viewedTableKeyRef.current = viewKey;
+  }, [roomCode, tableId, user]);
 
   const [leaving, setLeaving] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -199,7 +213,7 @@ export function GamePage() {
   async function handleLeaveTable() {
     if (!user || !tableId || leaving) return;
     setLeaving(true);
-    posthog?.capture('game_left', { table_id: tableId, phase });
+    trackEvent('game_left', { table_id: tableId, phase });
     try {
       if (roomCode) {
         await leaveTable(user.sessionToken, roomCode);
@@ -258,6 +272,22 @@ export function GamePage() {
     : s.game.pauseAfterDisconnect;
   const myRevealedHand = me && roundResult ? roundResult.handsRevealed[me.userId] : undefined;
   const myRoundTag = me ? getRoundTag(roundResult, me.userId, s) : null;
+
+  useEffect(() => {
+    if (!tableId || !user || !phase || phase === 'waiting_for_players') return;
+
+    const startedKey = `${tableId}:${user.userId}`;
+    if (startedTableKeyRef.current === startedKey) return;
+
+    trackEvent('game_started', {
+      table_id: tableId,
+      player_count: players.length,
+      table_type: isPrivateTable ? 'private' : 'public',
+      is_host: user.userId === hostId,
+      phase_at_capture: phase,
+    });
+    startedTableKeyRef.current = startedKey;
+  }, [hostId, isPrivateTable, phase, players.length, tableId, user]);
   const myRoundDelta = me && roundResult ? (roundResult.scoreDeltas[me.userId] ?? 0) : null;
 
   return (
@@ -613,7 +643,7 @@ export function GamePage() {
 
             {canShowStartButton && (
               <button
-                onClick={() => { posthog?.capture('game_started', { table_id: tableId, player_count: players.length }); readyUp(); }}
+                onClick={readyUp}
                 disabled={!canStartGame}
                 className="w-full py-3 rounded-2xl text-base font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
                 style={{

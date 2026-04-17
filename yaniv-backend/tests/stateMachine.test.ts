@@ -159,4 +159,65 @@ describe('yaniv resolution scoring', () => {
       p3: 9,
     });
   });
+
+  it('awards Assaf only to the lowest qualifying opponent', () => {
+    const result = resolveYaniv(
+      'p1',
+      {
+        p1: ['7H'],
+        p2: ['5D'],
+        p3: ['3S'],
+      },
+      {
+        p1: 0,
+        p2: 0,
+        p3: 0,
+      },
+      {
+        penaltyOnAssaf: 30,
+        scoreLimit: 200,
+        resetScoreAt: 50,
+      },
+    );
+
+    expect(result.isAssaf).toBe(true);
+    expect(result.assafPlayerIds).toEqual(['p3']);
+    expect(result.scoreDeltas).toEqual({
+      p1: 37,
+      p2: 5,
+      p3: 0,
+    });
+  });
+
+  it('keeps Assaf shared when the lowest qualifying total is tied', () => {
+    const result = resolveYaniv(
+      'p1',
+      {
+        p1: ['7H'],
+        p2: ['3D'],
+        p3: ['3S'],
+        p4: ['5C'],
+      },
+      {
+        p1: 0,
+        p2: 0,
+        p3: 0,
+        p4: 0,
+      },
+      {
+        penaltyOnAssaf: 30,
+        scoreLimit: 200,
+        resetScoreAt: 50,
+      },
+    );
+
+    expect(result.isAssaf).toBe(true);
+    expect(result.assafPlayerIds).toEqual(['p2', 'p3']);
+    expect(result.scoreDeltas).toEqual({
+      p1: 37,
+      p2: 0,
+      p3: 0,
+      p4: 5,
+    });
+  });
 });

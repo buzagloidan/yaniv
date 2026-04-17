@@ -1,31 +1,40 @@
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
 import { useAuthStore } from '../../store/authStore';
 import { useStrings } from '../../strings';
 import { Button } from '../ui/Button';
 import { useNavigate } from 'react-router-dom';
-import { usePostHog } from '@posthog/react';
+import { trackEvent } from '../../analytics';
 
 export function GameOverOverlay() {
   const s = useStrings();
   const gameOver = useGameStore((s) => s.gameOver);
   const players = useGameStore((s) => s.players);
+  const tableId = useGameStore((s) => s.tableId);
   const disconnect = useGameStore((s) => s.disconnect);
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
-  const posthog = usePostHog();
+  const trackedGameKeyRef = useRef<string | null>(null);
 
   const iWon = gameOver?.winnerId === user?.userId;
 
+  useEffect(() => {
+    if (!gameOver || !tableId) return;
+
+    const gameKey = `${tableId}:${gameOver.winnerId}`;
+    if (trackedGameKeyRef.current === gameKey) return;
+
+    trackEvent('game_completed', {
+      winner_id: gameOver.winnerId,
+      winner_name: gameOver.winnerName,
+      i_won: iWon,
+      player_count: players.length,
+    });
+    trackedGameKeyRef.current = gameKey;
+  }, [gameOver, iWon, players.length, tableId]);
+
   const handleLobby = () => {
-    if (gameOver) {
-      posthog?.capture('game_completed', {
-        winner_id: gameOver.winnerId,
-        winner_name: gameOver.winnerName,
-        i_won: iWon,
-        player_count: players.length,
-      });
-    }
     disconnect();
     navigate('/');
   };

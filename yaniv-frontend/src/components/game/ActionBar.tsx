@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useStrings } from '../../strings';
 import { useGameStore, selectCanCallYaniv, selectIsMyTurn } from '../../store/gameStore';
-import { usePostHog } from '@posthog/react';
+import { trackEvent } from '../../analytics';
 
 export function ActionBar() {
   const s = useStrings();
@@ -10,10 +10,9 @@ export function ActionBar() {
   const isMyTurn = useGameStore(selectIsMyTurn);
   const canYaniv = useGameStore((s) => selectCanCallYaniv(s, s.yanivThreshold));
   const yanivThreshold = useGameStore((s) => s.yanivThreshold);
-  const posthog = usePostHog();
 
   const handleCallYaniv = () => {
-    posthog?.capture('yaniv_called', { yaniv_threshold: yanivThreshold });
+    trackEvent('yaniv_called', { yaniv_threshold: yanivThreshold });
     callYaniv();
   };
 

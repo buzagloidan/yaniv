@@ -10,7 +10,7 @@ import { ErrorBanner } from '../ui/ErrorBanner';
 import { CreateTableModal } from './CreateTableModal';
 import { JoinTableModal } from './JoinTableModal';
 import { SettingsModal } from './SettingsModal';
-import { usePostHog } from '@posthog/react';
+import { trackEvent } from '../../analytics';
 
 export function LobbyPage() {
   const { user, signOut } = useAuthStore();
@@ -23,11 +23,24 @@ export function LobbyPage() {
   const [quickStarting, setQuickStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const attemptedSharedJoinRef = useRef<string | null>(null);
-  const posthog = usePostHog();
+  const lobbyViewKeyRef = useRef<string | null>(null);
 
   const s = useStrings();
   const token = user?.sessionToken ?? '';
   const sharedJoinCode = searchParams.get('join')?.trim() ?? '';
+
+  useEffect(() => {
+    if (!user) return;
+
+    const viewKey = `${user.userId}:${sharedJoinCode || 'direct'}`;
+    if (lobbyViewKeyRef.current === viewKey) return;
+
+    trackEvent('lobby_viewed', {
+      has_invite_code: Boolean(sharedJoinCode),
+      entry_point: sharedJoinCode ? 'shared_link' : 'direct',
+    });
+    lobbyViewKeyRef.current = viewKey;
+  }, [sharedJoinCode, user]);
 
   const mapJoinError = (message: string) => {
     switch (message) {
@@ -57,7 +70,18 @@ export function LobbyPage() {
         isPrivateTable: true,
       });
       await addBot(token, data.roomCode, 3);
-      posthog?.capture('game_quick_started', { table_id: data.tableId });
+      trackEvent('game_table_created', {
+        table_id: data.tableId,
+        yaniv_threshold: 7,
+        score_limit: 100,
+        table_type: 'private',
+        entry_point: 'quick_start',
+        bot_count: 3,
+      });
+      trackEvent('game_quick_started', {
+        table_id: data.tableId,
+        bot_count: 3,
+      });
       navigate(`/game/${data.tableId}`);
     } catch (e) {
       setError((e as Error).message ?? s.errors.unknown);
@@ -68,10 +92,12 @@ export function LobbyPage() {
   const handleCreate = async (settings: { yanivThreshold: number; scoreLimit: number }) => {
     if (!user) return;
     const data = await createTable(token, { ...settings, maxPlayers: 4 });
-    posthog?.capture('game_table_created', {
+    trackEvent('game_table_created', {
       table_id: data.tableId,
       yaniv_threshold: settings.yanivThreshold,
       score_limit: settings.scoreLimit,
+      table_type: 'public',
+      entry_point: 'custom_table',
     });
     navigate(`/game/${data.tableId}?code=${data.roomCode}`);
   };
@@ -80,7 +106,11 @@ export function LobbyPage() {
     if (!user) return;
     try {
       const data = await joinTable(token, code);
-      posthog?.capture('game_table_joined', { table_id: data.tableId, room_code: code });
+      trackEvent('game_table_joined', {
+        table_id: data.tableId,
+        room_code: code,
+        entry_point: 'manual_code',
+      });
       navigate(`/game/${data.tableId}?code=${data.roomCode}`);
     } catch (e) {
       setError(mapJoinError((e as Error).message));
@@ -97,6 +127,11 @@ export function LobbyPage() {
 
     void joinTable(token, sharedJoinCode)
       .then((data) => {
+        trackEvent('game_table_joined', {
+          table_id: data.tableId,
+          room_code: sharedJoinCode,
+          entry_point: 'shared_link',
+        });
         navigate(`/game/${data.tableId}?code=${data.roomCode}`);
       })
       .catch((e) => {

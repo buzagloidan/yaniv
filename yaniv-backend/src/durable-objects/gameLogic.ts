@@ -264,11 +264,25 @@ export function resolveYaniv(
 ): YanivResolution {
   const callerTotal = handTotal(hands[callerId]);
 
-  // Assaf: any OTHER active player with hand total ≤ caller's total
-  const assafPlayerIds = Object.entries(hands)
+  // Assaf: find all OTHER active players with hand total ≤ caller's total,
+  // then keep only the lowest qualifying total. If the lowest total is tied,
+  // all tied players share the Assaf.
+  const qualifyingPlayers = Object.entries(hands)
     .filter(([id]) => id !== callerId)
-    .filter(([, hand]) => handTotal(hand) <= callerTotal)
-    .map(([id]) => id);
+    .map(([id, hand]) => ({ id, total: handTotal(hand) }))
+    .filter(({ total }) => total <= callerTotal);
+
+  const lowestQualifyingTotal = qualifyingPlayers.reduce<number | null>(
+    (lowest, { total }) => (lowest === null || total < lowest ? total : lowest),
+    null,
+  );
+
+  const assafPlayerIds =
+    lowestQualifyingTotal === null
+      ? []
+      : qualifyingPlayers
+        .filter(({ total }) => total === lowestQualifyingTotal)
+        .map(({ id }) => id);
 
   const isAssaf = assafPlayerIds.length > 0;
   const scoreDeltas: Record<string, number> = {};
