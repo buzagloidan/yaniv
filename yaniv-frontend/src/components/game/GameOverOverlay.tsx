@@ -18,6 +18,13 @@ export function GameOverOverlay() {
   const trackedGameKeyRef = useRef<string | null>(null);
 
   const iWon = gameOver?.winnerId === user?.userId;
+  const sortedPlayers = gameOver
+    ? [...players].sort((a, b) => {
+        const scoreA = gameOver.finalScores[a.userId] ?? a.score;
+        const scoreB = gameOver.finalScores[b.userId] ?? b.score;
+        return scoreA - scoreB;
+      })
+    : players;
 
   useEffect(() => {
     if (!gameOver || !tableId) return;
@@ -65,8 +72,7 @@ export function GameOverOverlay() {
 
             {/* Standings */}
             <div className="space-y-2 mb-8 text-start">
-              {[...players]
-                .sort((a, b) => a.score - b.score)
+              {sortedPlayers
                 .map((p, i) => (
                   <div key={p.userId} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">

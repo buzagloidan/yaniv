@@ -459,7 +459,7 @@ export function applyRoundResolution(state: GameState): RoundResolutionResult {
     }
   }
 
-  const resolution = resolveYaniv(callerId, hands, currentScores, state.settings);
+  const resolution = resolveYaniv(callerId, hands, currentScores, state.seatOrder, state.settings);
   const nextRoundStarterId = pickNextRoundStarterId(state, callerId, hands, resolution);
 
   // Apply updated scores and eliminations
@@ -506,8 +506,8 @@ function pickNextRoundStarterId(
   let starterId: string | null = null;
   let starterTotal = Number.POSITIVE_INFINITY;
 
-  // When multiple players Assaf, let the lowest hand start.
-  // Ties fall back to seat order for deterministic behavior.
+  // The round winner starts next round. Assaf is already resolved to a
+  // single winner, but we keep this logic defensive.
   for (const playerId of state.seatOrder) {
     if (!assafIds.has(playerId)) continue;
 

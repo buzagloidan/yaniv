@@ -100,4 +100,21 @@ describe('validator current turn guards', () => {
 
     expect(validateYanivCall('p1', state)).toEqual({ valid: true });
   });
+
+  it('rejects K-Q-A as a valid run', () => {
+    const state = makeState({
+      players: {
+        p1: {
+          ...makeState().players.p1,
+          hand: ['KH', 'QH', 'AH'],
+        },
+        p2: makeState().players.p2,
+      },
+    });
+
+    expect(validateDiscard('p1', ['KH', 'QH', 'AH'], state)).toEqual({
+      valid: false,
+      code: ErrorCode.INVALID_MOVE,
+    });
+  });
 });

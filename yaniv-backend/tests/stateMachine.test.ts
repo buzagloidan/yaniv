@@ -118,6 +118,7 @@ describe('yaniv resolution scoring', () => {
         p1: 0,
         p2: 40,
       },
+      ['p1', 'p2'],
       {
         penaltyOnAssaf: 30,
         scoreLimit: 200,
@@ -144,6 +145,7 @@ describe('yaniv resolution scoring', () => {
         p2: 0,
         p3: 0,
       },
+      ['p1', 'p2', 'p3'],
       {
         penaltyOnAssaf: 30,
         scoreLimit: 200,
@@ -173,6 +175,7 @@ describe('yaniv resolution scoring', () => {
         p2: 0,
         p3: 0,
       },
+      ['p1', 'p2', 'p3'],
       {
         penaltyOnAssaf: 30,
         scoreLimit: 200,
@@ -189,7 +192,7 @@ describe('yaniv resolution scoring', () => {
     });
   });
 
-  it('keeps Assaf shared when the lowest qualifying total is tied', () => {
+  it('awards Assaf to the later player when the lowest qualifying total is tied', () => {
     const result = resolveYaniv(
       'p1',
       {
@@ -204,6 +207,7 @@ describe('yaniv resolution scoring', () => {
         p3: 0,
         p4: 0,
       },
+      ['p1', 'p2', 'p3', 'p4'],
       {
         penaltyOnAssaf: 30,
         scoreLimit: 200,
@@ -212,10 +216,10 @@ describe('yaniv resolution scoring', () => {
     );
 
     expect(result.isAssaf).toBe(true);
-    expect(result.assafPlayerIds).toEqual(['p2', 'p3']);
+    expect(result.assafPlayerIds).toEqual(['p3']);
     expect(result.scoreDeltas).toEqual({
       p1: 37,
-      p2: 0,
+      p2: 3,
       p3: 0,
       p4: 5,
     });

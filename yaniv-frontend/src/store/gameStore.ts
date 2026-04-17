@@ -464,6 +464,10 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
         pauseState: null,
         lastTurnAnimation: null,
         selectedCards: [],
+        players: s.players.map((p) => ({
+          ...p,
+          score: msg.finalScores[p.userId] ?? p.score,
+        })),
         myHand: msg.winnerId === myUserId ? s.myHand : [],
       }));
       trackEvent('game_ended', {

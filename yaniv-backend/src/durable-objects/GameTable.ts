@@ -8,7 +8,6 @@ import type {
   AddBotPayload,
   InitTablePayload,
   TurnDeltaMessage,
-  YanivCalledMessage,
   RoundResultMessage,
   GameOverMessage,
 } from '../shared/types';
@@ -574,76 +573,7 @@ export class GameTable implements DurableObject {
       this.sendError(ws, v.code, 'Cannot call Yaniv');
       return false;
     }
-
-    // 1. Reveal all hands
-    const yanivState = applyYanivCall(state, userId);
-    const allHands: Record<string, CardId[]> = {};
-    for (const [id, p] of Object.entries(yanivState.players)) {
-      if (!p.isEliminated) allHands[id] = p.hand;
-    }
-
-    const yanivMsg: YanivCalledMessage = {
-      type: 'yaniv_called',
-      callerId: userId,
-      allHands,
-      callerTotal: handTotal(state.players[userId].hand),
-    };
-    this.broadcast.broadcastAll(yanivMsg);
-
-    // 2. Resolve round
-    const { newState, resolution, isMatchOver, winnerId } = applyRoundResolution(yanivState);
-    const shouldStopAfterLastHumanLoss =
-      !isMatchOver && this.shouldStopBotTableWithoutActiveHumans(newState);
-    const persistedState = shouldStopAfterLastHumanLoss
-      ? newState
-      : this.pauseIfNeededAfterRound(newState, userId);
-    await this.saveState(persistedState);
-    await this.ctx.storage.deleteAlarm();
-
-    // 3. Build and broadcast round result
-    const handsRevealed: RoundResultMessage['handsRevealed'] = {};
-    for (const [id, hand] of Object.entries(allHands)) {
-      handsRevealed[id] = { cards: hand, total: handTotal(hand) };
-    }
-
-    const roundResult: RoundResultMessage = {
-      type: 'round_result',
-      callType: resolution.isAssaf ? 'assaf' : 'yaniv',
-      callerId: userId,
-      assafByIds: resolution.assafPlayerIds,
-      handsRevealed,
-      scoreDeltas: resolution.scoreDeltas,
-      penaltyApplied: resolution.isAssaf,
-      newScores: resolution.newScores,
-      eliminatedThisRound: resolution.eliminatedPlayerIds,
-      scoreResetApplied: resolution.resetPlayerIds,
-      nextRoundStartsIn:
-        isMatchOver || shouldStopAfterLastHumanLoss
-          ? 0
-          : DEFAULTS.BETWEEN_ROUNDS_DELAY_MS,
-    };
-    this.broadcast.broadcastAll(roundResult);
-
-    trackEvent(this.env, 'round_ended', {
-      table_id: state.tableId,
-      round_number: newState.roundNumber,
-      call_type: resolution.isAssaf ? 'assaf' : 'yaniv',
-      caller_id: userId,
-      eliminated_count: resolution.eliminatedPlayerIds.length,
-    });
-
-    if (persistedState.pauseState) {
-      this.broadcast.broadcastSnapshot(persistedState);
-    }
-
-    // 4. End or continue
-    if (isMatchOver) {
-      await this.concludeMatch(persistedState, winnerId);
-    } else if (shouldStopAfterLastHumanLoss) {
-      await this.concludeBotTableWithoutActiveHumans(persistedState);
-    } else if (!persistedState.pauseState) {
-      await this.setAlarm(persistedState);
-    }
+    await this.resolveYanivRound(userId, state);
     return true;
   }
 
@@ -671,6 +601,11 @@ export class GameTable implements DurableObject {
     }
 
     const newState = applyHadabakaAccept(state, userId);
+    if (newState.players[userId]?.hand.length === 0) {
+      await this.resolveYanivRound(userId, newState);
+      return true;
+    }
+
     await this.saveState(newState);
     await this.setAlarm(newState);
     this.broadcast.broadcastSnapshot(newState);
@@ -1099,6 +1034,10 @@ export class GameTable implements DurableObject {
       if (isHadabaka) {
         // Bot always accepts הדבקה immediately
         const afterAccept = applyHadabakaAccept(newState, playerId);
+        if (afterAccept.players[playerId]?.hand.length === 0) {
+          await this.resolveYanivRound(playerId, afterAccept);
+          return;
+        }
         await this.saveState(afterAccept);
         await this.setAlarm(afterAccept);
         this.broadcast.broadcastSnapshot(afterAccept);
@@ -1141,7 +1080,11 @@ export class GameTable implements DurableObject {
 
   /** Bot calling Yaniv (reuses existing call_yaniv logic). */
   private async executeBotYaniv(playerId: string, state: GameState): Promise<void> {
-    const yanivState = applyYanivCall(state, playerId);
+    await this.resolveYanivRound(playerId, state);
+  }
+
+  private async resolveYanivRound(callerId: string, state: GameState): Promise<void> {
+    const yanivState = applyYanivCall(state, callerId);
     const allHands: Record<string, CardId[]> = {};
     for (const [id, p] of Object.entries(yanivState.players)) {
       if (!p.isEliminated) allHands[id] = p.hand;
@@ -1149,9 +1092,9 @@ export class GameTable implements DurableObject {
 
     this.broadcast.broadcastAll({
       type: 'yaniv_called',
-      callerId: playerId,
+      callerId,
       allHands,
-      callerTotal: handTotal(state.players[playerId].hand),
+      callerTotal: handTotal(state.players[callerId].hand),
     });
 
     const { newState, resolution, isMatchOver, winnerId } = applyRoundResolution(yanivState);
@@ -1159,7 +1102,7 @@ export class GameTable implements DurableObject {
       !isMatchOver && this.shouldStopBotTableWithoutActiveHumans(newState);
     const persistedState = shouldStopAfterLastHumanLoss
       ? newState
-      : this.pauseIfNeededAfterRound(newState, playerId);
+      : this.pauseIfNeededAfterRound(newState, callerId);
     await this.saveState(persistedState);
     await this.ctx.storage.deleteAlarm();
 
@@ -1171,7 +1114,7 @@ export class GameTable implements DurableObject {
     this.broadcast.broadcastAll({
       type: 'round_result',
       callType: resolution.isAssaf ? 'assaf' : 'yaniv',
-      callerId: playerId,
+      callerId,
       assafByIds: resolution.assafPlayerIds,
       handsRevealed,
       scoreDeltas: resolution.scoreDeltas,
@@ -1183,6 +1126,14 @@ export class GameTable implements DurableObject {
         isMatchOver || shouldStopAfterLastHumanLoss
           ? 0
           : DEFAULTS.BETWEEN_ROUNDS_DELAY_MS,
+    });
+
+    trackEvent(this.env, 'round_ended', {
+      table_id: state.tableId,
+      round_number: newState.roundNumber,
+      call_type: resolution.isAssaf ? 'assaf' : 'yaniv',
+      caller_id: callerId,
+      eliminated_count: resolution.eliminatedPlayerIds.length,
     });
 
     if (persistedState.pauseState) {

@@ -80,6 +80,7 @@ function HebrewContent() {
         <p className="mb-2">מותר להשליך יותר מקלף אחד:</p>
         <ul className="list-disc list-inside space-y-1 mr-2">
           <li><strong>סדרה עולה</strong> של 3+ קלפים מאותה צורה — למשל ♥6‑♥7‑♥8. ג'וקר יכול להשלים סדרה.</li>
+          <li><strong>K‑Q‑A אינה סדרה</strong> — אס תמיד נחשב 1 בלבד.</li>
           <li><strong>זוג / שלישייה / ריבעייה</strong> — קלפים זהים (ערך זהה), למשל 9♠ 9♥ 9♦.</li>
         </ul>
         <p className="mt-2">
@@ -88,13 +89,23 @@ function HebrewContent() {
         </p>
       </Section>
 
+      <Section title="הדבקה">
+        <ul className="list-disc list-inside space-y-1 mr-2">
+          <li>אם מושכים מהקופה הסגורה קלף שמתאים בדרגה לערימה האחרונה שנזרקה, אפשר להדביק אותו מיד.</li>
+          <li>הדבקה אפשרית רק על זריקה של אותו ערך, לא על סדרה.</li>
+          <li>אם ההדבקה משאירה אותך עם <strong>0 קלפים</strong>, יניב מוכרז אוטומטית.</li>
+        </ul>
+      </Section>
+
       <Section title="הכרזת יניב ואסף">
         <ul className="list-disc list-inside space-y-1 mr-2">
           <li>אם סכום המכריז הוא הנמוך — הוא מנצח ואינו מקבל נקודות.</li>
           <li>
             אם לשחקן אחר יש סכום <strong>קטן או שווה</strong> למכריז — <strong>אסף!</strong>
             <br />
-            המכריז מקבל <strong>30 נקודות עונשין</strong>.
+            השחקן עם הסכום <strong>הנמוך ביותר</strong> עושה אסף. אם יש שוויון, השחקן <strong>המאוחר יותר בסדר המשחק</strong> הוא זה שעושה אסף.
+            <br />
+            המכריז מקבל את ערך ידו <strong>בתוספת 30 נקודות עונשין</strong>. שחקן האסף מקבל <strong>0</strong> נקודות, ושאר השחקנים מקבלים את ערך היד שלהם.
           </li>
         </ul>
       </Section>
@@ -102,7 +113,9 @@ function HebrewContent() {
       <Section title="ניקוד מיוחד">
         <ul className="list-disc list-inside space-y-1 mr-2">
           <li>
-            <strong>הגעה בדיוק ל-50 / 100 / 150 / 200</strong> — הניקוד מתאפס חזרה לאפס.
+            <strong>הגעה בדיוק ל-50 / 100 / 150 / 200</strong> — מורידים <strong>50 נקודות</strong> מהניקוד.
+            <br />
+            לדוגמה: 50→0, 100→50, 150→100, 200→150.
           </li>
           <li>
             <strong>מעבר לסף</strong> — השחקן מודח מהמשחק.
@@ -112,7 +125,7 @@ function HebrewContent() {
 
       <Section title="ניצחון">
         <p>
-          המשחק מסתיים כשנשאר שחקן אחד בלבד — הוא המנצח. הסף נקבע בעת יצירת השולחן (50 / 100 / 200 נקודות).
+          המשחק מסתיים כשנשאר שחקן אחד בלבד — הוא המנצח. מי שניצח את הסיבוב מתחיל את הסיבוב הבא. הסף נקבע בעת יצירת השולחן (50 / 100 / 200 נקודות).
         </p>
       </Section>
     </>
@@ -151,6 +164,7 @@ function EnglishContent() {
       <Section title="Valid Discards">
         <ul className="list-disc list-inside space-y-1">
           <li><strong>Run</strong> — 3 or more consecutive cards of the same suit (e.g. ♥6‑♥7‑♥8). A Joker can complete a run.</li>
+          <li><strong>K‑Q‑A is not a run</strong> — Ace always counts only as 1.</li>
           <li><strong>Pair / Three / Four of a Kind</strong> — 2–4 cards of the same rank (e.g. 9♠ 9♥ 9♦).</li>
         </ul>
         <p className="mt-2">
@@ -159,27 +173,41 @@ function EnglishContent() {
         </p>
       </Section>
 
+      <Section title="Hadabaka">
+        <ul className="list-disc list-inside space-y-1">
+          <li>If you draw from the deck a card that matches the rank of the last discarded set, you may stick it immediately.</li>
+          <li>Hadabaka only applies against same-rank discards, not against runs.</li>
+          <li>If Hadabaka leaves you with <strong>0 cards</strong>, Yaniv is called automatically.</li>
+        </ul>
+      </Section>
+
       <Section title="Yaniv & Assaf">
         <ul className="list-disc list-inside space-y-1">
           <li>If the caller has the lowest total — they win the round and score 0.</li>
           <li>
             If another player has a total <strong>equal to or lower</strong> than the caller — <strong>Assaf!</strong>
             <br />
-            The caller receives a <strong>+30 point penalty</strong> instead.
+            The player with the <strong>lowest total</strong> makes Assaf. If that lowest total is tied, the <strong>later player in turn order</strong> makes Assaf.
+            <br />
+            The caller scores their hand value <strong>plus a 30-point penalty</strong>. The Assaf player scores <strong>0</strong>, and all other players score their hand value.
           </li>
         </ul>
       </Section>
 
       <Section title="Special Scoring">
         <ul className="list-disc list-inside space-y-1">
-          <li><strong>Landing exactly on 50 / 100 / 150 / 200</strong> — your score resets back to 0.</li>
+          <li>
+            <strong>Landing exactly on 50 / 100 / 150 / 200</strong> — your score is reduced by <strong>50 points</strong>.
+            <br />
+            For example: 50→0, 100→50, 150→100, 200→150.
+          </li>
           <li><strong>Exceeding the limit</strong> — you are eliminated from the game.</li>
         </ul>
       </Section>
 
       <Section title="Winning">
         <p>
-          The last player standing wins. The points limit is set when creating the table (50 / 100 / 200 points).
+          The last player standing wins. The player who won the round starts the next round. The points limit is set when creating the table (50 / 100 / 200 points).
         </p>
       </Section>
     </>

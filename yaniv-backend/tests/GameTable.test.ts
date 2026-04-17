@@ -342,4 +342,46 @@ describe('GameTable round flow', () => {
     expect((env.DB as unknown as { batch: ReturnType<typeof vi.fn> }).batch).toHaveBeenCalledTimes(2);
     expect(mock.storage.setAlarm).toHaveBeenCalled();
   });
+
+  it('auto-calls Yaniv when hadabaka removes the player hand to zero cards', async () => {
+    const state = makeState({
+      phase: 'player_turn_hadabaka',
+      players: {
+        p1: {
+          ...makeState().players.p1,
+          hand: ['4D'],
+          score: 0,
+          isBot: false,
+        },
+        p2: {
+          ...makeState().players.p2,
+          userId: 'p2',
+          displayName: 'Player 2',
+          accountId: 2,
+          hand: ['7C', '8C'],
+          score: 0,
+          isBot: false,
+        },
+      },
+      seatOrder: ['p1', 'p2'],
+      currentTurnIndex: 0,
+      discardPile: {
+        currentSet: ['4C'],
+        previousSets: [],
+      },
+      hadabakaCard: '4D',
+    });
+    const mock = createMockCtx(state);
+    const table = new GameTable(mock.ctx, createMockEnv());
+    const ws = createMockWebSocket();
+
+    await (table as any).handleHadabakaAccept('p1', ws, state);
+
+    const stored = mock.getStoredState();
+    expect(stored?.phase).toBe('between_rounds');
+    expect(stored?.lastRoundCallerId).toBe('p1');
+    expect(stored?.yanivCallerId).toBeNull();
+    expect(stored?.players.p1.score).toBe(0);
+    expect(stored?.players.p2.score).toBe(15);
+  });
 });

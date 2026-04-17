@@ -260,29 +260,32 @@ export function resolveYaniv(
   callerId: string,
   hands: Record<string, CardId[]>,
   currentScores: Record<string, number>,
+  playerOrder: string[],
   settings: Pick<GameSettings, 'penaltyOnAssaf' | 'scoreLimit' | 'resetScoreAt'>,
 ): YanivResolution {
   const callerTotal = handTotal(hands[callerId]);
 
-  // Assaf: find all OTHER active players with hand total ≤ caller's total,
-  // then keep only the lowest qualifying total. If the lowest total is tied,
-  // all tied players share the Assaf.
-  const qualifyingPlayers = Object.entries(hands)
-    .filter(([id]) => id !== callerId)
-    .map(([id, hand]) => ({ id, total: handTotal(hand) }))
-    .filter(({ total }) => total <= callerTotal);
+  // Assaf is awarded to a single player. Among players at or below the
+  // caller's total, the lowest hand wins; if that lowest total is tied,
+  // the later player in order takes the Assaf.
+  let assafWinnerId: string | null = null;
+  let assafWinningTotal = Number.POSITIVE_INFINITY;
 
-  const lowestQualifyingTotal = qualifyingPlayers.reduce<number | null>(
-    (lowest, { total }) => (lowest === null || total < lowest ? total : lowest),
-    null,
-  );
+  for (const playerId of playerOrder) {
+    if (playerId === callerId) continue;
 
-  const assafPlayerIds =
-    lowestQualifyingTotal === null
-      ? []
-      : qualifyingPlayers
-        .filter(({ total }) => total === lowestQualifyingTotal)
-        .map(({ id }) => id);
+    const hand = hands[playerId];
+    if (!hand) continue;
+
+    const total = handTotal(hand);
+    if (total > callerTotal) continue;
+    if (total > assafWinningTotal) continue;
+
+    assafWinnerId = playerId;
+    assafWinningTotal = total;
+  }
+
+  const assafPlayerIds = assafWinnerId ? [assafWinnerId] : [];
 
   const isAssaf = assafPlayerIds.length > 0;
   const scoreDeltas: Record<string, number> = {};
