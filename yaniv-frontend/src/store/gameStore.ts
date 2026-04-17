@@ -43,6 +43,8 @@ interface LastTurnAnimation {
   discardedCards: CardId[] | null;
   drawnSource: DrawSource | null;
   myNewCard: CardId | null;
+  publicDrawnCard: CardId | null;
+  discardSourceSetBeforeDraw: CardId[] | null;
 }
 
 interface PendingDrawRequest {
@@ -158,7 +160,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   turnDeadlineEpoch: null,
   players: [],
   myHand: [],
-  discardPile: { currentSet: [], deckCount: 0 },
+  discardPile: { currentSet: [], previousSetPreview: [], deckCount: 0 },
   chatMessages: [],
   yanivCalled: null,
   roundResult: null,
@@ -350,14 +352,10 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
           (msg.action === 'discard' && msg.actingUserId === myUserId && msg.discardedCards
             ? s.myHand.filter((c) => !msg.discardedCards!.includes(c))
             : s.myHand);
-        const nextPhase =
-          msg.action === 'discard' && msg.nextTurnUserId === myUserId
-            ? 'player_turn_draw'
-            : 'player_turn_discard';
         const selectedCards =
           msg.actingUserId === myUserId
             ? []
-            : sanitizeSelectedCards(s.selectedCards, myHand, nextPhase);
+            : sanitizeSelectedCards(s.selectedCards, myHand, msg.phase);
         return {
           players: updatedPlayers,
           myHand,
@@ -369,11 +367,13 @@ function handleServerMessage(msg: ServerMessage, set: SetFn, get: GetFn) {
             seq: ++turnAnimationCounter,
             actingUserId: msg.actingUserId,
             action: msg.action,
-            discardedCards: msg.discardedCards,
-            drawnSource: msg.drawnSource,
-            myNewCard: msg.myNewCard,
+          discardedCards: msg.discardedCards,
+          drawnSource: msg.drawnSource,
+          myNewCard: msg.myNewCard,
+            publicDrawnCard: msg.publicDrawnCard,
+            discardSourceSetBeforeDraw: msg.discardSourceSetBeforeDraw,
           },
-          phase: nextPhase,
+          phase: msg.phase,
           selectedCards,
         };
       });

@@ -27,6 +27,21 @@ interface FlightCard {
   sourceKind?: 'deck' | 'discard';
 }
 
+function discardPreviewCardPoint(
+  discardCenter: Point,
+  sourceCards: CardId[],
+  cardId: CardId,
+): Point {
+  const index = sourceCards.findIndex((candidate) => candidate === cardId);
+  const safeIndex = index === -1 ? sourceCards.length - 1 : index;
+  const centerOffset = safeIndex - (sourceCards.length - 1) / 2;
+
+  return {
+    x: discardCenter.x + spreadOffset(safeIndex, sourceCards.length, 26),
+    y: discardCenter.y + Math.abs(centerOffset) * 3 - 8,
+  };
+}
+
 interface Props {
   myUserId: string | null;
   deckRef: { current: HTMLDivElement | null };
@@ -145,21 +160,29 @@ function buildDrawFlights(
   opponentHandEls: Record<string, HTMLDivElement | null>,
   drawnSource: DrawSource | null,
   myNewCard: CardId | null,
+  publicDrawnCard: CardId | null,
+  discardSourceSetBeforeDraw: CardId[] | null,
 ): FlightCard[] {
   if (!drawnSource) return [];
 
-  const source = centerPoint(drawnSource === 'deck' ? deckEl : discardEl);
+  const discardCenter = centerPoint(discardEl);
+  const source =
+    drawnSource === 'deck'
+      ? centerPoint(deckEl)
+      : discardCenter && publicDrawnCard && discardSourceSetBeforeDraw && discardSourceSetBeforeDraw.length > 0
+        ? discardPreviewCardPoint(discardCenter, discardSourceSetBeforeDraw, publicDrawnCard)
+        : discardCenter;
   const target =
     (actingUserId === myUserId && myNewCard ? centerPoint(myCardEls[myNewCard]) : null) ??
     centerPoint(targetForDraw(actingUserId, myUserId, myHandEl, opponentHandEls));
   if (!source || !target) return [];
 
-  const faceDown = actingUserId !== myUserId || !myNewCard;
+  const faceDown = !(actingUserId === myUserId && myNewCard) && !publicDrawnCard;
   const sourceKind = drawnSource === 'deck' ? 'deck' : 'discard';
 
   return [{
     id: `draw-${seq}-${actingUserId}`,
-    cardId: myNewCard ?? placeholderCardId(),
+    cardId: myNewCard ?? publicDrawnCard ?? placeholderCardId(),
     faceDown,
     from: clonePoint(source),
     to: clonePoint(target),
@@ -219,6 +242,8 @@ export function CardFlightLayer({
               opponentHandEls,
               lastTurnAnimation.drawnSource,
               lastTurnAnimation.myNewCard,
+              lastTurnAnimation.publicDrawnCard,
+              lastTurnAnimation.discardSourceSetBeforeDraw,
             );
 
       if (nextFlights.length === 0) return;

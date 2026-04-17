@@ -126,6 +126,7 @@ export interface PublicPlayerInfo {
 
 export interface PublicDiscardPile {
   currentSet: CardId[];
+  previousSetPreview: CardId[];
   deckCount: number;
 }
 
@@ -171,8 +172,11 @@ export interface TurnDeltaMessage {
   type: 'turn_delta';
   actingUserId: string;
   action: 'discard' | 'draw';
+  phase: GamePhase;
   discardedCards: CardId[] | null;
   drawnSource: DrawSource | null;
+  publicDrawnCard: CardId | null;
+  discardSourceSetBeforeDraw: CardId[] | null;
   newDiscardPile: PublicDiscardPile;
   nextTurnUserId: string;
   turnDeadlineEpoch: number;

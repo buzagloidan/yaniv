@@ -88,6 +88,7 @@ export function buildSnapshot(state: GameState, forUserId: string): StateSnapsho
 
   const discardPile: PublicDiscardPile = {
     currentSet: state.discardPile.currentSet,
+    previousSetPreview: state.discardPile.previousSets[state.discardPile.previousSets.length - 1] ?? [],
     deckCount: state.deck.length,
   };
 

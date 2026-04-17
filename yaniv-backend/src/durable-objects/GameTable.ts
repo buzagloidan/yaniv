@@ -74,6 +74,10 @@ export class GameTable implements DurableObject {
     }
   }
 
+  private sendSnapshotTo(userId: string, state: GameState): void {
+    this.broadcast.sendTo(userId, buildSnapshot(state, userId));
+  }
+
   // ============================================================
   // fetch() — entry point for all HTTP and WebSocket requests
   // ============================================================
@@ -481,10 +485,15 @@ export class GameTable implements DurableObject {
         type: 'turn_delta',
         actingUserId: userId,
         action: 'discard',
+        phase: newState.phase,
         discardedCards: newState.discardPile.currentSet,
         drawnSource: null,
+        publicDrawnCard: null,
+        discardSourceSetBeforeDraw: null,
         newDiscardPile: {
           currentSet: newState.discardPile.currentSet,
+          previousSetPreview:
+            newState.discardPile.previousSets[newState.discardPile.previousSets.length - 1] ?? [],
           deckCount: newState.deck.length,
         },
         // Still this player's turn (draw phase)
@@ -496,6 +505,7 @@ export class GameTable implements DurableObject {
       };
       this.broadcast.sendTo(recipientId, delta);
     }
+    this.sendSnapshotTo(userId, newState);
     return true;
   }
 
@@ -516,6 +526,10 @@ export class GameTable implements DurableObject {
     }
 
     const { newState, drawnCard, isHadabaka, deckWasReshuffled } = applyDraw(state, userId, source);
+    const discardSourceSetBeforeDraw =
+      source === 'deck'
+        ? null
+        : [...(state.discardPile.previousSets[state.discardPile.previousSets.length - 1] ?? [])];
     await this.saveState(newState);
     await this.setAlarm(newState);
 
@@ -545,10 +559,15 @@ export class GameTable implements DurableObject {
         type: 'turn_delta',
         actingUserId: userId,
         action: 'draw',
+        phase: newState.phase,
         discardedCards: null,
         drawnSource: source,
+        publicDrawnCard: source === 'deck' ? null : drawnCard,
+        discardSourceSetBeforeDraw,
         newDiscardPile: {
           currentSet: newState.discardPile.currentSet,
+          previousSetPreview:
+            newState.discardPile.previousSets[newState.discardPile.previousSets.length - 1] ?? [],
           deckCount: newState.deck.length,
         },
         nextTurnUserId,
@@ -560,6 +579,7 @@ export class GameTable implements DurableObject {
       };
       this.broadcast.sendTo(recipientId, delta);
     }
+    this.sendSnapshotTo(nextTurnUserId, newState);
     return true;
   }
 
@@ -1016,9 +1036,17 @@ export class GameTable implements DurableObject {
         type: 'turn_delta',
         actingUserId: playerId,
         action: 'discard',
+        phase: newState.phase,
         discardedCards: cards,
         drawnSource: null,
-        newDiscardPile: { currentSet: newState.discardPile.currentSet, deckCount: newState.deck.length },
+        publicDrawnCard: null,
+        discardSourceSetBeforeDraw: null,
+        newDiscardPile: {
+          currentSet: newState.discardPile.currentSet,
+          previousSetPreview:
+            newState.discardPile.previousSets[newState.discardPile.previousSets.length - 1] ?? [],
+          deckCount: newState.deck.length,
+        },
         nextTurnUserId: playerId,
         turnDeadlineEpoch: newState.turnDeadlineEpoch!,
         opponentCardCounts,
@@ -1026,6 +1054,7 @@ export class GameTable implements DurableObject {
         myHand: null,
       };
       this.broadcast.broadcastAll(delta);
+      this.sendSnapshotTo(playerId, newState);
 
     } else if (state.phase === 'player_turn_draw') {
       // Bot always draws from deck
@@ -1064,9 +1093,17 @@ export class GameTable implements DurableObject {
           type: 'turn_delta',
           actingUserId: playerId,
           action: 'draw',
+          phase: newState.phase,
           discardedCards: null,
           drawnSource: 'deck',
-          newDiscardPile: { currentSet: newState.discardPile.currentSet, deckCount: newState.deck.length },
+          publicDrawnCard: null,
+          discardSourceSetBeforeDraw: null,
+          newDiscardPile: {
+            currentSet: newState.discardPile.currentSet,
+            previousSetPreview:
+              newState.discardPile.previousSets[newState.discardPile.previousSets.length - 1] ?? [],
+            deckCount: newState.deck.length,
+          },
           nextTurnUserId,
           turnDeadlineEpoch: newState.turnDeadlineEpoch!,
           opponentCardCounts,
@@ -1075,6 +1112,7 @@ export class GameTable implements DurableObject {
         };
         this.broadcast.sendTo(recipientId, delta);
       }
+      this.sendSnapshotTo(nextTurnUserId, newState);
     }
   }
 

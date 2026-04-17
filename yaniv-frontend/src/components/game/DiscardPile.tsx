@@ -1,8 +1,8 @@
 import type { Ref } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { CardView } from './CardView';
-import type { CardId, DrawSource } from '../../shared/types';
+import type { DrawSource } from '../../shared/types';
 import { useGameStore, selectCanDiscardAndDraw } from '../../store/gameStore';
 
 interface Props {
@@ -17,22 +17,8 @@ export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Pro
   const canDiscardAndDraw = useGameStore(selectCanDiscardAndDraw);
   const lastTurnAnimation = useGameStore((s) => s.lastTurnAnimation);
 
-  const { currentSet } = discardPile;
+  const { currentSet, previousSetPreview } = discardPile;
   const canInteractWithPile = canDiscardAndDraw && currentSet.length > 0;
-
-  // Track the last 2 discarded sets for visual history display
-  const [historyStacks, setHistoryStacks] = useState<CardId[][]>([]);
-  const prevSetRef = useRef<CardId[]>([]);
-  useEffect(() => {
-    const prev = prevSetRef.current;
-    if (currentSet.length === 0) {
-      // New round — clear history
-      setHistoryStacks([]);
-    } else if (prev.length > 0 && prev.join(',') !== currentSet.join(',')) {
-      setHistoryStacks((old) => [...old.slice(-1), prev]);
-    }
-    prevSetRef.current = currentSet;
-  }, [currentSet]);
 
   const deckPulseSeq =
     lastTurnAnimation?.action === 'draw' && lastTurnAnimation.drawnSource === 'deck'
@@ -74,33 +60,28 @@ export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Pro
       {/* Discard set — top */}
       <div className="flex flex-col items-center justify-center relative">
         {/* History layers — faded cards peeking behind */}
-        {historyStacks.map((set, hi) => {
-          const opacity = hi === historyStacks.length - 1 ? 0.38 : 0.18;
-          const offsetY = (historyStacks.length - hi) * 6;
-          return (
-            <div
-              key={`hist-${hi}`}
-              className="absolute flex items-end justify-center pointer-events-none"
-              style={{ opacity, transform: `translateY(${offsetY}px)`, zIndex: 0 }}
-            >
-              {set.map((cardId, i) => {
-                const centerOffset = i - (set.length - 1) / 2;
-                return (
-                  <div
-                    key={i}
-                    style={{
-                      marginInlineStart: i === 0 ? 0 : -26,
-                      zIndex: i,
-                      transform: `rotate(${centerOffset * 5}deg)`,
-                    }}
-                  >
-                    <CardView cardId={cardId} size="xl" />
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
+        {previousSetPreview.length > 0 && (
+          <div
+            className="absolute flex items-end justify-center pointer-events-none"
+            style={{ opacity: 0.32, transform: 'translateY(6px)', zIndex: 0 }}
+          >
+            {previousSetPreview.map((cardId, i) => {
+              const centerOffset = i - (previousSetPreview.length - 1) / 2;
+              return (
+                <div
+                  key={`${cardId}-${i}`}
+                  style={{
+                    marginInlineStart: i === 0 ? 0 : -26,
+                    zIndex: i,
+                    transform: `rotate(${centerOffset * 5}deg)`,
+                  }}
+                >
+                  <CardView cardId={cardId} size="xl" />
+                </div>
+              );
+            })}
+          </div>
+        )}
         {discardDrawPulseSeq ? (
           <motion.div
             key={`discard-glow-${discardDrawPulseSeq}`}
