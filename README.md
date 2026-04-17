@@ -4,6 +4,8 @@
 
 Multiplayer Hebrew Yaniv card game built with a React frontend and a Cloudflare Workers backend. Game state is server-authoritative and runs inside a Durable Object, with clients sending intents over WebSockets.
 
+This repository is shared for entertainment and transparency. It is provided as-is under the MIT license.
+
 ## Live project
 
 - Frontend: [yaniv.games](https://yaniv.games)
@@ -77,6 +79,7 @@ By default, the frontend uses the Vite proxy for `/auth`, `/tables`, and `/game`
 - Forks should create their own Cloudflare resources and deployment settings.
 - The current frontend and backend include production branding and URLs for the live game.
 - The current web client uses guest nickname sessions via `/auth/dev`.
+- For repository changes, open a GitHub PR instead of contacting `support@yaniv.games`.
 
 ## Contributing
 

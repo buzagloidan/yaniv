@@ -1,9 +1,10 @@
 # Security
 
-If you discover a vulnerability, please avoid opening a public issue with exploit details.
+This repository is shared as-is for entertainment and transparency.
 
-- Contact: `support@yaniv.games`
-- Include: reproduction steps, impact, and any relevant logs or request samples
+- Do not contact `support@yaniv.games` about repository changes.
+- If you want to propose a fix, open a GitHub PR.
+- If you want to discuss a problem before fixing it, open a GitHub issue with only the level of detail you are comfortable sharing publicly.
 
 ## Deployment guidance
 

@@ -23,3 +23,4 @@
 
 - Small, focused PRs are easier to review.
 - If you are changing rules or multiplayer flow, include a short note about the player-visible behavior change.
+- For repository-related changes, use GitHub PRs rather than `support@yaniv.games`.
