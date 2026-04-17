@@ -100,6 +100,16 @@ export function OpponentSeat({
         {!player.isConnected && !player.isEliminated && ` (${s.game.disconnected})`}
       </div>
 
+      <div
+        className="text-[0.78rem] font-semibold leading-none"
+        style={{
+          color: player.isEliminated ? 'rgba(248,113,113,0.92)' : 'rgba(255,251,240,0.76)',
+          opacity: !player.isConnected && !player.isEliminated ? 0.55 : 1,
+        }}
+      >
+        ({player.score})
+      </div>
+
       {/* Round-result hand total (shown only at end of round) */}
       {isRevealed && (
         <span className="text-white/65 text-[11px] font-medium text-center">

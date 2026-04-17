@@ -119,7 +119,11 @@ function createActionId(): string {
 }
 
 function canPreselectInPhase(phase: GamePhase | null): boolean {
-  return phase === 'player_turn_discard' || phase === 'player_turn_draw';
+  return (
+    phase === 'player_turn_discard' ||
+    phase === 'player_turn_draw' ||
+    phase === 'player_turn_hadabaka'
+  );
 }
 
 function sanitizeSelectedCards(
