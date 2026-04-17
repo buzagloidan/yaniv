@@ -12,6 +12,7 @@ export function Chat() {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const [readCount, setReadCount] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasAnotherHuman = players.some((player) => !player.isBot && player.userId !== me?.userId);
   const unread = messages.length - readCount;
@@ -31,6 +32,19 @@ export function Chat() {
     }
   }, [hasAnotherHuman, open]);
 
+  useEffect(() => {
+    if (!open) return;
+
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+
   const send = () => {
     if (!text.trim()) return;
     sendChat(text);
@@ -42,7 +56,7 @@ export function Chat() {
   }
 
   return (
-    <div className="absolute bottom-36 end-3 z-20">
+    <div ref={containerRef} className="absolute bottom-36 end-3 z-20">
       {/* Toggle button with unread badge */}
       <button
         onClick={() => setOpen((v) => !v)}

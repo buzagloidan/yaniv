@@ -11,6 +11,32 @@ interface Props {
   onBeforeDiscardAndDraw?: (source: DrawSource) => void;
 }
 
+function previewOffset(index: number, count: number, frontCount: number): {
+  x: number;
+  y: number;
+  rotate: number;
+} {
+  const centerOffset = index - (count - 1) / 2;
+
+  if (frontCount > 1) {
+    return {
+      x: centerOffset * 4,
+      y: 0,
+      rotate: centerOffset * 5,
+    };
+  }
+
+  // When the front discard is a single card, fan the preview cards wider so
+  // older singles still peek out from behind it.
+  const alternatingIndex = index === 0 ? 1 : (index % 2 === 1 ? -index : index + 1);
+
+  return {
+    x: alternatingIndex * 12,
+    y: Math.abs(alternatingIndex) <= 1 ? 2 : 5,
+    rotate: alternatingIndex * 7,
+  };
+}
+
 export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Props) {
   const discardPile = useGameStore((s) => s.discardPile);
   const discardAndDraw = useGameStore((s) => s.discardAndDraw);
@@ -66,14 +92,14 @@ export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Pro
             style={{ opacity: 0.32, transform: 'translateY(6px)', zIndex: 0 }}
           >
             {previousSetPreview.map((cardId, i) => {
-              const centerOffset = i - (previousSetPreview.length - 1) / 2;
+              const offset = previewOffset(i, previousSetPreview.length, currentSet.length);
               return (
                 <div
                   key={`${cardId}-${i}`}
                   style={{
                     marginInlineStart: i === 0 ? 0 : -26,
                     zIndex: i,
-                    transform: `rotate(${centerOffset * 5}deg)`,
+                    transform: `translateX(${offset.x}px) translateY(${offset.y}px) rotate(${offset.rotate}deg)`,
                   }}
                 >
                   <CardView cardId={cardId} size="xl" />
