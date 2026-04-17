@@ -470,7 +470,7 @@ export class GameTable implements DurableObject {
 
     const opponentCardCounts: Record<string, number> = {};
     for (const [pid, p] of Object.entries(newState.players)) {
-      if (pid !== userId) opponentCardCounts[pid] = p.hand.length;
+      opponentCardCounts[pid] = p.hand.length;
     }
 
     // Send personalised deltas: discarding player receives their authoritative
@@ -535,7 +535,7 @@ export class GameTable implements DurableObject {
 
     const opponentCardCounts: Record<string, number> = {};
     for (const [pid, p] of Object.entries(newState.players)) {
-      if (pid !== userId) opponentCardCounts[pid] = p.hand.length;
+      opponentCardCounts[pid] = p.hand.length;
     }
 
     // Each player receives a personalised delta: only the drawer sees their new card
@@ -1009,7 +1009,7 @@ export class GameTable implements DurableObject {
 
       const opponentCardCounts: Record<string, number> = {};
       for (const [pid, p] of Object.entries(newState.players)) {
-        if (pid !== playerId) opponentCardCounts[pid] = p.hand.length;
+        opponentCardCounts[pid] = p.hand.length;
       }
 
       const delta: TurnDeltaMessage = {
@@ -1055,7 +1055,7 @@ export class GameTable implements DurableObject {
       }
       const opponentCardCounts: Record<string, number> = {};
       for (const [pid, p] of Object.entries(newState.players)) {
-        if (pid !== playerId) opponentCardCounts[pid] = p.hand.length;
+        opponentCardCounts[pid] = p.hand.length;
       }
 
       for (const recipientId of this.broadcast.connectedUserIds()) {

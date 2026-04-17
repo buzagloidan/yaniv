@@ -58,6 +58,25 @@ function opponentPositions(count: number): OpponentPosition[] {
   ];
 }
 
+function orderOpponentsAroundMe<T extends { userId: string; seatIndex: number }>(
+  players: T[],
+  myUserId: string | undefined,
+): T[] {
+  if (!myUserId) return players;
+
+  const me = players.find((player) => player.userId === myUserId);
+  if (!me) return players.filter((player) => player.userId !== myUserId);
+
+  const totalSeats = players.length;
+  return players
+    .filter((player) => player.userId !== myUserId)
+    .sort((a, b) => {
+      const aOffset = (a.seatIndex - me.seatIndex + totalSeats) % totalSeats;
+      const bOffset = (b.seatIndex - me.seatIndex + totalSeats) % totalSeats;
+      return aOffset - bOffset;
+    });
+}
+
 /* Tropical palm silhouette corners */
 function CornerPalm({ side }: { side: 'left' | 'right' }) {
   return (
@@ -249,7 +268,7 @@ export function GamePage() {
     pendingMyDiscardAnchorsRef.current = anchors;
   }
 
-  const opponents = players.filter((p) => p.userId !== user?.userId);
+  const opponents = orderOpponentsAroundMe(players, user?.userId);
   const isLoading = !phase;
   const isWaiting = phase === 'waiting_for_players';
   const visibleSeatCount = isWaiting ? Math.max(0, maxPlayers - 1) : opponents.length;

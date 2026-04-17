@@ -24,6 +24,7 @@ interface FlightCard {
   delay: number;
   duration: number;
   action: 'discard' | 'draw';
+  sourceKind?: 'deck' | 'discard';
 }
 
 interface Props {
@@ -154,6 +155,7 @@ function buildDrawFlights(
   if (!source || !target) return [];
 
   const faceDown = actingUserId !== myUserId || !myNewCard;
+  const sourceKind = drawnSource === 'deck' ? 'deck' : 'discard';
 
   return [{
     id: `draw-${seq}-${actingUserId}`,
@@ -167,6 +169,7 @@ function buildDrawFlights(
     delay: 0,
     duration: 0.42,
     action: 'draw' as const,
+    sourceKind,
   }];
 }
 
@@ -258,6 +261,7 @@ export function CardFlightLayer({
           const dx = flight.to.x - flight.from.x;
           const dy = flight.to.y - flight.from.y;
           const isDraw = flight.action === 'draw';
+          const isDiscardDraw = isDraw && flight.sourceKind === 'discard';
 
           return (
             <motion.div
@@ -272,7 +276,7 @@ export function CardFlightLayer({
                 x: 0,
                 y: 0,
                 rotate: flight.startRotate,
-                scale: 1.08,
+                scale: isDiscardDraw ? 1.02 : 1.08,
                 opacity: 1,
               } : {
                 x: 0,
@@ -282,10 +286,17 @@ export function CardFlightLayer({
                 opacity: 0,
               }}
               animate={isDraw ? {
-                x: [0, dx * 0.6, dx],
-                y: [0, dy * 0.6, dy],
-                rotate: [flight.startRotate, (flight.startRotate + flight.endRotate) / 2, flight.endRotate],
-                scale: [1.08, 1.02, 1],
+                x: isDiscardDraw ? [0, dx * 0.16, dx * 0.64, dx] : [0, dx * 0.6, dx],
+                y: isDiscardDraw ? [0, -28, dy * 0.52, dy] : [0, dy * 0.6, dy],
+                rotate: isDiscardDraw
+                  ? [
+                      flight.startRotate,
+                      flight.startRotate - Math.sign(dx || 1) * 8,
+                      (flight.startRotate + flight.endRotate) / 2,
+                      flight.endRotate,
+                    ]
+                  : [flight.startRotate, (flight.startRotate + flight.endRotate) / 2, flight.endRotate],
+                scale: isDiscardDraw ? [1.02, 1.1, 1.04, 1] : [1.08, 1.02, 1],
                 opacity: [1, 1, 0],
               } : {
                 x: [0, dx * 0.28, dx * 0.80, dx],
@@ -304,7 +315,7 @@ export function CardFlightLayer({
                 duration: flight.duration,
                 delay: flight.delay,
                 ease: [0.22, 0.68, 0.36, 1.0],
-                times: [0, 0.55, 1],
+                times: isDiscardDraw ? [0, 0.18, 0.72, 1] : [0, 0.55, 1],
               } : {
                 duration: flight.duration,
                 delay: flight.delay,
@@ -312,11 +323,17 @@ export function CardFlightLayer({
                 times: [0, 0.06, 0.86, 1],
               }}
             >
-              <CardView
-                cardId={flight.cardId}
-                faceDown={flight.faceDown}
-                size="lg"
-              />
+              <div
+                style={{
+                  filter: isDiscardDraw ? 'drop-shadow(0 0 18px rgba(242,100,25,0.42))' : 'none',
+                }}
+              >
+                <CardView
+                  cardId={flight.cardId}
+                  faceDown={flight.faceDown}
+                  size="lg"
+                />
+              </div>
             </motion.div>
           );
         })}
