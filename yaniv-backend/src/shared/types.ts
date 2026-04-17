@@ -39,6 +39,7 @@ export interface Env {
   SESSIONS: KVNamespace;
   ANALYTICS: AnalyticsEngineDataset;
   ENVIRONMENT: string;
+  ALLOWED_ORIGINS?: string;
 }
 
 // ============================================================

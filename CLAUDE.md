@@ -17,7 +17,7 @@ All game logic runs in Cloudflare Durable Objects. Clients only send intents.
 | Game state | Cloudflare Durable Objects (hibernatable WebSockets + alarms) |
 | Database | Cloudflare D1 (SQLite) — lobby/table metadata only |
 | Sessions | Cloudflare KV |
-| Auth | Apple Sign-In + dev auth (`/auth/dev`) |
+| Auth | Guest nickname sessions (`/auth/dev`) |
 
 ## Project structure
 ```

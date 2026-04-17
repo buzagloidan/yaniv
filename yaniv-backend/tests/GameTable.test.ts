@@ -131,8 +131,8 @@ function createMockEnv(options: { failStatusUpdate?: boolean } = {}): Env {
     DB: db,
     SESSIONS: {} as KVNamespace,
     ANALYTICS: { writeDataPoint: () => {} } as unknown as AnalyticsEngineDataset,
-    APPLE_APP_BUNDLE_ID: 'test.bundle',
     ENVIRONMENT: 'test',
+    ALLOWED_ORIGINS: 'http://localhost:5173',
   };
 }
 

@@ -1,0 +1,44 @@
+name = "yaniv-backend"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[[durable_objects.bindings]]
+name = "GAME_TABLE"
+class_name = "GameTable"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["GameTable"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "your-yaniv-db"
+database_id = "replace-with-your-d1-database-id"
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "replace-with-your-kv-namespace-id"
+
+[vars]
+ENVIRONMENT = "development"
+ALLOWED_ORIGINS = "http://localhost:5173"
+
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "yaniv_events_dev"
+
+[observability]
+enabled = false
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
+persist = true
+head_sampling_rate = 1

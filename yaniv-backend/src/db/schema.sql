@@ -1,6 +1,6 @@
--- Users (created/updated on first Apple Sign-In)
+-- Users (created/updated on first guest nickname sign-in)
 CREATE TABLE IF NOT EXISTS users (
-  id           TEXT PRIMARY KEY,        -- Apple subject identifier (stable opaque)
+  id           TEXT PRIMARY KEY,        -- Stable opaque user identifier
   account_id   INTEGER NOT NULL UNIQUE, -- Sequential display ID, e.g. YanivID42
   display_name TEXT NOT NULL,           -- UTF-8 Hebrew or fallback "YanivID{n}"
   created_at   INTEGER NOT NULL,

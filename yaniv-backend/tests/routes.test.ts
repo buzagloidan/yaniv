@@ -57,8 +57,8 @@ function createRouteTestEnv() {
     } as unknown as D1Database,
     SESSIONS: kv as unknown as KVNamespace,
     ANALYTICS: { writeDataPoint: () => {} } as unknown as AnalyticsEngineDataset,
-    APPLE_APP_BUNDLE_ID: 'test.bundle',
     ENVIRONMENT: 'test',
+    ALLOWED_ORIGINS: 'http://example.com',
   };
 
   return { env, kv, stubFetch };
@@ -114,5 +114,37 @@ describe('game routes ticket flow', () => {
     );
 
     expect(reusedTicketRes.status).toBe(401);
+  });
+});
+
+describe('cors allowlist', () => {
+  it('returns the origin header only for configured origins', async () => {
+    const { env } = createRouteTestEnv();
+
+    const allowedRes = await app.request(
+      'http://example.com/health',
+      {
+        method: 'GET',
+        headers: {
+          Origin: 'http://example.com',
+        },
+      },
+      env,
+    );
+
+    expect(allowedRes.headers.get('Access-Control-Allow-Origin')).toBe('http://example.com');
+
+    const blockedRes = await app.request(
+      'http://example.com/health',
+      {
+        method: 'GET',
+        headers: {
+          Origin: 'http://evil.example',
+        },
+      },
+      env,
+    );
+
+    expect(blockedRes.headers.get('Access-Control-Allow-Origin')).toBeNull();
   });
 });

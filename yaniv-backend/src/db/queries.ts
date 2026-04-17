@@ -30,16 +30,16 @@ export async function claimNextAccountId(db: D1Database): Promise<number> {
  */
 export async function upsertUser(
   db: D1Database,
-  appleSub: string,
+  userId: string,
   displayName: string,
 ): Promise<UserRow> {
-  const existing = await getUserById(db, appleSub);
+  const existing = await getUserById(db, userId);
   const now = Date.now();
 
   if (existing) {
     await db
       .prepare('UPDATE users SET last_seen_at = ? WHERE id = ?')
-      .bind(now, appleSub)
+      .bind(now, userId)
       .run();
     return { ...existing, last_seen_at: now };
   }
@@ -51,11 +51,11 @@ export async function upsertUser(
     .prepare(
       'INSERT INTO users (id, account_id, display_name, created_at, last_seen_at) VALUES (?, ?, ?, ?, ?)',
     )
-    .bind(appleSub, accountId, finalName, now, now)
+    .bind(userId, accountId, finalName, now, now)
     .run();
 
   return {
-    id: appleSub,
+    id: userId,
     account_id: accountId,
     display_name: finalName,
     created_at: now,

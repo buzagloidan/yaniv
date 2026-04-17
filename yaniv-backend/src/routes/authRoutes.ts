@@ -9,8 +9,8 @@ type Variables = { userId: string };
 const auth = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 // ============================================================
-// POST /auth/dev  — no-auth sign-in for local development
-// Creates a user with a random ID and the provided display name.
+// POST /auth/dev  — guest nickname sign-in
+// Creates or resumes a stable guest identity based on the provided display name.
 // ============================================================
 
 auth.post('/dev', async (ctx) => {

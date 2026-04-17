@@ -14,15 +14,34 @@ export { GameTable } from './durable-objects/GameTable';
 
 const app = new Hono<{ Bindings: Env }>();
 
-// CORS — restrict to the app's own origin in production
+const DEFAULT_DEV_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+
+function getAllowedOrigins(env: Env): Set<string> {
+  const configuredOrigins = (env.ALLOWED_ORIGINS ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  if (configuredOrigins.length > 0) {
+    return new Set(configuredOrigins);
+  }
+
+  if (env.ENVIRONMENT === 'production') {
+    return new Set();
+  }
+
+  return new Set(DEFAULT_DEV_ORIGINS);
+}
+
+// CORS — only allow explicitly configured origins
 app.use(
   '*',
   cors({
-    origin: (origin) => {
-      // Allow requests with no origin (native iOS app)
-      if (!origin) return '*';
-      // In production, pin to your domain; during dev allow all
-      return origin;
+    origin: (origin, ctx) => {
+      if (!origin) return null;
+
+      const allowedOrigins = getAllowedOrigins(ctx.env);
+      return allowedOrigins.has(origin) ? origin : null;
     },
     allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
