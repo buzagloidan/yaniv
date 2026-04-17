@@ -80,14 +80,6 @@ By default, the frontend uses the Vite proxy for `/auth`, `/tables`, and `/game`
 - The current web client uses guest nickname sessions via `/auth/dev`.
 - For repository changes, open a GitHub PR instead of contacting `support@yaniv.games`.
 
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Security
-
-See [SECURITY.md](SECURITY.md).
-
 ## License
 
 [MIT](LICENSE)
