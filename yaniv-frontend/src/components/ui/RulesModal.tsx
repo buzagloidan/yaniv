@@ -114,8 +114,6 @@ function HebrewContent() {
         <ul className="list-disc list-inside space-y-1 mr-2">
           <li>
             <strong>הגעה בדיוק ל-50 / 100 / 150 / 200</strong> — מורידים <strong>50 נקודות</strong> מהניקוד.
-            <br />
-            לדוגמה: 50→0, 100→50, 150→100, 200→150.
           </li>
           <li>
             <strong>מעבר לסף</strong> — השחקן מודח מהמשחק.
@@ -198,8 +196,6 @@ function EnglishContent() {
         <ul className="list-disc list-inside space-y-1">
           <li>
             <strong>Landing exactly on 50 / 100 / 150 / 200</strong> — your score is reduced by <strong>50 points</strong>.
-            <br />
-            For example: 50→0, 100→50, 150→100, 200→150.
           </li>
           <li><strong>Exceeding the limit</strong> — you are eliminated from the game.</li>
         </ul>
