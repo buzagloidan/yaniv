@@ -1,0 +1,44 @@
+#!/bin/sh
+
+set -eu
+
+required_email="buzagloidan@gmail.com"
+configured_email="$(git config --get user.email || true)"
+
+if [ "$configured_email" != "$required_email" ]; then
+  echo "Push blocked: git user.email must be $required_email, found ${configured_email:-<unset>}." >&2
+  exit 1
+fi
+
+while read -r local_ref local_sha remote_ref remote_sha
+do
+  if [ -z "${local_sha:-}" ]; then
+    continue
+  fi
+
+  if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then
+    continue
+  fi
+
+  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+    range="$local_sha"
+  else
+    range="$remote_sha..$local_sha"
+  fi
+
+  bad_commit="$(git rev-list "$range" --format='%H %ae %ce' | awk -v required="$required_email" '
+    /^[0-9a-f]{40} / {
+      if ($2 != required || $3 != required) {
+        print $1
+        exit
+      }
+    }
+  ')"
+
+  if [ -n "$bad_commit" ]; then
+    echo "Push blocked: commit $bad_commit does not use $required_email for both author and committer." >&2
+    exit 1
+  fi
+done
+
+exit 0

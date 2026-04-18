@@ -110,6 +110,12 @@ git push origin main
 ```
 Deployment credentials and resource identifiers are intentionally omitted from this file.
 
+## Git identity
+- Always commit as `Idan Buzaglo <buzagloidan@gmail.com>` in this repository.
+- Never commit or push with `idanbu-cloud` or any other email/account identity.
+- If local git config drifts, reset `user.name` / `user.email` before creating commits or pushing.
+- Keep the repo `pre-push` hook enabled so pushes fail if outgoing commits use the wrong author or committer email.
+
 ## Common mistakes to avoid
 - **Never** add the system user as a player in D1 (`addTablePlayer`) for public tables
 - **Never** mutate `GameState` outside `stateMachine.ts`
