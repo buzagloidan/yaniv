@@ -4,6 +4,22 @@ const POSTHOG_KEY = import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN as string 
 const POSTHOG_HOST = (import.meta.env.VITE_PUBLIC_POSTHOG_HOST as string | undefined) ?? 'https://eu.i.posthog.com';
 let isInitialized = false;
 
+declare global {
+  interface Window {
+    dataLayer?: unknown[];
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
+function hasGoogleTag(): boolean {
+  return typeof window !== 'undefined' && typeof window.gtag === 'function';
+}
+
+function trackGoogleEvent(event: string, props?: Record<string, unknown>): void {
+  if (!hasGoogleTag()) return;
+  window.gtag?.('event', event, props ?? {});
+}
+
 function ensureAnalytics(): boolean {
   if (!POSTHOG_KEY) return false;
   if (isInitialized) return true;
@@ -28,16 +44,35 @@ export function getAnalyticsClient() {
 }
 
 export function identifyUser(userId: string, displayName: string): void {
-  if (!ensureAnalytics()) return;
-  posthog.identify(userId, { display_name: displayName });
+  if (ensureAnalytics()) {
+    posthog.identify(userId, { display_name: displayName });
+  }
+  if (!hasGoogleTag()) return;
+  window.gtag?.('set', { user_id: userId });
+  window.gtag?.('set', 'user_properties', { display_name: displayName });
 }
 
 export function resetAnalyticsUser(): void {
-  if (!ensureAnalytics()) return;
-  posthog.reset();
+  if (ensureAnalytics()) {
+    posthog.reset();
+  }
+  if (!hasGoogleTag()) return;
+  window.gtag?.('set', { user_id: null });
+  window.gtag?.('set', 'user_properties', { display_name: null });
 }
 
 export function trackEvent(event: string, props?: Record<string, unknown>): void {
-  if (!ensureAnalytics()) return;
-  posthog.capture(event, props);
+  if (ensureAnalytics()) {
+    posthog.capture(event, props);
+  }
+  trackGoogleEvent(event, props);
+}
+
+export function trackPageView(path: string): void {
+  if (!hasGoogleTag()) return;
+  window.gtag?.('event', 'page_view', {
+    page_path: path,
+    page_location: window.location.href,
+    page_title: document.title,
+  });
 }

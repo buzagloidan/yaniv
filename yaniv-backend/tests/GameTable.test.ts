@@ -338,6 +338,33 @@ describe('GameTable action dedupe helpers', () => {
   });
 });
 
+describe('GameTable alarm timing guards', () => {
+  it('reschedules an alarm that fires before the current human deadline', async () => {
+    const deadline = Date.now() + 10_000;
+    const state = makeState({
+      phase: 'player_turn_discard',
+      turnDeadlineEpoch: deadline,
+      players: {
+        ...makeState().players,
+        p1: {
+          ...makeState().players.p1,
+          isBot: false,
+          timeoutCount: 0,
+        },
+      },
+    });
+    const mock = createMockCtx(state);
+    const table = new GameTable(mock.ctx, createMockEnv());
+
+    await table.alarm();
+
+    const stored = mock.getStoredState();
+    expect(stored?.players.p1.timeoutCount).toBe(0);
+    expect(stored?.phase).toBe('player_turn_discard');
+    expect(mock.storage.setAlarm).toHaveBeenCalledWith(deadline);
+  });
+});
+
 describe('GameTable round flow', () => {
   it('persists match completion after a match-ending Yaniv call', async () => {
     const state = makeState({

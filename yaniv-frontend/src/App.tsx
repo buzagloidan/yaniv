@@ -1,14 +1,31 @@
 import { useEffect, useRef } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { LobbyPage } from './components/lobby/LobbyPage';
 import { GamePage } from './components/game/GamePage';
 import { installAudioUnlock } from './utils/soundManager';
-import { identifyUser, resetAnalyticsUser, trackEvent } from './analytics';
+import { identifyUser, resetAnalyticsUser, trackEvent, trackPageView } from './analytics';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user);
   return user ? <>{children}</> : <Navigate to="/" replace />;
+}
+
+function AnalyticsRouteTracker() {
+  const location = useLocation();
+  const isFirstPageViewRef = useRef(true);
+
+  useEffect(() => {
+    if (isFirstPageViewRef.current) {
+      isFirstPageViewRef.current = false;
+      return;
+    }
+
+    const path = `${location.pathname}${location.search}${location.hash}`;
+    trackPageView(path);
+  }, [location.hash, location.pathname, location.search]);
+
+  return null;
 }
 
 export default function App() {
@@ -51,6 +68,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <AnalyticsRouteTracker />
       <Routes>
         <Route path="/" element={<LobbyPage />} />
         <Route

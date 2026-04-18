@@ -266,12 +266,13 @@ export class GameTable implements DurableObject {
     if (!state) return;
 
     this.hydrateBroadcastMap();
+    const now = Date.now();
 
     if (state.pauseState) {
       if (
         state.pauseState.reason === 'disconnect' &&
         state.pauseState.resumeDeadlineEpoch !== null &&
-        Date.now() >= state.pauseState.resumeDeadlineEpoch
+        now >= state.pauseState.resumeDeadlineEpoch
       ) {
         await this.handleReconnectGraceExpired(state);
       } else if (
@@ -295,6 +296,11 @@ export class GameTable implements DurableObject {
       return;
     }
     const isBot = state.players[currentPlayerId].isBot;
+
+    if (this.shouldRescheduleEarlyAlarm(state, isBot, now)) {
+      await this.ctx.storage.setAlarm(state.turnDeadlineEpoch!);
+      return;
+    }
 
     if (
       isBot &&
@@ -1347,6 +1353,29 @@ export class GameTable implements DurableObject {
     } else {
       await this.ctx.storage.deleteAlarm();
     }
+  }
+
+  private shouldRescheduleEarlyAlarm(
+    state: GameState,
+    isBotTurn: boolean,
+    now: number,
+  ): boolean {
+    if (state.turnDeadlineEpoch === null) {
+      return false;
+    }
+
+    if (state.phase === 'between_rounds' || state.phase === 'player_turn_hadabaka') {
+      return now + 50 < state.turnDeadlineEpoch;
+    }
+
+    if (
+      !isBotTurn &&
+      (state.phase === 'player_turn_discard' || state.phase === 'player_turn_draw')
+    ) {
+      return now + 50 < state.turnDeadlineEpoch;
+    }
+
+    return false;
   }
 
   /** Returns true if this userId has exceeded the message rate limit and the message should be dropped. */
