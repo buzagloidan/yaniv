@@ -184,7 +184,7 @@ export function LobbyPage() {
           className="mb-2"
         >
           <img
-            src="/yaniv-logo.png"
+            src="/yaniv-logo.webp"
             alt="יניב"
             className="w-48 sm:w-56 md:w-64 h-auto object-contain drop-shadow-[0_10px_24px_rgba(12,74,110,0.28)]"
             onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
@@ -199,7 +199,7 @@ export function LobbyPage() {
             className="w-full max-w-xs mb-4"
           >
             <div style={{ position: 'relative', height: 70, overflow: 'hidden' }}>
-              <img src="/name-button.png" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
+              <img src="/name-button.webp" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
               <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: '22%', paddingRight: '22%', color: '#0C4A6E', fontFamily: 'Noto Sans Hebrew, sans-serif', fontSize: '1rem', fontWeight: 700, textShadow: '0 1px 2px rgba(255,255,255,0.4)' }}>
                 {s.lobby.greeting(user.displayName)}
               </span>
@@ -225,7 +225,7 @@ export function LobbyPage() {
             className="w-full transition-all active:scale-95 disabled:opacity-60"
             style={{ position: 'relative', height: 96, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
           >
-            <img src="/main-button.png" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
+            <img src="/main-button.webp" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
             <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: '28%', color: '#FFFBF0', fontFamily: 'Syne, sans-serif', fontSize: '1.25rem', fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
               {quickStarting ? s.lobby.loading : s.game.startGame}
             </span>
@@ -245,7 +245,7 @@ export function LobbyPage() {
             className="w-full transition-all active:scale-95"
             style={{ position: 'relative', height: 76, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
           >
-            <img src="/sub-button.png" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
+            <img src="/sub-button.webp" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
             <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: '28%', color: '#3D2000', fontFamily: 'Noto Sans Hebrew, sans-serif', fontSize: '1rem', fontWeight: 600 }}>
               {s.lobby.joinWithCode}
             </span>
@@ -257,7 +257,7 @@ export function LobbyPage() {
             className="w-full transition-all active:scale-95"
             style={{ position: 'relative', height: 76, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
           >
-            <img src="/sub-button.png" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
+            <img src="/sub-button.webp" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
             <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: '28%', color: '#3D2000', fontFamily: 'Noto Sans Hebrew, sans-serif', fontSize: '1rem', fontWeight: 600 }}>
               {s.lobby.createTable}
             </span>
@@ -269,7 +269,7 @@ export function LobbyPage() {
             className="w-full transition-all active:scale-95"
             style={{ position: 'relative', height: 76, border: 'none', padding: 0, overflow: 'hidden', background: 'none' }}
           >
-            <img src="/sub-button.png" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
+            <img src="/sub-button.webp" alt="" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 50%' }} />
             <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingLeft: '28%', color: '#3D2000', fontFamily: 'Noto Sans Hebrew, sans-serif', fontSize: '1rem', fontWeight: 600 }}>
               {s.lobby.settings}
             </span>

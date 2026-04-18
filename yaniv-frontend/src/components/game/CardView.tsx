@@ -60,7 +60,7 @@ export function CardView({
         onClick={onClick}
       >
         <img
-          src="/yaniv-card.png"
+          src="/yaniv-card.webp"
           alt=""
           className="absolute inset-0 w-full h-full"
           style={{ transform: 'scale(1.12)', transformOrigin: 'center', objectFit: 'cover' }}

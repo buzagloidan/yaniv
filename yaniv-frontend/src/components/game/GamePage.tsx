@@ -324,7 +324,7 @@ export function GamePage() {
           className="flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
           style={{ background: 'none', border: 'none', padding: 0 }}
         >
-          <img src="/settings-button.png" alt="" aria-hidden="true" style={{ width: 72, height: 72, objectFit: 'contain' }} />
+          <img src="/settings-button.webp" alt="" aria-hidden="true" style={{ width: 72, height: 72, objectFit: 'contain' }} />
         </button>
 
         <AnimatePresence>
@@ -438,7 +438,7 @@ export function GamePage() {
             >
               {/* Animated logo */}
               <motion.img
-                src="/yaniv-logo.png"
+                src="/yaniv-logo.webp"
                 alt="יניב"
                 className="w-16 h-16 object-contain mx-auto mb-3"
                 animate={{ y: [0, -6, 0] }}
@@ -537,7 +537,7 @@ export function GamePage() {
               }}
             >
               <div className="flex justify-center mb-3">
-                <img src="/pause-button.png" alt="pause" className="w-12 h-12 object-contain" />
+                <img src="/pause-button.webp" alt="pause" className="w-12 h-12 object-contain" />
               </div>
               <p
                 className="text-xl font-semibold mb-2"

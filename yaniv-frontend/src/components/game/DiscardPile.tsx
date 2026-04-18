@@ -219,7 +219,7 @@ export function DiscardPile({ deckRef, discardRef, onBeforeDiscardAndDraw }: Pro
         onClick={() => triggerDiscardAndDraw('deck')}
       >
         <img
-          src="/yaniv-deck.png"
+          src="/yaniv-deck.webp"
           alt=""
           className="absolute inset-0 w-full h-full"
           style={{ transform: 'scale(1.12)', transformOrigin: 'center', objectFit: 'cover' }}

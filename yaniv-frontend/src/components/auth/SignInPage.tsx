@@ -169,7 +169,7 @@ export function SignInPage() {
 
             {/* Logo */}
             <motion.img
-              src="/yaniv-logo.png"
+              src="/yaniv-logo.webp"
               alt="יניב"
               className="w-40 h-auto object-contain mb-2 drop-shadow-lg"
               initial={{ scale: 0.8, opacity: 0 }}

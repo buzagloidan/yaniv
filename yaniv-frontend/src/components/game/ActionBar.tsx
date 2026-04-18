@@ -56,7 +56,7 @@ export function ActionBar() {
         }}
       >
         <img
-          src="/yaniv-win.png"
+          src="/yaniv-win.webp"
           alt={s.game.callYaniv}
           style={{ width: 122, height: 122, objectFit: 'contain', pointerEvents: 'none' }}
         />

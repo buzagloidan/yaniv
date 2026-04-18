@@ -61,7 +61,7 @@ export function TurnCountdown({ phase, turnDeadlineEpoch, show }: Props) {
       }}
     >
       <div className="flex items-center justify-center gap-1">
-        <img src="/clock-button.png" alt="" aria-hidden="true" style={{ width: 14, height: 14, objectFit: 'contain' }} />
+        <img src="/clock-button.webp" alt="" aria-hidden="true" style={{ width: 14, height: 14, objectFit: 'contain' }} />
         <span className="tabular-nums text-sm leading-none">{secondsLeft}</span>
       </div>
     </motion.div>
