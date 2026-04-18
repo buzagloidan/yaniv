@@ -9,6 +9,7 @@ dist-ssr/
 # Wrangler
 .wrangler/
 .dev.vars
+yaniv-backend/wrangler.toml
 
 # Environment files
 .env
