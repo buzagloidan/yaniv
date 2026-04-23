@@ -630,6 +630,7 @@ export class GameTable implements DurableObject {
       this.broadcast.sendTo(recipientId, delta);
     }
     this.sendSnapshotTo(nextTurnUserId, newState);
+    await this.maybeAutoYanivForCurrentPlayer(newState);
     return true;
   }
 
@@ -671,14 +672,10 @@ export class GameTable implements DurableObject {
     }
 
     const newState = applyHadabakaAccept(state, userId);
-    if (newState.players[userId]?.hand.length === 0) {
-      await this.resolveYanivRound(userId, newState);
-      return true;
-    }
-
     await this.saveState(newState);
     await this.setAlarm(newState);
     this.broadcast.broadcastSnapshot(newState);
+    await this.maybeAutoYanivForCurrentPlayer(newState);
     return true;
   }
 
@@ -691,6 +688,7 @@ export class GameTable implements DurableObject {
     await this.saveState(newState);
     await this.setAlarm(newState);
     this.broadcast.broadcastSnapshot(newState);
+    await this.maybeAutoYanivForCurrentPlayer(newState);
   }
 
   // ============================================================
@@ -747,6 +745,12 @@ export class GameTable implements DurableObject {
     }
 
     if (state.phase === 'player_turn_discard') {
+      // Player has 0 cards (accepted a הדבקה that emptied their hand) — auto-Yaniv
+      if (player.hand.length === 0) {
+        await this.resolveYanivRound(playerId, state);
+        return;
+      }
+
       // Auto-discard the highest-value card
       const { newState: afterDiscard, shouldEliminate } = applyAutoDiscard(state, playerId);
 
@@ -1113,13 +1117,10 @@ export class GameTable implements DurableObject {
       if (isHadabaka) {
         // Bot always accepts הדבקה immediately
         const afterAccept = applyHadabakaAccept(newState, playerId);
-        if (afterAccept.players[playerId]?.hand.length === 0) {
-          await this.resolveYanivRound(playerId, afterAccept);
-          return;
-        }
         await this.saveState(afterAccept);
         await this.setAlarm(afterAccept);
         this.broadcast.broadcastSnapshot(afterAccept);
+        await this.maybeAutoYanivForCurrentPlayer(afterAccept);
         return;
       }
 
@@ -1678,6 +1679,20 @@ export class GameTable implements DurableObject {
 
   private isPersistentWinnerId(state: GameState, winnerId: string | null): winnerId is string {
     return !!winnerId && !!state.players[winnerId] && !state.players[winnerId].isBot;
+  }
+
+  /**
+   * If the current turn player has 0 cards at the start of their discard turn
+   * (possible after accepting a הדבקה that emptied their hand), automatically
+   * call Yaniv on their behalf. Returns true if Yaniv was resolved.
+   */
+  private async maybeAutoYanivForCurrentPlayer(state: GameState): Promise<boolean> {
+    if (state.phase !== 'player_turn_discard') return false;
+    const playerId = this.getCurrentTurnPlayerId(state);
+    if (!playerId) return false;
+    if (state.players[playerId].hand.length !== 0) return false;
+    await this.resolveYanivRound(playerId, state);
+    return true;
   }
 }
 
