@@ -90,8 +90,14 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
+      - name: Notify on success
+        if: success()
+        run: |
+          curl -s -X POST https://api.notifikations.com/api/v1/ntf_dev_o38a4nfj7aamj7bn5o36niluxhk62py2 \
+            -d "✅ Yaniv backend deployed | commit: $(echo ${{ github.sha }} | cut -c1-7) | ${{ github.event.head_commit.message }}"
+
       - name: Notify on failure
         if: failure()
         run: |
           curl -s -X POST https://api.notifikations.com/api/v1/ntf_dev_o38a4nfj7aamj7bn5o36niluxhk62py2 \
-            -d "🚨 Yaniv backend deploy FAILED | branch: ${{ github.ref_name }} | commit: $(echo ${{ github.sha }} | cut -c1-7) | ${{ github.event.head_commit.message }}"
+            -d "🚨 Yaniv backend deploy FAILED | commit: $(echo ${{ github.sha }} | cut -c1-7) | ${{ github.event.head_commit.message }}"
