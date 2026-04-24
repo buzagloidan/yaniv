@@ -234,10 +234,12 @@ export function GamePage() {
     setLeaving(true);
     trackEvent('game_left', { table_id: tableId, phase });
     try {
-      if (roomCode) {
-        await leaveTable(user.sessionToken, roomCode);
-      } else {
-        await leaveTableById(user.sessionToken, tableId);
+      if (phase === 'waiting_for_players') {
+        if (roomCode) {
+          await leaveTable(user.sessionToken, roomCode);
+        } else {
+          await leaveTableById(user.sessionToken, tableId);
+        }
       }
     } catch {
       // ignore — navigate away regardless
