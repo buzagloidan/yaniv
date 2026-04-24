@@ -75,7 +75,7 @@ app.route('/tables', lobbyRoutes);
 app.route('/game', gameRoutes);
 
 // Health check
-app.get('/health', (ctx) => ctx.json({ ok: true, ts: Date.now() }));
+app.get('/health', (ctx) => ctx.json({ ok: true, service: 'yaniv-backend', ts: Date.now() }));
 
 // 404 fallback
 app.notFound((ctx) => ctx.json({ error: 'Not found' }, 404));
