@@ -9,6 +9,7 @@ interface Props {
 export function AboutModal({ open, onClose }: Props) {
   const lang = useLangStore((s) => s.lang);
   const isEn = lang === 'en';
+  const currentYear = new Date().getFullYear();
 
   return (
     <AnimatePresence>
@@ -91,8 +92,8 @@ export function AboutModal({ open, onClose }: Props) {
                 style={{ background: '#E0F2FE', color: '#0E7490' }}
               >
                 {isEn
-                  ? '© 2025 Yaniv App. All rights reserved.'
-                  : '© 2025 יניב אפ. כל הזכויות שמורות.'}
+                  ? `© ${currentYear} Yaniv App. All rights reserved.`
+                  : `© ${currentYear} יניב אפ. כל הזכויות שמורות.`}
               </div>
             </div>
           </motion.div>
