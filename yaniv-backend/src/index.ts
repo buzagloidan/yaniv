@@ -15,6 +15,7 @@ export { GameTable } from './durable-objects/GameTable';
 const app = new Hono<{ Bindings: Env }>();
 
 const DEFAULT_DEV_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+const DEFAULT_PRODUCTION_ORIGINS = ['https://yaniv.games', 'https://www.yaniv.games'];
 
 function getAllowedOrigins(env: Env): Set<string> {
   const configuredOrigins = (env.ALLOWED_ORIGINS ?? '')
@@ -27,7 +28,7 @@ function getAllowedOrigins(env: Env): Set<string> {
   }
 
   if (env.ENVIRONMENT === 'production') {
-    return new Set();
+    return new Set(DEFAULT_PRODUCTION_ORIGINS);
   }
 
   return new Set(DEFAULT_DEV_ORIGINS);

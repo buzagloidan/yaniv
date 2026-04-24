@@ -154,6 +154,7 @@ export const he = {
     GAME_ALREADY_STARTED: 'המשחק כבר התחיל',
     GAME_PAUSED: 'המשחק מושהה בהמתנה לשחקן אנושי',
     NOT_HOST: 'רק למארח מותר להתחיל',
+    requestFailed: 'לא הצלחנו להתחבר לשרת. אפשר לנסות שוב בעוד רגע.',
     connection: 'החיבור נותק. מנסה להתחבר מחדש...',
     unknown: 'שגיאה לא ידועה',
   } as Record<string, string>,

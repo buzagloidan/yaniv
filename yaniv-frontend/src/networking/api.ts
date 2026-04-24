@@ -1,6 +1,24 @@
 import type { GameSettings } from '../shared/types';
+import { getStrings } from '../strings';
 
 const BASE = import.meta.env.VITE_API_URL ?? '';
+
+function mapRequestError(error: unknown): Error {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    if (
+      message.includes('failed to fetch')
+      || message.includes('networkerror')
+      || message.includes('load failed')
+    ) {
+      return new Error(getStrings().errors.requestFailed);
+    }
+
+    return error;
+  }
+
+  return new Error(getStrings().errors.unknown);
+}
 
 /** Called when any request returns 401 — clears the stale session so NicknameGate re-appears. */
 function handleUnauthorized() {
@@ -22,7 +40,12 @@ async function request<T>(
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`${BASE}${path}`, { ...options, headers });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, { ...options, headers });
+  } catch (error) {
+    throw mapRequestError(error);
+  }
   let json: unknown;
   try {
     json = await res.json();

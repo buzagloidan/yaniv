@@ -134,6 +134,7 @@ export const ar = {
     GAME_ALREADY_STARTED: 'اللعبة بدأت بالفعل',
     GAME_PAUSED: 'اللعبة متوقفة مؤقتاً حتى يتابعها لاعب بشري',
     NOT_HOST: 'فقط المضيف يمكنه البدء',
+    requestFailed: 'تعذر الوصول إلى الخادم. حاول مرة أخرى بعد قليل.',
     connection: 'انقطع الاتصال. جارٍ إعادة الاتصال...',
     unknown: 'خطأ غير معروف',
   } as Record<string, string>,

@@ -134,6 +134,7 @@ export const en = {
     GAME_ALREADY_STARTED: 'Game already started',
     GAME_PAUSED: 'The game is paused until a human continues',
     NOT_HOST: 'Only the host can start',
+    requestFailed: 'Could not reach the server. Please try again in a moment.',
     connection: 'Connection lost. Reconnecting...',
     unknown: 'Unknown error',
   } as Record<string, string>,

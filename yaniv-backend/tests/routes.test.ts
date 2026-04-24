@@ -147,4 +147,23 @@ describe('cors allowlist', () => {
 
     expect(blockedRes.headers.get('Access-Control-Allow-Origin')).toBeNull();
   });
+
+  it('falls back to the production site allowlist when ALLOWED_ORIGINS is unset', async () => {
+    const { env } = createRouteTestEnv();
+    env.ENVIRONMENT = 'production';
+    env.ALLOWED_ORIGINS = '';
+
+    const allowedRes = await app.request(
+      'https://api.yaniv.games/health',
+      {
+        method: 'GET',
+        headers: {
+          Origin: 'https://yaniv.games',
+        },
+      },
+      env,
+    );
+
+    expect(allowedRes.headers.get('Access-Control-Allow-Origin')).toBe('https://yaniv.games');
+  });
 });
