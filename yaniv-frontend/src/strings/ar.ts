@@ -128,7 +128,7 @@ export const ar = {
     HAND_TOO_HIGH: 'المجموع مرتفع جداً ليانيف',
     INVALID_DRAW_SOURCE: 'لا يمكن السحب من هذا المصدر',
     CARDS_NOT_IN_HAND: 'الأوراق ليست في يدك',
-    SESSION_EXPIRED: 'انتهت الجلسة',
+    SESSION_EXPIRED: 'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.',
     TABLE_FULL: 'الطاولة ممتلئة',
     TABLE_NOT_FOUND: 'الطاولة غير موجودة',
     GAME_ALREADY_STARTED: 'اللعبة بدأت بالفعل',

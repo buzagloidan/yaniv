@@ -128,7 +128,7 @@ export const ru = {
     HAND_TOO_HIGH: 'Сумма слишком высока для Янива',
     INVALID_DRAW_SOURCE: 'Нельзя взять из этого источника',
     CARDS_NOT_IN_HAND: 'Карты не в вашей руке',
-    SESSION_EXPIRED: 'Сессия истекла',
+    SESSION_EXPIRED: 'Срок сессии истек. Войдите снова.',
     TABLE_FULL: 'Стол заполнен',
     TABLE_NOT_FOUND: 'Стол не найден',
     GAME_ALREADY_STARTED: 'Игра уже началась',

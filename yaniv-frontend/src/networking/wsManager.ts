@@ -1,4 +1,4 @@
-import { createWsTicket } from './api';
+import { createWsTicket, isSessionExpiredError } from './api';
 import type { ClientMessage, ServerMessage } from '../shared/types';
 
 type MessageHandler = (msg: ServerMessage) => void;
@@ -72,8 +72,11 @@ export class WSManager {
     try {
       const res = await createWsTicket(this.token, this.tableId);
       ticket = res.ticket;
-    } catch {
+    } catch (error) {
       this.opening = false;
+      if (isSessionExpiredError(error)) {
+        return;
+      }
       if (!this.destroyed) this.scheduleReconnect();
       return;
     }

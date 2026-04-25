@@ -148,7 +148,7 @@ export const he = {
     HAND_TOO_HIGH: 'הסכום גבוה מדי ליניב',
     INVALID_DRAW_SOURCE: 'לא ניתן לשלוף ממקור זה',
     CARDS_NOT_IN_HAND: 'הקלפים לא ביד שלך',
-    SESSION_EXPIRED: 'פג תוקף הכניסה',
+    SESSION_EXPIRED: 'פג תוקף הכניסה. צריך להתחבר שוב.',
     TABLE_FULL: 'השולחן מלא',
     TABLE_NOT_FOUND: 'שולחן לא נמצא',
     GAME_ALREADY_STARTED: 'המשחק כבר התחיל',

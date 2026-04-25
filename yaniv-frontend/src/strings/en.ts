@@ -128,7 +128,7 @@ export const en = {
     HAND_TOO_HIGH: 'Hand total too high for Yaniv',
     INVALID_DRAW_SOURCE: 'Cannot draw from that source',
     CARDS_NOT_IN_HAND: 'Cards not in your hand',
-    SESSION_EXPIRED: 'Session expired',
+    SESSION_EXPIRED: 'Your session expired. Please sign in again.',
     TABLE_FULL: 'Table is full',
     TABLE_NOT_FOUND: 'Table not found',
     GAME_ALREADY_STARTED: 'Game already started',

@@ -3,6 +3,13 @@ import { getStrings } from '../strings';
 
 const BASE = import.meta.env.VITE_API_URL ?? '';
 
+class SessionExpiredError extends Error {
+  constructor() {
+    super(getStrings().errors.SESSION_EXPIRED);
+    this.name = 'SessionExpiredError';
+  }
+}
+
 function mapRequestError(error: unknown): Error {
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
@@ -29,6 +36,10 @@ function handleUnauthorized() {
   });
 }
 
+export function isSessionExpiredError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'SessionExpiredError';
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {},
@@ -50,10 +61,15 @@ async function request<T>(
   try {
     json = await res.json();
   } catch {
+    if (res.status === 401) {
+      handleUnauthorized();
+      throw new SessionExpiredError();
+    }
     throw new Error(`HTTP ${res.status}`);
   }
   if (res.status === 401) {
     handleUnauthorized();
+    throw new SessionExpiredError();
   }
   if (!res.ok) throw new Error((json as { error?: string }).error ?? `HTTP ${res.status}`);
   return json as T;
