@@ -56,7 +56,7 @@ lobby.post('/', async (ctx) => {
   const scoreLimit = [50, 100, 200].includes(body.scoreLimit ?? 0)
     ? body.scoreLimit!
     : DEFAULTS.SCORE_LIMIT;
-  const resetScoreAt = Math.round(scoreLimit / 2);
+  const resetScoreAt = DEFAULTS.RESET_SCORE_AT;
   const turnTimeoutSeconds = DEFAULTS.TURN_TIMEOUT_SECONDS;
   const isPrivateTable = body.isPrivateTable === true;
 
