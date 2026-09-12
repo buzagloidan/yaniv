@@ -1,4 +1,5 @@
 import type { UserRow, TableRow, GameSettings } from '../shared/types';
+import { DEFAULTS } from '../shared/constants';
 
 // ============================================================
 // Users
@@ -103,30 +104,41 @@ export async function getTableById(db: D1Database, tableId: string): Promise<Tab
   );
 }
 
-export async function isRoomCodeTaken(db: D1Database, code: string): Promise<boolean> {
-  const row = await db
-    .prepare("SELECT id FROM tables WHERE room_code = ? AND status IN ('waiting','in_progress')")
-    .bind(code)
-    .first<{ id: string }>();
-  return row !== null;
-}
-
 export async function createTable(
   db: D1Database,
   tableId: string,
-  roomCode: string,
   hostId: string,
   settings: Pick<GameSettings, 'maxPlayers' | 'yanivThreshold' | 'turnTimeoutSeconds' | 'isRanked'>,
-): Promise<void> {
-  await db
+): Promise<string | null> {
+  const { ROOM_CODE_MIN: min, ROOM_CODE_MAX: max } = DEFAULTS;
+  const capacity = max - min + 1;
+  const start = Math.floor(Math.random() * capacity) + min;
+
+  // Reserve a globally unused code in the same statement that creates the table.
+  // Finished/cancelled tables still own their codes under the UNIQUE constraint.
+  // A circular search visits every code at most once, including when nearly full.
+  const row = await db
     .prepare(
-      `INSERT INTO tables
+      `WITH RECURSIVE candidates(code, attempt) AS (
+         SELECT CAST(? AS INTEGER), 0
+         UNION ALL
+         SELECT CASE WHEN code = ? THEN CAST(? AS INTEGER) ELSE code + 1 END, attempt + 1
+         FROM candidates WHERE attempt + 1 < ?
+       )
+       INSERT INTO tables
          (id, room_code, host_id, status, max_players, yaniv_threshold, turn_timeout_seconds, is_ranked, created_at)
-       VALUES (?, ?, ?, 'waiting', ?, ?, ?, ?, ?)`,
+       SELECT ?, CAST(code AS TEXT), ?, 'waiting', ?, ?, ?, ?, ?
+       FROM candidates
+       WHERE NOT EXISTS (SELECT 1 FROM tables WHERE room_code = CAST(code AS TEXT))
+       LIMIT 1
+       RETURNING room_code`,
     )
     .bind(
+      start,
+      max,
+      min,
+      capacity,
       tableId,
-      roomCode,
       hostId,
       settings.maxPlayers,
       settings.yanivThreshold,
@@ -134,7 +146,8 @@ export async function createTable(
       settings.isRanked ? 1 : 0,
       Date.now(),
     )
-    .run();
+    .first<{ room_code: string }>();
+  return row?.room_code ?? null;
 }
 
 export async function updateTableStatus(
