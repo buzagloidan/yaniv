@@ -4,7 +4,6 @@ import { authMiddleware } from '../auth/middleware';
 import {
   getTableByRoomCode,
   getTableById,
-  isRoomCodeTaken,
   createTable,
   getTablePlayerCount,
   addTablePlayer,
@@ -60,16 +59,16 @@ lobby.post('/', async (ctx) => {
   const turnTimeoutSeconds = DEFAULTS.TURN_TIMEOUT_SECONDS;
   const isPrivateTable = body.isPrivateTable === true;
 
-  // Generate unique 4-digit room code
-  const roomCode = await generateRoomCode(ctx.env.DB);
-
   const tableId = crypto.randomUUID();
-  await createTable(ctx.env.DB, tableId, roomCode, userId, {
+  const roomCode = await createTable(ctx.env.DB, tableId, userId, {
     maxPlayers,
     yanivThreshold,
     turnTimeoutSeconds,
     isRanked: false,
   });
+  if (roomCode === null) {
+    return ctx.json({ error: 'No room codes available. Please try again later.' }, 503);
+  }
 
   // Initialise the Durable Object
   const settings: GameSettings = {
@@ -283,17 +282,5 @@ lobby.get('/:id', async (ctx) => {
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(Math.round(value), min), max);
 }
-
-async function generateRoomCode(db: D1Database): Promise<string> {
-  for (let attempt = 0; attempt < 20; attempt++) {
-    const code = String(
-      Math.floor(Math.random() * (DEFAULTS.ROOM_CODE_MAX - DEFAULTS.ROOM_CODE_MIN + 1)) +
-        DEFAULTS.ROOM_CODE_MIN,
-    );
-    if (!(await isRoomCodeTaken(db, code))) return code;
-  }
-  throw new Error('Failed to generate unique room code after 20 attempts');
-}
-
 
 export default lobby;
